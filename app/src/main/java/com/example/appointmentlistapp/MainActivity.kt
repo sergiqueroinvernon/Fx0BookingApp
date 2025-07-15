@@ -1,0 +1,506 @@
+package com.example.appointmentlistapp
+
+import android.Manifest
+import android.os.Bundle
+import android.widget.Toast
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.QrCodeScanner
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
+import retrofit2.HttpException
+import retrofit2.Response
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
+import retrofit2.http.GET
+import retrofit2.http.POST
+import retrofit2.http.Path
+import java.io.IOException
+import java.text.SimpleDateFormat
+import java.util.*
+
+import android.util.Log
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.camera.core.CameraSelector
+import androidx.camera.core.ImageAnalysis
+import androidx.camera.core.Preview
+import androidx.camera.lifecycle.ProcessCameraProvider
+import androidx.camera.view.PreviewView
+import androidx.compose.ui.viewinterop.AndroidView
+import androidx.core.content.ContextCompat
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import com.google.mlkit.vision.barcode.BarcodeScannerOptions
+import com.google.mlkit.vision.barcode.BarcodeScanning
+import com.google.mlkit.vision.barcode.common.Barcode
+import com.google.mlkit.vision.common.InputImage
+import java.util.concurrent.Executors
+
+// =====================================================================================
+// == BUILD.GRADLE.KTS DEPENDENCIES - (Instructions remain in comments for reference) ==
+// =====================================================================================
+// dependencies {
+//      ...
+//      // ViewModel for Compose (ensure you have version 2.8.3 from previous instructions)
+//      implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.3")
+//
+//      // Retrofit for networking
+//      implementation("com.squareup.retrofit2:retrofit:2.9.0")
+//      implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+//
+//      // CameraX dependencies (ensure consistent versions, e.g., 1.3.3)
+//      implementation("androidx.camera:camera-core:1.3.3")
+//      implementation("androidx.camera:camera-camera2:1.3.3")
+//      implementation("androidx.camera:camera-lifecycle:1.3.3")
+//      implementation("androidx.camera:camera-view:1.3.3")
+//      implementation("androidx.camera:camera-extensions:1.3.3")
+//
+//      // ML Kit Barcode Scanning
+//      implementation("com.google.mlkit:barcode-scanning:17.2.0")
+// }
+// =====================================================================================
+
+
+// =====================================================================================
+// == ANDROIDMANIFEST.XML - (Instructions remain in comments for reference) ==
+// =====================================================================================
+// <manifest ...>
+//      <uses-permission android:name="android.permission.INTERNET" />
+//      <uses-permission android:name="android.permission.CAMERA" />
+//
+//      <application
+//          ...
+//          android:usesCleartextTraffic="true">
+//          ...
+//      </application>
+// </manifest>
+// =====================================================================================
+
+
+// =====================================================================================
+// == DATA MODELS ==
+// =====================================================================================
+data class Appointment(
+    val id: String,
+    val driverId: String,
+    val driver: Driver?,
+    val appointmentDateTime: String,
+    val status: String,
+    val description: String
+)
+
+data class Driver(
+    val id: String,
+    val name: String,
+    val email: String
+)
+
+// =====================================================================================
+// == CAMERA PREVIEW AND BARCODE ANALYZER ==
+// =====================================================================================
+typealias BarcodeAnalyserListener = (barcodeValue: String?) -> Unit
+
+@Composable
+fun CameraPreview(
+    modifier: Modifier = Modifier,
+    onBarcodeScanned: BarcodeAnalyserListener
+) {
+    val context = LocalContext.current
+    val lifecycleOwner = LocalLifecycleOwner.current
+    val cameraProviderFuture = remember { ProcessCameraProvider.getInstance(context)}
+
+    AndroidView(
+        factory = { ctx ->
+            val previewView = PreviewView(ctx).apply {
+                this.scaleType = PreviewView.ScaleType.FILL_CENTER
+            }
+            val cameraExecutor = Executors.newSingleThreadExecutor()
+
+            cameraProviderFuture.addListener({
+                val cameraProvider = cameraProviderFuture.get()
+                val preview = Preview.Builder().build().also {
+                    it.setSurfaceProvider(previewView.surfaceProvider)
+                }
+
+                val barcodeScannerOptions = BarcodeScannerOptions.Builder()
+                    .setBarcodeFormats(Barcode.FORMAT_QR_CODE)
+                    .build()
+
+                val barcodeScanner = BarcodeScanning.getClient(barcodeScannerOptions)
+
+                val imageAnalysis = ImageAnalysis.Builder()
+                    .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+                    .build()
+                    .also {
+                        it.setAnalyzer(cameraExecutor, BarcodeAnalyzer(barcodeScanner) { barcodeValue ->
+                            onBarcodeScanned(barcodeValue)
+                        })
+                    }
+
+                try {
+                    cameraProvider.unbindAll()
+                    cameraProvider.bindToLifecycle(
+                        lifecycleOwner,
+                        CameraSelector.DEFAULT_BACK_CAMERA,
+                        preview,
+                        imageAnalysis
+                    )
+                } catch (exc: Exception) {
+                    Log.e("CameraPreview", "Use case binding failed", exc)
+                }
+            }, ContextCompat.getMainExecutor(ctx))
+            previewView
+        },
+        modifier = modifier
+    )
+}
+
+private class BarcodeAnalyzer(
+    private val barcodeScanner: com.google.mlkit.vision.barcode.BarcodeScanner,
+    private val listener: BarcodeAnalyserListener
+) : ImageAnalysis.Analyzer {
+
+    @androidx.annotation.OptIn(androidx.camera.core.ExperimentalGetImage::class)
+    override fun analyze(imageProxy: androidx.camera.core.ImageProxy) {
+        val mediaImage = imageProxy.image
+        if (mediaImage != null) {
+            val image = InputImage.fromMediaImage(mediaImage, imageProxy.imageInfo.rotationDegrees)
+
+            barcodeScanner.process(image)
+                .addOnSuccessListener { barcodes ->
+                    barcodes.firstOrNull()?.rawValue?.let {
+                        listener(it)
+                    }
+                }
+                .addOnFailureListener { e ->
+                    Log.e("BarcodeAnalyzer", "Barcode scanning failed", e)
+                }
+                .addOnCompleteListener {
+                    imageProxy.close()
+                }
+        } else {
+            imageProxy.close()
+        }
+    }
+}
+
+
+// =====================================================================================
+// == NETWORKING LAYER (Retrofit) ==
+// =====================================================================================
+private const val BASE_URL = "http://172.26.140.23:5251/" // IMPORTANT: Change port if yours is different
+
+interface ApiService {
+    @GET("api/appointments")
+    suspend fun getAppointments(): List<Appointment>
+
+    @GET(value="api/appointments/driver/{driverId}")
+    suspend fun getAppointmentsByDriverId(@Path("driverId") id: String): List<Appointment>
+
+    @POST("api/appointments/{id}/checkin")
+    suspend fun checkInAppointment(@Path("id") id: String): Response<Unit>
+}
+
+object RetrofitInstance {
+    val api: ApiService by lazy {
+        Retrofit.Builder()
+            .baseUrl(BASE_URL)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+            .create(ApiService::class.java)
+    }
+}
+
+
+// =====================================================================================
+// == VIEWMODEL (To hold state and handle logic) ==
+// =====================================================================================
+class AppointmentViewModel : ViewModel() {
+    private val _appointments = MutableStateFlow<List<Appointment>>(emptyList())
+    val appointments: StateFlow<List<Appointment>> = _appointments
+
+    private val _isLoading = MutableStateFlow(false)
+    val isLoading: StateFlow<Boolean> = _isLoading
+
+    // Corrected: Public getter for errorMessage
+    private val _errorMessage = MutableStateFlow<String?>(null)
+    val errorMessage: StateFlow<String?> = _errorMessage
+
+    // DriverID
+    private val _scannedDriverId = MutableStateFlow<String?>(null)
+    val scannedDriverId: StateFlow<String?> = _scannedDriverId
+
+    // Function to set the error message from outside the ViewModel
+    fun setErrorMessage(message: String?) {
+        _errorMessage.value = message
+    }
+
+    fun setScannedDriverId(driverId: String){
+        if (_scannedDriverId.value != driverId) {
+            _scannedDriverId.value = driverId
+            fetchAppointments(driverId)
+        }
+    }
+
+    fun fetchAppointments(driverId: String? = _scannedDriverId.value){
+        if(driverId == null) {
+            _appointments.value = emptyList()
+            // Using setErrorMessage to update the public errorMessage
+            setErrorMessage("Please scan a QR code to get driver appointments.")
+            return
+        }
+
+        viewModelScope.launch {
+            _isLoading.value = true
+            setErrorMessage(null) // Clear previous errors on new fetch attempt
+            try {
+                val driverAppointments = RetrofitInstance.api.getAppointmentsByDriverId(driverId)
+                _appointments.value = driverAppointments
+            } catch(e: IOException) {
+                setErrorMessage("Network error. Please check your connection and ensure the API is running.")
+            } catch(e: HttpException){
+                setErrorMessage("API error: ${e.message()}")
+            } catch(e: Exception){
+                setErrorMessage("An unexpected error occurred: ${e.message}")
+            } finally {
+                _isLoading.value = false
+            }
+        }
+    }
+
+    // This fetchAppointments is for the refresh button, using the current scanned ID
+    fun fetchAppointments() {
+        fetchAppointments(_scannedDriverId.value)
+    }
+
+    fun checkInAppointment(id: String) {
+        viewModelScope.launch {
+            try {
+                RetrofitInstance.api.checkInAppointment(id)
+                fetchAppointments(_scannedDriverId.value)
+            } catch (e: Exception) {
+                setErrorMessage("Failed to check in: ${e.message}")
+            }
+        }
+    }
+}
+
+
+// =====================================================================================
+// == MAIN ACTIVITY & UI (Jetpack Compose) ==
+// =====================================================================================
+class MainActivity : ComponentActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContent {
+            Surface(
+                modifier = Modifier.fillMaxSize(),
+                color = MaterialTheme.colorScheme.background
+            ) {
+                val viewModel: AppointmentViewModel = viewModel()
+                AppointmentListScreen(viewModel = viewModel)
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun AppointmentListScreen(viewModel: AppointmentViewModel) {
+    val appointments by viewModel.appointments.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
+    // Corrected: Collect errorMessage directly from ViewModel
+    val errorMessage by viewModel.errorMessage.collectAsState() // This line is correct now
+    val scannedDriverId by viewModel.scannedDriverId.collectAsState()
+
+    val context = LocalContext.current
+
+    var showQrScanner by remember { mutableStateOf(false) }
+
+    // Removed the problematic duplicate MutableStateFlow declaration
+    // private val _errorMessageAppointment = MutableStateFlow<String?>(null)
+    // val errorMessageAppointment: StateFlow<String?> = _errorMessage // This was causing conflict
+
+    val requestPermissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted: Boolean ->
+        if (isGranted) {
+            showQrScanner = true
+        } else {
+            Toast.makeText(context, "Camera permission denied. Cannot scan QR code.", Toast.LENGTH_LONG).show()
+            // Corrected: Call the public setErrorMessage function on the ViewModel
+            viewModel.setErrorMessage("Camera permission denied. Cannot scan QR code.")
+        }
+    }
+
+    Scaffold(
+        topBar = {
+            CenterAlignedTopAppBar(
+                title = { Text("Appointment List") },
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    titleContentColor = Color.White,
+                    actionIconContentColor = Color.White
+                ),
+                actions = {
+                    IconButton(onClick = { viewModel.fetchAppointments() }) {
+                        Icon(
+                            imageVector = Icons.Filled.Refresh,
+                            contentDescription = "Refresh"
+                        )
+                    }
+                    IconButton(onClick = {
+                        when {
+                            ContextCompat.checkSelfPermission(
+                                context,
+                                Manifest.permission.CAMERA
+                            ) == android.content.pm.PackageManager.PERMISSION_GRANTED -> { // Fully qualified name
+                                showQrScanner = true
+                            }
+                            else -> {
+                                requestPermissionLauncher.launch(Manifest.permission.CAMERA)
+                            }
+                        }
+                    }) {
+                        Icon(
+                            imageVector = Icons.Filled.QrCodeScanner,
+                            contentDescription = "Scan QR Code"
+                        )
+                    }
+                }
+            )
+        }
+    ) { paddingValues ->
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+        ) {
+            if (showQrScanner) {
+                CameraPreview(
+                    modifier = Modifier.fillMaxSize(),
+                    onBarcodeScanned = { barcodeValue ->
+                        if (barcodeValue != null) {
+                            viewModel.setScannedDriverId(barcodeValue)
+                            showQrScanner = false
+                        } else {
+                            Toast.makeText(context, "QR code not detected or invalid.", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                )
+            } else {
+                when {
+                    isLoading -> {
+                        CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+                    }
+                    // Use the errorMessage collected from the ViewModel
+                    errorMessage != null -> {
+                        Text(
+                            text = errorMessage ?: "An unknown error occurred.",
+                            color = MaterialTheme.colorScheme.error,
+                            modifier = Modifier
+                                .align(Alignment.Center)
+                                .padding(16.dp)
+                        )
+                    }
+                    scannedDriverId == null -> {
+                        Text(
+                            text = "Please scan a QR code to view appointments.",
+                            modifier = Modifier.align(Alignment.Center)
+                        )
+                    }
+                    appointments.isEmpty() -> {
+                        Text(
+                            text = "No appointments found for driver ID: ${scannedDriverId ?: "N/A"}. Tap refresh to try again.",
+                            modifier = Modifier.align(Alignment.Center)
+                        )
+                    }
+                    else -> {
+                        LazyColumn(
+                            modifier = Modifier.fillMaxSize(),
+                            contentPadding = PaddingValues(16.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            items(appointments) { appointment ->
+                                AppointmentItem(appointment = appointment) {
+                                    viewModel.checkInAppointment(appointment.id)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun AppointmentItem(appointment: Appointment, onCheckInClicked: () -> Unit) {
+    val isCompleted = appointment.status.equals("Completed", ignoreCase = true)
+
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(
+                text = appointment.description,
+                fontWeight = FontWeight.Bold,
+                fontSize = 18.sp
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(text = "Driver: ${appointment.driver?.name ?: "N/A"}")
+            Text(text = "Date: ${formatDate(appointment.appointmentDateTime)}")
+
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(text = "Status: ")
+                Text(
+                    text = appointment.status,
+                    color = if (isCompleted) Color(0xFF388E3C) else Color(0xFFFBC02D),
+                    fontWeight = FontWeight.Bold
+                )
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            if (!isCompleted) {
+                Button(
+                    onClick = onCheckInClicked,
+                    modifier = Modifier.align(Alignment.End),
+                    enabled = !isCompleted
+                ) {
+                    Text("Check In")
+                }
+            }
+        }
+    }
+}
+
+fun formatDate(dateString: String): String {
+    return try {
+        val parser = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault())
+        val formatter = SimpleDateFormat("dd MMM yyyy, hh:mm a", Locale.getDefault())
+        formatter.format(parser.parse(dateString) ?: Date())
+    } catch (e: Exception) {
+        dateString
+    }
+}
