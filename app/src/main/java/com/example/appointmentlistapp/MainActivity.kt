@@ -354,7 +354,7 @@ fun AppointmentListScreen(viewModel: AppointmentViewModel) {
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("Appointment List") },
+                title = { Text("Terminliste") },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primary,
                     titleContentColor = Color.White,
@@ -423,7 +423,7 @@ fun AppointmentListScreen(viewModel: AppointmentViewModel) {
                     }
                     scannedDriverId == null -> {
                         Text(
-                            text = "Please scan a QR code to view appointments.",
+                            text = "Bitte scannen Sie einen QR-Code, um Termine anzuzeigen.",
                             modifier = Modifier.align(Alignment.Center)
                         )
                     }
