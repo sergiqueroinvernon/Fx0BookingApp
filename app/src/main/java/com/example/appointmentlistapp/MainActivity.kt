@@ -264,7 +264,7 @@ class AppointmentViewModel : ViewModel() {
         if(driverId == null) {
             _appointments.value = emptyList()
             // Using setErrorMessage to update the public errorMessage
-            setErrorMessage("Please scan a QR code to get driver appointments.")
+            setErrorMessage("Bitte scannen Sie einen QR-Code, um Fahrertermine zu erhalten.")
             return
         }
 
