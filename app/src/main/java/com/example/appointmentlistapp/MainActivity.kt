@@ -104,7 +104,8 @@ data class Appointment(
     val driver: Driver?,
     val appointmentDateTime: String,
     val status: String,
-    val description: String
+    val description: String,
+    var isChecked: Boolean = false
 )
 
 data class Driver(
@@ -253,15 +254,15 @@ class AppointmentViewModel : ViewModel() {
         _errorMessage.value = message
     }
 
-    fun setScannedDriverId(driverId: String){
+    fun setScannedDriverId(driverId: String) {
         if (_scannedDriverId.value != driverId) {
             _scannedDriverId.value = driverId
             fetchAppointments(driverId)
         }
     }
 
-    fun fetchAppointments(driverId: String? = _scannedDriverId.value){
-        if(driverId == null) {
+    fun fetchAppointments(driverId: String? = _scannedDriverId.value) {
+        if (driverId == null) {
             _appointments.value = emptyList()
             // Using setErrorMessage to update the public errorMessage
             setErrorMessage("Bitte scannen Sie einen QR-Code, um Fahrertermine zu erhalten.")
@@ -274,17 +275,79 @@ class AppointmentViewModel : ViewModel() {
             try {
                 val driverAppointments = RetrofitInstance.api.getAppointmentsByDriverId(driverId)
                 _appointments.value = driverAppointments
-            } catch(e: IOException) {
+            } catch (e: IOException) {
                 setErrorMessage("Network error. Please check your connection and ensure the API is running.")
-            } catch(e: HttpException){
+            } catch (e: HttpException) {
                 setErrorMessage("API error: ${e.message()}")
-            } catch(e: Exception){
+            } catch (e: Exception) {
                 setErrorMessage("An unexpected error occurred: ${e.message}")
             } finally {
                 _isLoading.value = false
             }
         }
     }
+
+    //Toggle the checked state of a specific appointment
+    fun toggleAppointmentChecked(appointmentId: String) {
+        _appointments.value = _appointments.value.map { appointment ->
+            if (appointment.id == appointmentId) {
+                appointment.copy(isChecked = !appointment.isChecked)
+            } else
+                appointment
+        }
+    }
+
+    // New: Toggle the checked state of all appointments
+    fun toggleSelectAll(selectAll: Boolean) {
+        _appointments.value = _appointments.value.map { appointment ->
+            appointment.copy(isChecked = selectAll)
+        }
+    }
+
+    //Check-in selected appointments
+    // New: Check-in selected appointments
+    fun checkInSelectedAppointments() {
+        viewModelScope.launch {
+            val selectedAppointments = _appointments.value.filter { it.isChecked && it.status.equals("Pending", ignoreCase = true) }
+            if (selectedAppointments.isEmpty()) {
+                setErrorMessage("No pending appointments selected for check-in.")
+                return@launch
+            }
+
+            _isLoading.value = true
+            setErrorMessage(null)
+            var successCount = 0
+            var errorOccurred = false
+
+            for (appointment in selectedAppointments) {
+                try {
+                    val response = RetrofitInstance.api.checkInAppointment(appointment.id)
+                    if (response.isSuccessful) {
+                        successCount++
+                    } else {
+                        errorOccurred = true
+                        setErrorMessage("Failed to check in appointment ${appointment.description}: ${response.code()} ${response.message()}")
+                        // Break or continue based on desired behavior for multiple failures
+                    }
+                } catch (e: Exception) {
+                    errorOccurred = true
+                    setErrorMessage("Error checking in appointment ${appointment.description}: ${e.message}")
+                    // Break or continue
+                }
+            }
+
+            if (!errorOccurred && successCount > 0) {
+                setErrorMessage("Successfully checked in $successCount appointment(s).")
+            } else if (successCount == 0 && errorOccurred) {
+                // Error message already set by the loop
+            } else if (successCount > 0 && errorOccurred) {
+                setErrorMessage("Some appointments checked in, but errors occurred with others.")
+            }
+            fetchAppointments(_scannedDriverId.value) // Refresh the list after attempted check-ins
+            _isLoading.value = false
+        }
+    }
+
 
     // This fetchAppointments is for the refresh button, using the current scanned ID
     fun fetchAppointments() {
