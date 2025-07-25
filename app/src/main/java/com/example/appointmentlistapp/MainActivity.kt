@@ -45,6 +45,7 @@ import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
+import androidx.compose.foundation.background
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -289,18 +290,31 @@ class AppointmentViewModel : ViewModel() {
 
     //Toggle the checked state of a specific appointment
     fun toggleAppointmentChecked(appointmentId: String) {
+
         _appointments.value = _appointments.value.map { appointment ->
             if (appointment.id == appointmentId) {
-                appointment.copy(isChecked = !appointment.isChecked)
-            } else
+                // Only allow toggling for "Pending" appointments
+                if (appointment.status.equals("Pending", ignoreCase = true)) { // <-- CHANGED LINE
+                    appointment.copy(isChecked = !appointment.isChecked)
+                } else {
+                    appointment // Do not change checked state if not pending // <-- CHANGED LINE
+                }
+            } else {
                 appointment
+            }
         }
     }
 
     // New: Toggle the checked state of all appointments
+
     fun toggleSelectAll(selectAll: Boolean) {
         _appointments.value = _appointments.value.map { appointment ->
-            appointment.copy(isChecked = selectAll)
+            // Only toggle if the appointment status is "Pending"
+            if (appointment.status.equals("Pending", ignoreCase = true)) { // <-- CHANGED LINE
+                appointment.copy(isChecked = selectAll)
+            } else {
+                appointment // Keep non-pending appointments as they are // <-- CHANGED LINE
+            }
         }
     }
 
@@ -391,6 +405,28 @@ fun AppointmentListScreen(viewModel: AppointmentViewModel) {
     val appointments by viewModel.appointments.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     // Corrected: Collect errorMessage directly from ViewModel
+    //state for selected appointments count
+
+    val selectedAppointmentCount by remember(appointments){
+        derivedStateOf {appointments.count { it.isChecked && it.status.equals("Pending", ignoreCase = true)}}
+    }
+
+    //Derived state for "Select all" checkbox
+    val allAppointmentsChecked by remember(appointments){
+        derivedStateOf{
+            // If there are no pending appointments, "Select All" should conceptually be unchecked
+            val pendingAppointments = appointments.filter { it.status.equals("Pending", ignoreCase = true) }
+            if(pendingAppointments.isEmpty()) false
+            else pendingAppointments.all { it.isChecked }
+        }
+    }
+
+
+
+
+
+
+
     val errorMessage by viewModel.errorMessage.collectAsState() // This line is correct now
     val scannedDriverId by viewModel.scannedDriverId.collectAsState()
 
@@ -409,7 +445,6 @@ fun AppointmentListScreen(viewModel: AppointmentViewModel) {
             showQrScanner = true
         } else {
             Toast.makeText(context, "Camera permission denied. Cannot scan QR code.", Toast.LENGTH_LONG).show()
-            // Corrected: Call the public setErrorMessage function on the ViewModel
             viewModel.setErrorMessage("Camera permission denied. Cannot scan QR code.")
         }
     }
@@ -429,6 +464,15 @@ fun AppointmentListScreen(viewModel: AppointmentViewModel) {
                             imageVector = Icons.Filled.Refresh,
                             contentDescription = "Refresh"
                         )
+                    }
+                    if (scannedDriverId != null && !showQrScanner) { // Only show if a driver is scanned and scanner is not open
+                        Button(
+                            onClick = { viewModel.checkInSelectedAppointments() },
+                            enabled = selectedAppointmentCount > 0,
+                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary)
+                        ) {
+                            Text("Check In Selected ($selectedAppointmentCount)")
+                        }
                     }
                     IconButton(onClick = {
                         when {
@@ -492,7 +536,7 @@ fun AppointmentListScreen(viewModel: AppointmentViewModel) {
                     }
                     appointments.isEmpty() -> {
                         Text(
-                            text = "No appointments found for driver ID: ${scannedDriverId ?: "N/A"}. Tap refresh to try again.",
+                            text = "Keine Termine für Fahrer-ID gefunden ${scannedDriverId ?: "N/A"}. Tippen Sie auf „Aktualisieren“, um es erneut zu versuchen.",
                             modifier = Modifier.align(Alignment.Center)
                         )
                     }
@@ -502,10 +546,34 @@ fun AppointmentListScreen(viewModel: AppointmentViewModel) {
                             contentPadding = PaddingValues(16.dp),
                             verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            items(appointments) { appointment ->
-                                AppointmentItem(appointment = appointment) {
-                                    viewModel.checkInAppointment(appointment.id)
+                            // New: Select All Checkbox
+                            item {
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(vertical = 8.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Checkbox(
+                                        checked = allAppointmentsChecked,
+                                        onCheckedChange = { isChecked ->
+                                            viewModel.toggleSelectAll(isChecked)
+                                        },
+                                        enabled = appointments.any { it.status.equals("Pending", ignoreCase = true) } // Only enable if there are pending appointments
+                                    )
+                                    Text(text = "Alle auswählen", fontWeight = FontWeight.Bold)
                                 }
+                                Divider() 
+                            }
+
+                            items(appointments) { appointment ->
+                                AppointmentItem(
+                                    appointment = appointment,
+                                    isChecked = appointment.isChecked,
+                                    onCheckedChange = { checked ->
+                                        viewModel.toggleAppointmentChecked(appointment.id)
+                                    }
+                                )
                             }
                         }
                     }
@@ -515,46 +583,64 @@ fun AppointmentListScreen(viewModel: AppointmentViewModel) {
     }
 }
 
+
+
 @Composable
-fun AppointmentItem(appointment: Appointment, onCheckInClicked: () -> Unit) {
+fun AppointmentItem(appointment: Appointment, isChecked: Boolean, onCheckedChange: (Boolean) -> Unit) {
     val isCompleted = appointment.status.equals("Completed", ignoreCase = true)
 
     Card(
         modifier = Modifier.fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+        elevation = CardDefaults.cardElevation(defaultElevation = 20.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.background)
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text(
-                text = appointment.description,
-                fontWeight = FontWeight.Bold,
-                fontSize = 18.sp
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(text = "Driver: ${appointment.driver?.name ?: "N/A"}")
-            Text(text = "Date: ${formatDate(appointment.appointmentDateTime)}")
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(15.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Only show checkbox for pending appointments
+            if (!isCompleted) {
+                Checkbox(
+                    checked = isChecked,
+                    onCheckedChange = onCheckedChange,
+                    modifier = Modifier.padding(end = 8.dp)
 
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(text = "Status: ")
-                Text(
-                    text = appointment.status,
-                    color = if (isCompleted) Color(0xFF388E3C) else Color(0xFFFBC02D),
-                    fontWeight = FontWeight.Bold
                 )
+            } else {
+                // Optional: A placeholder or just empty space for completed appointments
+                Spacer(modifier = Modifier.width(48.dp)) // Aligns content if checkbox were present
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
 
-            if (!isCompleted) {
-                Button(
-                    onClick = onCheckInClicked,
-                    modifier = Modifier.align(Alignment.End),
-                    enabled = !isCompleted
-                ) {
-                    Text("Check In")
+
+
+            Column(modifier = Modifier.padding(16.dp)) {
+                Text(
+                    text = appointment.description,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 18.sp,
+
+                    )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(text = "Driver: ${appointment.driver?.name ?: "N/A"}")
+                Text(text = "Date: ${formatDate(appointment.appointmentDateTime)}")
+
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(text = "Status: ")
+                    Text(
+                        text = appointment.status,
+                        color = if (isCompleted) Color(0xFF388E3C) else Color(0xFFFBC02D),
+                        fontWeight = FontWeight.Bold
+                    )
                 }
+
+                Spacer(modifier = Modifier.height(12.dp))
+
             }
         }
+
     }
 }
 
@@ -567,3 +653,5 @@ fun formatDate(dateString: String): String {
         dateString
     }
 }
+
+
