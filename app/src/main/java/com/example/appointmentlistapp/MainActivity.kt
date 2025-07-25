@@ -294,7 +294,7 @@ class AppointmentViewModel : ViewModel() {
         _appointments.value = _appointments.value.map { appointment ->
             if (appointment.id == appointmentId) {
                 // Only allow toggling for "Pending" appointments
-                if (appointment.status.equals("Pending", ignoreCase = true)) { // <-- CHANGED LINE
+                if (appointment.status.equals("Pending", ignoreCase = true) || appointment.status.isEmpty()) { // <-- CHANGED LINE
                     appointment.copy(isChecked = !appointment.isChecked)
                 } else {
                     appointment // Do not change checked state if not pending // <-- CHANGED LINE
@@ -310,7 +310,7 @@ class AppointmentViewModel : ViewModel() {
     fun toggleSelectAll(selectAll: Boolean) {
         _appointments.value = _appointments.value.map { appointment ->
             // Only toggle if the appointment status is "Pending"
-            if (appointment.status.equals("Pending", ignoreCase = true)) { // <-- CHANGED LINE
+            if (appointment.status.equals("Pending", ignoreCase = true) || appointment.status.isEmpty()) { // <-- CHANGED LINE
                 appointment.copy(isChecked = selectAll)
             } else {
                 appointment // Keep non-pending appointments as they are // <-- CHANGED LINE
@@ -322,7 +322,7 @@ class AppointmentViewModel : ViewModel() {
     // New: Check-in selected appointments
     fun checkInSelectedAppointments() {
         viewModelScope.launch {
-            val selectedAppointments = _appointments.value.filter { it.isChecked && it.status.equals("Pending", ignoreCase = true) }
+            val selectedAppointments = _appointments.value.filter { it.isChecked && it.status.equals("Pending", ignoreCase = true) || it.status.isEmpty() }
             if (selectedAppointments.isEmpty()) {
                 setErrorMessage("No pending appointments selected for check-in.")
                 return@launch
@@ -408,16 +408,17 @@ fun AppointmentListScreen(viewModel: AppointmentViewModel) {
     //state for selected appointments count
 
     val selectedAppointmentCount by remember(appointments){
-        derivedStateOf {appointments.count { it.isChecked && it.status.equals("Pending", ignoreCase = true)}}
+        derivedStateOf {appointments.count { it.isChecked && it.status.equals("Pending", ignoreCase = true) || it.status.isEmpty()}}
     }
 
     //Derived state for "Select all" checkbox
-    val allAppointmentsChecked by remember(appointments){
-        derivedStateOf{
-            // If there are no pending appointments, "Select All" should conceptually be unchecked
+    val allAppointmentsChecked by remember(appointments) {
+        derivedStateOf {
             val pendingAppointments = appointments.filter { it.status.equals("Pending", ignoreCase = true) }
-            if(pendingAppointments.isEmpty()) false
-            else pendingAppointments.all { it.isChecked }
+
+            // If there are no pending appointments, "Select All" cannot logically be "all checked".
+            // If there are pending appointments, check if all of them are currently checked.
+            pendingAppointments.isNotEmpty() && pendingAppointments.all { it.isChecked }
         }
     }
 
@@ -559,18 +560,22 @@ fun AppointmentListScreen(viewModel: AppointmentViewModel) {
                                         onCheckedChange = { isChecked ->
                                             viewModel.toggleSelectAll(isChecked)
                                         },
-                                        enabled = appointments.any { it.status.equals("Pending", ignoreCase = true) } // Only enable if there are pending appointments
+                                        enabled = appointments.any { it.status.equals("Pending", ignoreCase = true) || it.status.isEmpty() } // Only enable if there are pending appointments
                                     )
                                     Text(text = "Alle auswählen", fontWeight = FontWeight.Bold)
                                 }
                                 Divider() 
                             }
 
-                            items(appointments) { appointment ->
+                            items(
+                                appointments,
+                                key = { appointment -> appointment.id }
+                            ) { appointment ->
                                 AppointmentItem(
                                     appointment = appointment,
-                                    isChecked = appointment.isChecked,
+                                    isChecked = appointment.isChecked, // <--- FIXED: Removed the '!' here
                                     onCheckedChange = { checked ->
+
                                         viewModel.toggleAppointmentChecked(appointment.id)
                                     }
                                 )
@@ -601,12 +606,22 @@ fun AppointmentItem(appointment: Appointment, isChecked: Boolean, onCheckedChang
             verticalAlignment = Alignment.CenterVertically
         ) {
             // Only show checkbox for pending appointments
+
+
+
             if (!isCompleted) {
                 Checkbox(
                     checked = isChecked,
                     onCheckedChange = onCheckedChange,
+                    enabled = !isCompleted,
+                    // --- NEW / CHANGED CODE START ---
+                    colors = CheckboxDefaults.colors(
+                        checkedColor = Color.Red, // Color when the checkbox is checked
+                        uncheckedColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f), // Default unchecked color
+                        checkmarkColor = Color.White // Color of the checkmark itself (often white on a dark checked box)
+                    ),
+                    // --- NEW / CHANGED CODE END ---
                     modifier = Modifier.padding(end = 8.dp)
-
                 )
             } else {
                 // Optional: A placeholder or just empty space for completed appointments
