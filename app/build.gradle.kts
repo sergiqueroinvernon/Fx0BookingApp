@@ -65,6 +65,7 @@ dependencies {
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
     implementation(libs.androidx.animation.core.android)
+    implementation(libs.androidx.runtime)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
@@ -85,5 +86,7 @@ dependencies {
     // ML Kit Barcode Scanning
     implementation("com.google.mlkit:barcode-scanning:17.2.0") // This is the current latest stable version for ML Kit Barcode Scanning
     implementation("androidx.compose.material:material-icons-extended:1.7.0-beta01") // Use the latest stable or beta if targeting newer Compose BOM
+    implementation("io.coil-kt:coil-compose:2.6.0")
+
 
 }

@@ -1,0 +1,403 @@
+[33mcommit e1b999a5eb73642344ec9b7b419a0567604264fc[m
+Author: Sergi Quero Invernon <sergiquero@gmail.com>
+Date:   Tue Jul 15 11:57:58 2025 +0200
+
+    Get Appointments by DriverId
+
+[1mdiff --git a/.gitignore b/.gitignore[m
+[1mnew file mode 100644[m
+[1mindex 0000000..aa724b7[m
+[1m--- /dev/null[m
+[1m+++ b/.gitignore[m
+[36m@@ -0,0 +1,15 @@[m
+[32m+[m[32m*.iml[m
+[32m+[m[32m.gradle[m
+[32m+[m[32m/local.properties[m
+[32m+[m[32m/.idea/caches[m
+[32m+[m[32m/.idea/libraries[m
+[32m+[m[32m/.idea/modules.xml[m
+[32m+[m[32m/.idea/workspace.xml[m
+[32m+[m[32m/.idea/navEditor.xml[m
+[32m+[m[32m/.idea/assetWizardSettings.xml[m
+[32m+[m[32m.DS_Store[m
+[32m+[m[32m/build[m
+[32m+[m[32m/captures[m
+[32m+[m[32m.externalNativeBuild[m
+[32m+[m[32m.cxx[m
+[32m+[m[32mlocal.properties[m
+[1mdiff --git a/.idea/.gitignore b/.idea/.gitignore[m
+[1mnew file mode 100644[m
+[1mindex 0000000..26d3352[m
+[1m--- /dev/null[m
+[1m+++ b/.idea/.gitignore[m
+[36m@@ -0,0 +1,3 @@[m
+[32m+[m[32m# Default ignored files[m
+[32m+[m[32m/shelf/[m
+[32m+[m[32m/workspace.xml[m
+[1mdiff --git a/.idea/.name b/.idea/.name[m
+[1mnew file mode 100644[m
+[1mindex 0000000..0d2a4e8[m
+[1m--- /dev/null[m
+[1m+++ b/.idea/.name[m
+[36m@@ -0,0 +1 @@[m
+[32m+[m[32mAppointmentListApp[m
+\ No newline at end of file[m
+[1mdiff --git a/.idea/AndroidProjectSystem.xml b/.idea/AndroidProjectSystem.xml[m
+[1mnew file mode 100644[m
+[1mindex 0000000..4a53bee[m
+[1m--- /dev/null[m
+[1m+++ b/.idea/AndroidProjectSystem.xml[m
+[36m@@ -0,0 +1,6 @@[m
+[32m+[m[32m<?xml version="1.0" encoding="UTF-8"?>[m
+[32m+[m[32m<project version="4">[m
+[32m+[m[32m  <component name="AndroidProjectSystem">[m
+[32m+[m[32m    <option name="providerId" value="com.android.tools.idea.GradleProjectSystem" />[m
+[32m+[m[32m  </component>[m
+[32m+[m[32m</project>[m
+\ No newline at end of file[m
+[1mdiff --git a/.idea/compiler.xml b/.idea/compiler.xml[m
+[1mnew file mode 100644[m
+[1mindex 0000000..b86273d[m
+[1m--- /dev/null[m
+[1m+++ b/.idea/compiler.xml[m
+[36m@@ -0,0 +1,6 @@[m
+[32m+[m[32m<?xml version="1.0" encoding="UTF-8"?>[m
+[32m+[m[32m<project version="4">[m
+[32m+[m[32m  <component name="CompilerConfiguration">[m
+[32m+[m[32m    <bytecodeTargetLevel target="21" />[m
+[32m+[m[32m  </component>[m
+[32m+[m[32m</project>[m
+\ No newline at end of file[m
+[1mdiff --git a/.idea/deploymentTargetSelector.xml b/.idea/deploymentTargetSelector.xml[m
+[1mnew file mode 100644[m
+[1mindex 0000000..b268ef3[m
+[1m--- /dev/null[m
+[1m+++ b/.idea/deploymentTargetSelector.xml[m
+[36m@@ -0,0 +1,10 @@[m
+[32m+[m[32m<?xml version="1.0" encoding="UTF-8"?>[m
+[32m+[m[32m<project version="4">[m
+[32m+[m[32m  <component name="deploymentTargetSelector">[m
+[32m+[m[32m    <selectionStates>[m
+[32m+[m[32m      <SelectionState runConfigName="app">[m
+[32m+[m[32m        <option name="selectionMode" value="DROPDOWN" />[m
+[32m+[m[32m      </SelectionState>[m
+[32m+[m[32m    </selectionStates>[m
+[32m+[m[32m  </component>[m
+[32m+[m[32m</project>[m
+\ No newline at end of file[m
+[1mdiff --git a/.idea/gradle.xml b/.idea/gradle.xml[m
+[1mnew file mode 100644[m
+[1mindex 0000000..639c779[m
+[1m--- /dev/null[m
+[1m+++ b/.idea/gradle.xml[m
+[36m@@ -0,0 +1,19 @@[m
+[32m+[m[32m<?xml version="1.0" encoding="UTF-8"?>[m
+[32m+[m[32m<project version="4">[m
+[32m+[m[32m  <component name="GradleMigrationSettings" migrationVersion="1" />[m
+[32m+[m[32m  <component name="GradleSettings">[m
+[32m+[m[32m    <option name="linkedExternalProjectsSettings">[m
+[32m+[m[32m      <GradleProjectSettings>[m
+[32m+[m[32m        <option name="testRunner" value="CHOOSE_PER_TEST" />[m
+[32m+[m[32m        <option name="externalProjectPath" value="$PROJECT_DIR$" />[m
+[32m+[m[32m        <option name="gradleJvm" value="#GRADLE_LOCAL_JAVA_HOME" />[m
+[32m+[m[32m        <option name="modules">[m
+[32m+[m[32m          <set>[m
+[32m+[m[32m            <option value="$PROJECT_DIR$" />[m
+[32m+[m[32m            <option value="$PROJECT_DIR$/app" />[m
+[32m+[m[32m          </set>[m
+[32m+[m[32m        </option>[m
+[32m+[m[32m      </GradleProjectSettings>[m
+[32m+[m[32m    </option>[m
+[32m+[m[32m  </component>[m
+[32m+[m[32m</project>[m
+\ No newline at end of file[m
+[1mdiff --git a/.idea/inspectionProfiles/Project_Default.xml b/.idea/inspectionProfiles/Project_Default.xml[m
+[1mnew file mode 100644[m
+[1mindex 0000000..7061a0d[m
+[1m--- /dev/null[m
+[1m+++ b/.idea/inspectionProfiles/Project_Default.xml[m
+[36m@@ -0,0 +1,61 @@[m
+[32m+[m[32m<component name="InspectionProjectProfileManager">[m
+[32m+[m[32m  <profile version="1.0">[m
+[32m+[m[32m    <option name="myName" value="Project Default" />[m
+[32m+[m[32m    <inspection_tool class="ComposePreviewDimensionRespectsLimit" enabled="true" level="WARNING" enabled_by_default="true">[m
+[32m+[m[32m      <option name="composableFile" value="true" />[m
+[32m+[m[32m      <option name="previewFile" value="true" />[m
+[32m+[m[32m    </inspection_tool>[m
+[32m+[m[32m    <inspection_tool class="ComposePreviewMustBeTopLevelFunction" enabled="true" level="ERROR" enabled_by_default="true">[m
+[32m+[m[32m      <option name="composableFile" value="true" />[m
+[32m+[m[32m      <option name="previewFile" value="true" />[m
+[32m+[m[32m    </inspection_tool>[m
+[32m+[m[32m    <inspection_tool class="ComposePreviewNeedsComposableAnnotation" enabled="true" level="ERROR" enabled_by_default="true">[m
+[32m+[m[32m      <option name="composableFile" value="true" />[m
+[32m+[m[32m      <option name="previewFile" value="true" />[m
+[32m+[m[32m    </inspection_tool>[m
+[32m+[m[32m    <inspection_tool class="ComposePreviewNotSupportedInUnitTestFiles" enabled="true" level="ERROR" enabled_by_default="true">[m
+[32m+[m[32m      <option name="composableFile" value="true" />[m
+[32m+[m[32m      <option name="previewFile" value="true" />[m
+[32m+[m[32m    </inspection_tool>[m
+[32m+[m[32m    <inspection_tool class="GlancePreviewDimensionRespectsLimit" enabled="true" level="WARNING" enabled_by_default="true">[m
+[32m+[m[32m      <option name="composableFile" value="true" />[m
+[32m+[m[32m    </inspection_tool>[m
+[32m+[m[32m    <inspection_tool class="GlancePreviewMustBeTopLevelFunction" enabled="true" level="ERROR" enabled_by_default="true">[m
+[32m+[m[32m      <option name="composableFile" value="true" />[m
+[32m+[m[32m    </inspection_tool>[m
+[32m+[m[32m    <inspection_tool class="GlancePreviewNeedsComposableAnnotation" enabled="true" level="ERROR" enabled_by_default="true">[m
+[32m+[m[32m      <option name="composableFile" value="true" />[m
+[32m+[m[32m    </inspection_tool>[m
+[32m+[m[32m    <inspection_tool class="GlancePreviewNotSupportedInUnitTestFiles" enabled="true" level="ERROR" enabled_by_default="true">[m
+[32m+[m[32m      <option name="composableFile" value="true" />[m
+[32m+[m[32m    </inspection_tool>[m
+[32m+[m[32m    <inspection_tool class="PreviewAnnotationInFunctionWithParameters" enabled="true" level="ERROR" enabled_by_default="true">[m
+[32m+[m[32m      <option name="composableFile" value="true" />[m
+[32m+[m[32m      <option name="previewFile" value="true" />[m
+[32m+[m[32m    </inspection_tool>[m
+[32m+[m[32m    <inspection_tool class="PreviewApiLevelMustBeValid" enabled="true" level="ERROR" enabled_by_default="true">[m
+[32m+[m[32m      <option name="composableFile" value="true" />[m
+[32m+[m[32m      <option name="previewFile" value="true" />[m
+[32m+[m[32m    </inspection_tool>[m
+[32m+[m[32m    <inspection_tool class="PreviewDeviceShouldUseNewSpec" enabled="true" level="WEAK WARNING" enabled_by_default="true">[m
+[32m+[m[32m      <option name="composableFile" value="true" />[m
+[32m+[m[32m      <option name="previewFile" value="true" />[m
+[32m+[m[32m    </inspection_tool>[m
+[32m+[m[32m    <inspection_tool class="PreviewFontScaleMustBeGreaterThanZero" enabled="true" level="ERROR" enabled_by_default="true">[m
+[32m+[m[32m      <option name="composableFile" value="true" />[m
+[32m+[m[32m      <option name="previewFile" value="true" />[m
+[32m+[m[32m    </inspection_tool>[m
+[32m+[m[32m    <inspection_tool class="PreviewMultipleParameterProviders" enabled="true" level="ERROR" enabled_by_default="true">[m
+[32m+[m[32m      <option name="composableFile" value="true" />[m
+[32m+[m[32m      <option name="previewFile" value="true" />[m
+[32m+[m[32m    </inspection_tool>[m
+[32m+[m[32m    <inspection_tool class="PreviewParameterProviderOnFirstParameter" enabled="true" level="ERROR" enabled_by_default="true">[m
+[32m+[m[32m      <option name="composableFile" value="true" />[m
+[32m+[m[32m      <option name="previewFile" value="true" />[m
+[32m+[m[32m    </inspection_tool>[m
+[32m+[m[32m    <inspection_tool class="PreviewPickerAnnotation" enabled="true" level="ERROR" enabled_by_default="true">[m
+[32m+[m[32m      <option name="composableFile" value="true" />[m
+[32m+[m[32m      <option name="previewFile" value="true" />[m
+[32m+[m[32m    </inspection_tool>[m
+[32m+[m[32m  </profile>[m
+[32m+[m[32m</component>[m
+\ No newline at end of file[m
+[1mdiff --git a/.idea/migrations.xml b/.idea/migrations.xml[m
+[1mnew file mode 100644[m
+[1mindex 0000000..f8051a6[m
+[1m--- /dev/null[m
+[1m+++ b/.idea/migrations.xml[m
+[36m@@ -0,0 +1,10 @@[m
+[32m+[m[32m<?xml version="1.0" encoding="UTF-8"?>[m
+[32m+[m[32m<project version="4">[m
+[32m+[m[32m  <component name="ProjectMigrations">[m
+[32m+[m[32m    <option name="MigrateToGradleLocalJavaHome">[m
+[32m+[m[32m      <set>[m
+[32m+[m[32m        <option value="$PROJECT_DIR$" />[m
+[32m+[m[32m      </set>[m
+[32m+[m[32m    </option>[m
+[32m+[m[32m  </component>[m
+[32m+[m[32m</project>[m
+\ No newline at end of file[m
+[1mdiff --git a/.idea/misc.xml b/.idea/misc.xml[m
+[1mnew file mode 100644[m
+[1mindex 0000000..b2c751a[m
+[1m--- /dev/null[m
+[1m+++ b/.idea/misc.xml[m
+[36m@@ -0,0 +1,9 @@[m
+[32m+[m[32m<project version="4">[m
+[32m+[m[32m  <component name="ExternalStorageConfigurationManager" enabled="true" />[m
+[32m+[m[32m  <component name="ProjectRootManager" version="2" languageLevel="JDK_21" default="true" project-jdk-name="jbr-21" project-jdk-type="JavaSDK">[m
+[32m+[m[32m    <output url="file://$PROJECT_DIR$/build/classes" />[m
+[32m+[m[32m  </component>[m
+[32m+[m[32m  <component name="ProjectType">[m
+[32m+[m[32m    <option name="id" value="Android" />[m
+[32m+[m[32m  </component>[m
+[32m+[m[32m</project>[m
+\ No newline at end of file[m
+[1mdiff --git a/.idea/runConfigurations.xml b/.idea/runConfigurations.xml[m
+[1mnew file mode 100644[m
+[1mindex 0000000..16660f1[m
+[1m--- /dev/null[m
+[1m+++ b/.idea/runConfigurations.xml[m
+[36m@@ -0,0 +1,17 @@[m
+[32m+[m[32m<?xml version="1.0" encoding="UTF-8"?>[m
+[32m+[m[32m<project version="4">[m
+[32m+[m[32m  <component name="RunConfigurationProducerService">[m
+[32m+[m[32m    <option name="ignoredProducers">[m
+[32m+[m[32m      <set>[m
+[32m+[m[32m        <option value="com.intellij.execution.junit.AbstractAllInDirectoryConfigurationProducer" />[m
+[32m+[m[32m        <option value="com.intellij.execution.junit.AllInPackageConfigurationProducer" />[m
+[32m+[m[32m        <option value="com.intellij.execution.junit.PatternConfigurationProducer" />[m
+[32m+[m[32m        <option value="com.intellij.execution.junit.TestInClassConfigurationProducer" />[m
+[32m+[m[32m        <option value="com.intellij.execution.junit.UniqueIdConfigurationProducer" />[m
+[32m+[m[32m        <option value="com.intellij.execution.junit.testDiscovery.JUnitTestDiscoveryConfigurationProducer" />[m
+[32m+[m[32m        <option value="org.jetbrains.kotlin.idea.junit.KotlinJUnitRunConfigurationProducer" />[m
+[32m+[m[32m        <option value="org.jetbrains.kotlin.idea.junit.KotlinPatternConfigurationProducer" />[m
+[32m+[m[32m      </set>[m
+[32m+[m[32m    </option>[m
+[32m+[m[32m  </component>[m
+[32m+[m[32m</project>[m
+\ No newline at end of file[m
+[1mdiff --git a/.idea/vcs.xml b/.idea/vcs.xml[m
+[1mnew file mode 100644[m
+[1mindex 0000000..94a25f7[m
+[1m--- /dev/null[m
+[1m+++ b/.idea/vcs.xml[m
+[36m@@ -0,0 +1,6 @@[m
+[32m+[m[32m<?xml version="1.0" encoding="UTF-8"?>[m
+[32m+[m[32m<project version="4">[m
+[32m+[m[32m  <component name="VcsDirectoryMappings">[m
+[32m+[m[32m    <mapping directory="$PROJECT_DIR$" vcs="Git" />[m
+[32m+[m[32m  </component>[m
+[32m+[m[32m</project>[m
+\ No newline at end of file[m
+[1mdiff --git a/app/.gitignore b/app/.gitignore[m
+[1mnew file mode 100644[m
+[1mindex 0000000..42afabf[m
+[1m--- /dev/null[m
+[1m+++ b/app/.gitignore[m
+[36m@@ -0,0 +1 @@[m
+[32m+[m[32m/build[m
+\ No newline at end of file[m
+[1mdiff --git a/app/build.gradle.kts b/app/build.gradle.kts[m
+[1mnew file mode 100644[m
+[1mindex 0000000..e223da2[m
+[1m--- /dev/null[m
+[1m+++ b/app/build.gradle.kts[m
+[36m@@ -0,0 +1,88 @@[m
+[32m+[m[32mplugins {[m
+[32m+[m[32m    alias(libs.plugins.android.application)[m
+[32m+[m[32m    alias(libs.plugins.kotlin.android)[m
+[32m+[m[32m    alias(libs.plugins.kotlin.compose)[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32mandroid {[m
+[32m+[m[32m    namespace = "com.example.appointmentlistapp"[m
+[32m+[m[32m    compileSdk = 36 // Keeping your chosen compile SDK version[m
+[32m+[m
+[32m+[m[32m    defaultConfig {[m
+[32m+[m[32m        applicationId = "com.example.appointmentlistapp"[m
+[32m+[m[32m        minSdk = 24[m
+[32m+[m[32m        targetSdk = 36 // Keeping your chosen target SDK version[m
+[32m+[m[32m        versionCode = 1[m
+[32m+[m[32m        versionName = "1.0"[m
+[32m+[m
+[32m+[m[32m        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    buildTypes {[m
+[32m+[m[32m        release {[m
+[32m+[m[32m            isMinifyEnabled = false[m
+[32m+[m[32m            proguardFiles([m
+[32m+[m[32m                getDefaultProguardFile("proguard-android-optimize.txt"),[m
+[32m+[m[32m                "proguard-rules.pro"[m
+[32m+[m[32m            )[m
+[32m+[m[32m        }[m
+[32m+[m[32m    }[m
+[32m+[m[32m    compileOptions {[m
+[32m+[m[32m        sourceCompatibility = JavaVersion.VERSION_11 // Keeping your chosen Java source compatibility[m
+[32m+[m[32m        targetCompatibility = JavaVersion.VERSION_11 // Keeping your chosen Java target compatibility[m
+[32m+[m[32m    }[m
+[32m+[m[32m    kotlinOptions {[m
+[32m+[m[32m        jvmTarget = "11" // Keeping your chosen JVM target[m
+[32m+[m[32m    }[m
+[32m+[m[32m    buildFeatures {[m
+[32m+[m[32m        compose = true[m
+[32m+[m[32m    }[m
+[32m+[m[32m    composeOptions {[m
+[32m+[m[32m        // Ensure this version is compatible with your AGP and Kotlin version[m
+[32m+[m[32m        kotlinCompilerExtensionVersion = "1.5.1" // Keeping your Compose compiler extension version[m
+[32m+[m[32m    }[m
+[32m+[m[32m    packaging {[m
+[32m+[m[32m        resources {[m
+[32m+[m[32m            excludes += "/META-INF/{AL2.0,LGPL2.1}"[m
+[32m+[m[32m        }[m
+[32m+[m[32m    }[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32mdependencies {[m
+[32m+[m
+[32m+[m[32m    implementation(libs.androidx.core.ktx)[m
+[32m+[m[32m    implementation(libs.androidx.lifecycle.runtime.ktx)[m
+[32m+[m[32m    implementation(libs.androidx.activity.compose)[m
+[32m+[m[32m    implementation(platform(libs.androidx.compose.bom))[m
+[32m+[m[32m    implementation(libs.androidx.ui)[m
+[32m+[m[32m    implementation(libs.androidx.ui.graphics)[m
+[32m+[m[32m    implementation(libs.androidx.ui.tooling.preview)[m
+[32m+[m[32m    implementation(libs.androidx.material3)[m
+[32m+[m
+[32m+[m[32m    // Lifecycle ViewModel Compose (removed duplicate, kept the latest stable)[m
+[32m+[m[32m    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.3")[m
+[32m+[m
+[32m+[m[32m    implementation("com.squareup.retrofit2:retrofit:2.9.0")[m
+[32m+[m[32m    implementation("com.squareup.retrofit2:converter-gson:2.9.0")[m
+[32m+[m
+[32m+[m[32m    testImplementation(libs.junit)[m
+[32m+[m[32m    androidTestImplementation(libs.androidx.junit)[m
+[32m+[m[32m    androidTestImplementation(libs.androidx.espresso.core)[m
+[32m+[m[32m    androidTestImplementation(platform(libs.androidx.compose.bom))[m
+[32m+[m[32m    androidTestImplementation(libs.androidx.ui.test.junit4)[m
+[32m+[m[32m    debugImplementation(libs.androidx.ui.tooling)[m
+[32m+[m[32m    debugImplementation(libs.androidx.ui.test.manifest)[m
+[32m+[m
+[32m+[m[32m    // CameraX dependencies (using a consistent version variable for clarity and easy updates)[m
+[32m+[m[32m    val camerax_version = "1.3.3" // This is the current latest stable version for CameraX[m
+[32m+[m[32m    implementation("androidx.camera:camera-core:${camerax_version}")[m
+[32m+[m[32m    implementation("androidx.camera:camera-camera2:${camerax_version}")[m
+[32m+[m[32m    implementation("androidx.camera:camera-lifecycle:${camerax_version}")[m
+[32m+[m[32m    implementation("androidx.camera:camera-view:${camerax_version}")[m
+[32m+[m[32m    implementation("androidx.camera:camera-extensions:${camerax_version}") // For CameraX extensions (optional but recommended)[m
+[32m+[m
+[32m+[m[32m    // ML Kit Barcode Scanning[m
+[32m+[m[32m    implementation("com.google.mlkit:barcode-scanning:17.2.0") // This is the current latest stable version for ML Kit Barcode Scanning[m
+[32m+[m[32m    implementation("androidx.compose.material:material-icons-extended:1.7.0-beta01") // Use the latest stable or beta if targeting newer Compose BOM[m
+[32m+[m
+[32m+[m[32m}[m
+\ No newline at end of file[m
+[1mdiff --git a/app/proguard-rules.pro b/app/proguard-rules.pro[m
+[1mnew file mode 100644[m
+[1mindex 0000000..481bb43[m
+[1m--- /dev/null[m
+[1m+++ b/app/proguard-rules.pro[m
+[36m@@ -0,0 +1,21 @@[m
+[32m+[m[32m# Add project specific ProGuard rules here.[m
+[32m+[m[32m# You can control the set of applied configuration files using the[m
+[32m+[m[32m# proguardFiles setting in build.gradle.[m
+[32m+[m[32m#[m
+[32m+[m[32m# For more details, see[m
+[32m+[m[32m#   http://developer.android.com/guide/developing/tools/proguard.html[m
+[32m+[m
+[32m+[m[32m# If your project uses WebView with JS, uncomment the following[m
+[32m+[m[32m# and specify the fully qualified class name to the JavaScript interface[m
+[32m+[m[32m# class:[m
+[32m+[m[32m#-keepclassmembers class fqcn.of.javascript.interface.for.webview {[m
+[32m+[m[32m#   public *;[m
+[32m+[m[32m#}[m
+[32m+[m
+[32m+[m[32m# Uncomment this to preserve the line number information for[m
+[32m+[m[32m# debugging stack traces.[m
+[32m+[m[32m#-keepattributes SourceFile,LineNumberTable[m
+[32m+[m
+[32m+[m[32m# If you keep the line number information, uncomment this to[m
+[32m+[m[32m# hide the original source file name.[m
+[32m+[m[32m#-renamesourcefileattribute SourceFile[m
+\ No newline at end of file[m
+[1mdiff --git a/app/src/androidTest/java/com/example/appointmentlistapp/ExampleInstrumentedTest.kt b/app/src/androidTest/java/com/example/appointmentlistapp/ExampleInstrumentedTest.kt[m
+[1mnew file mode 100644[m
+[1mindex 0000000..fff539e[m
+[1m--- /dev/null[m
+[1m+++ b/app/src/androidTest/java/com/example/appointmentlistapp/ExampleInstrumentedTest.kt[m
+[36m@@ -0,0 +1,24 @@[m
+[32m+[m[32mpackage com.example.appointmentlistapp[m
+[32m+[m
+[32m+[m[32mimport androidx.test.platform.app.InstrumentationRegistry[m
+[32m+[m[32mimport androidx.test.ext.junit.runners.AndroidJUnit4[m
+[32m+[m
+[32m+[m[32mimport org.junit.Test[m
+[32m+[m[32mimport org.junit.runner.RunWith[m
+[32m+[m
+[32m+[m[32mimport org.junit.Assert.*[m
+[32m+[m
+[32m+[m[32m/**[m
+[32m+[m[32m * Instrumented test, which will execute on an Android device.[m
+[32m+[m[32m *[m
+[32m+[m[32m * See [testing documentation](http://d.android.com/tools/testing).[m
+[32m+[m[32m */[m

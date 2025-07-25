@@ -1,6 +1,7 @@
 package com.example.appointmentlistapp
 
 import android.Manifest
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -41,14 +42,17 @@ import java.util.*
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.camera.core.CameraSelector
+import androidx.camera.core.ExperimentalGetImage
 import androidx.camera.core.ImageAnalysis
+import androidx.camera.core.ImageProxy
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
-import androidx.compose.foundation.background
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import com.example.appointmentlistapp.ui.theme.LoginScreen
+import com.google.mlkit.vision.barcode.BarcodeScanner
 import com.google.mlkit.vision.barcode.BarcodeScannerOptions
 import com.google.mlkit.vision.barcode.BarcodeScanning
 import com.google.mlkit.vision.barcode.common.Barcode
@@ -176,12 +180,12 @@ fun CameraPreview(
 }
 
 private class BarcodeAnalyzer(
-    private val barcodeScanner: com.google.mlkit.vision.barcode.BarcodeScanner,
+    private val barcodeScanner: BarcodeScanner,
     private val listener: BarcodeAnalyserListener
 ) : ImageAnalysis.Analyzer {
 
-    @androidx.annotation.OptIn(androidx.camera.core.ExperimentalGetImage::class)
-    override fun analyze(imageProxy: androidx.camera.core.ImageProxy) {
+    @androidx.annotation.OptIn(ExperimentalGetImage::class)
+    override fun analyze(imageProxy: ImageProxy) {
         val mediaImage = imageProxy.image
         if (mediaImage != null) {
             val image = InputImage.fromMediaImage(mediaImage, imageProxy.imageInfo.rotationDegrees)
@@ -211,8 +215,6 @@ private class BarcodeAnalyzer(
 private const val BASE_URL = "http://172.26.140.23:5251/" // IMPORTANT: Change port if yours is different
 
 interface ApiService {
-    @GET("api/appointments")
-    suspend fun getAppointments(): List<Appointment>
 
     @GET(value="api/appointments/driver/{driverId}")
     suspend fun getAppointmentsByDriverId(@Path("driverId") id: String): List<Appointment>
@@ -350,13 +352,16 @@ class AppointmentViewModel : ViewModel() {
                 }
             }
 
-            if (!errorOccurred && successCount > 0) {
-                setErrorMessage("Successfully checked in $successCount appointment(s).")
+            if(successCount > 0 && !errorOccurred){
+                setErrorMessage("Successfully checked in $successCount appointment(s)")
+            } else if(successCount > 0 && errorOccurred) {
+                setErrorMessage("Some appointments checked in, but errors occurred with others. Please check logs for details.")
             } else if (successCount == 0 && errorOccurred) {
-                // Error message already set by the loop
-            } else if (successCount > 0 && errorOccurred) {
-                setErrorMessage("Some appointments checked in, but errors occurred with others.")
+                if(errorMessage.value == null || errorMessage.value == "No pending appointments selected for check-in."){
+                    setErrorMessage("Failed to check in all selected appointments.")
+                }
             }
+
             fetchAppointments(_scannedDriverId.value) // Refresh the list after attempted check-ins
             _isLoading.value = false
         }
@@ -393,7 +398,9 @@ class MainActivity : ComponentActivity() {
                 color = MaterialTheme.colorScheme.background
             ) {
                 val viewModel: AppointmentViewModel = viewModel()
-                AppointmentListScreen(viewModel = viewModel)
+                LoginScreen(viewModel = viewModel
+                )
+               // AppointmentListScreen(viewModel = viewModel)
             }
         }
     }
@@ -480,7 +487,7 @@ fun AppointmentListScreen(viewModel: AppointmentViewModel) {
                             ContextCompat.checkSelfPermission(
                                 context,
                                 Manifest.permission.CAMERA
-                            ) == android.content.pm.PackageManager.PERMISSION_GRANTED -> { // Fully qualified name
+                            ) == PackageManager.PERMISSION_GRANTED -> { // Fully qualified name
                                 showQrScanner = true
                             }
                             else -> {
