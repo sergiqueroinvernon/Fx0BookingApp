@@ -43,6 +43,7 @@ fun LoginScreen(viewModel: AppointmentViewModel) {
             contentScale = ContentScale.Crop
         )
 
+
         Column(
             modifier = Modifier
                 .width(500.dp)
@@ -50,6 +51,7 @@ fun LoginScreen(viewModel: AppointmentViewModel) {
                 .background(Color.White),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
+
         ) {
             Text(
                 text = "Fuhrparkmanagement für Stadtwerke Düsseldorf AG",
@@ -89,14 +91,19 @@ fun LoginScreen(viewModel: AppointmentViewModel) {
                     println("Login clicked with Email: $email, Password: $password")
                 },
                 modifier = Modifier.width(250.dp).height(35.dp)
-                    .border(1.dp,Color.Black, shape = RectangleShape)
+                    .border(1.dp, Color.Black, shape = RectangleShape)
                     .background(Color.White),
-                shape = RectangleShape
+                shape = RectangleShape,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color.White,
+                    contentColor = Color.Black
+                )
             ) {
                 Text("Anmelden")
             }
         }
     }
+
 }
 
 @Preview(showBackground = true)
