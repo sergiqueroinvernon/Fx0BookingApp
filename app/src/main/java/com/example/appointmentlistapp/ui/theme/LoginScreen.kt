@@ -18,6 +18,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.appointmentlistapp.AppointmentViewModel
 import coil.compose.AsyncImage
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -26,12 +27,19 @@ fun LoginScreen(viewModel: AppointmentViewModel) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
 
+    var errorMessage by remember { mutableStateOf<String?>(null) }
+
+    //Showing Snackbar
+    var snackbarHostState = remember { SnackbarHostState() }
+    var coroutineScope = rememberCoroutineScope()
+
     //Dynamic profile photo
-    val customerProfileImageUrl = "https://www.designyourway.net/blog/wp-content/uploads/2019/04/BMW-wallpaper-4-1250x781.jpg"
+    val customerProfileImageUrl =
+        "https://www.designyourway.net/blog/wp-content/uploads/2019/04/BMW-wallpaper-4-1250x781.jpg"
 
 
     Box(
-        modifier = Modifier.width(1000.dp),
+        modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
     )
     {
@@ -43,13 +51,21 @@ fun LoginScreen(viewModel: AppointmentViewModel) {
             contentScale = ContentScale.Crop
         )
 
+        // 2. Semi-transparent Overlay to make text readable
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Black.copy(alpha = 0.2f))
+        )
+
 
         Column(
             modifier = Modifier
-                .width(500.dp)
-                .padding(16.dp)
-                .background(Color.White),
-            verticalArrangement = Arrangement.Center,
+                .width(600.dp)
+                .background(Color.White)
+                .padding(36.dp), // Padding inside the column, between the content and the edges
+
+            verticalArrangement = Arrangement.spacedBy(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
 
         ) {
@@ -88,9 +104,27 @@ fun LoginScreen(viewModel: AppointmentViewModel) {
             Button(
                 onClick = {
                     // Handle login logic here, e.g., validate input and authenticate
-                    println("Login clicked with Email: $email, Password: $password")
+                    if(email.isEmpty()  && password.isEmpty()){
+                    errorMessage = "E-mail oder Kennwort fehlt."
+                    }
+                    if (email.isEmpty()) {
+                        errorMessage = "E-mail fehlt."
+                    }
+                    else if(password.isEmpty())
+                            {
+                       errorMessage = "Kennwort fehlt."
+                    }
+
+                    else {
+                        errorMessage = null
+                        println("Login clicked with Email: $email, Password: $password.")
+                    }
+
+
                 },
-                modifier = Modifier.width(250.dp).height(35.dp)
+                modifier = Modifier
+                    .width(250.dp)
+                    .height(35.dp)
                     .border(1.dp, Color.Black, shape = RectangleShape)
                     .background(Color.White),
                 shape = RectangleShape,
@@ -101,7 +135,31 @@ fun LoginScreen(viewModel: AppointmentViewModel) {
             ) {
                 Text("Anmelden")
             }
+
+            SnackbarHost(
+                hostState = snackbarHostState,
+                modifier = Modifier.fillMaxWidth()
+            ) { data ->
+                Snackbar(
+                    snackbarData = data,
+                    containerColor = Color.White, // CUSTOM: set to white
+                    contentColor = Color.Black // CUSTOM: set content to black
+                )
+            }
         }
+    }
+
+    LaunchedEffect(errorMessage)
+    {
+        if (errorMessage != null) {
+            coroutineScope.launch {
+                snackbarHostState.showSnackbar(
+                    message = errorMessage!!,
+                    duration = SnackbarDuration.Long
+                )
+            }
+        }
+
     }
 
 }
