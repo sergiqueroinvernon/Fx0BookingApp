@@ -15,7 +15,7 @@ import androidx.compose.material.icons.filled.QrCodeScanner
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
+
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -43,6 +43,11 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -50,6 +55,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.appointmentlistapp.ui.theme.LoginScreen
+import com.google.mlkit.common.sdkinternal.model.ModelFileHelper
 import com.google.mlkit.vision.barcode.BarcodeScanner
 import com.google.mlkit.vision.barcode.BarcodeScannerOptions
 import com.google.mlkit.vision.barcode.BarcodeScanning
@@ -308,8 +314,8 @@ class MainActivity : ComponentActivity() {
             ) {
                 val viewModel: AppointmentViewModel = viewModel()
                 val navController = rememberNavController()
-                NavHost(navController = navController, startDestination = "login") {
-                    composable("login") {
+                NavHost(navController = navController, startDestination = "main") {
+                   composable("login") {
                         LoginScreen(
                             viewModel = viewModel,
                             onLoginSuccess = {
@@ -319,10 +325,53 @@ class MainActivity : ComponentActivity() {
                             }
                         )
                     }
-                    composable("appointmentList") {
-                        AppointmentListScreen(viewModel = viewModel)
+
+                    composable("main") {
+                        MainAppScreen(viewModel = viewModel)
                     }
                 }
+            }
+        }
+    }
+}
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun MainAppScreen(viewModel: AppointmentViewModel) {
+    val tabs = listOf("Start", "Meine Buchungen", "Mein Fahrtenbuch", "Fahrtenbuchprüfung")
+    var selectedTabIndex by remember { mutableIntStateOf(1) } // Default to "Terminliste"
+
+    Scaffold(
+        topBar = {
+            Column {
+                CenterAlignedTopAppBar(
+                    title = { Text("Fuhrparkmanagement") },
+                    colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        titleContentColor = Color.White
+                    )
+                )
+                TabRow(selectedTabIndex = selectedTabIndex) {
+                    tabs.forEachIndexed { index, title ->
+                        Tab(
+                            text = { Text(title) },
+                            selected = selectedTabIndex == index,
+                            onClick = { selectedTabIndex = index }
+                        )
+                    }
+                }
+            }
+        }
+    ) { paddingValues ->
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+        ) {
+            when (selectedTabIndex) {
+                0 -> AppointmentListScreen(viewModel = viewModel)
+                1 -> Text("Meine Buchungen", modifier = Modifier.align(Alignment.Center))
+                2 -> Text("Mein Fahrtenbuch", modifier = Modifier.align(Alignment.Center))
+                3 -> Text("Fahrtenbuchprüfung", modifier = Modifier.align(Alignment.Center))
             }
         }
     }
@@ -360,94 +409,132 @@ fun AppointmentListScreen(viewModel: AppointmentViewModel) {
         }
     }
 
-    Scaffold(
-        topBar = {
-            CenterAlignedTopAppBar(
-                title = { Text("Terminliste") },
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    titleContentColor = Color.White,
-                    actionIconContentColor = Color.White
-                ),
-                actions = {
-                    IconButton(onClick = { viewModel.fetchAppointments() }) {
-                        Icon(
-                            imageVector = Icons.Filled.Refresh,
-                            contentDescription = "Refresh"
-                        )
-                    }
-                    if (scannedDriverId != null && !showQrScanner) {
-                        Button(
-                            onClick = { viewModel.checkInSelectedAppointments() },
-                            enabled = selectedAppointmentCount > 0,
-                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary)
-                        ) {
-                            Text("Check In ($selectedAppointmentCount)")
-                        }
-                    }
-                    IconButton(onClick = {
-                        when {
-                            ContextCompat.checkSelfPermission(
-                                context,
-                                Manifest.permission.CAMERA
-                            ) == PackageManager.PERMISSION_GRANTED -> {
-                                showQrScanner = true
-                            }
-                            else -> {
-                                requestPermissionLauncher.launch(Manifest.permission.CAMERA)
-                            }
-                        }
-                    }) {
-                        Icon(
-                            imageVector = Icons.Filled.QrCodeScanner,
-                            contentDescription = "Scan QR Code"
-                        )
+    // A single Box now holds all the content of the screen.
+    // The Scaffold and TopAppBar are removed.
+    Box(
+        modifier = Modifier.fillMaxSize()
+    ) {
+        if (showQrScanner) {
+            CameraPreview(
+                modifier = Modifier.fillMaxSize(),
+                onBarcodeScanned = { barcodeValue ->
+                    if (barcodeValue != null) {
+                        viewModel.setScannedDriverId(barcodeValue)
+                        showQrScanner = false
+                    } else {
+                        Toast.makeText(context, "QR-Code nicht erkannt oder ungültig.", Toast.LENGTH_SHORT).show()
                     }
                 }
             )
-        }
-    ) { paddingValues ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-        ) {
-            if (showQrScanner) {
-                CameraPreview(
-                    modifier = Modifier.fillMaxSize(),
-                    onBarcodeScanned = { barcodeValue ->
-                        if (barcodeValue != null) {
-                            viewModel.setScannedDriverId(barcodeValue)
-                            showQrScanner = false
-                        } else {
-                            Toast.makeText(context, "QR-Code nicht erkannt oder ungültig.", Toast.LENGTH_SHORT).show()
+        } else {
+            Column(modifier = Modifier.fillMaxSize()) {
+                // Actions bar specific to the AppointmentListScreen
+                /*CenterAlignedTopAppBar(
+                    title = {  },
+                    colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                        titleContentColor = Color.White,
+                        actionIconContentColor = Color.White
+                    ),
+                    actions = {
+                        IconButton(onClick = { viewModel.fetchAppointments() }) {
+                            Icon(
+                                imageVector = Icons.Filled.Refresh,
+                                contentDescription = "Refresh"
+                            )
+                        }
+                        if (scannedDriverId != null && !showQrScanner) {
+                            Button(
+                                onClick = { viewModel.checkInSelectedAppointments() },
+                                enabled = selectedAppointmentCount > 0,
+                                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary)
+                            ) {
+                                Text("Check In ($selectedAppointmentCount)")
+                            }
+                        }
+                        IconButton(onClick = {
+                            when {
+                                ContextCompat.checkSelfPermission(
+                                    context,
+                                    Manifest.permission.CAMERA
+                                ) == PackageManager.PERMISSION_GRANTED -> {
+                                    showQrScanner = true
+                                }
+                                else -> {
+                                    requestPermissionLauncher.launch(Manifest.permission.CAMERA)
+                                }
+                            }
+                        }) {
+                            Icon(
+                                imageVector = Icons.Filled.QrCodeScanner,
+                                contentDescription = "Scan QR Code"
+                            )
                         }
                     }
-                )
-            } else {
+                )*/
+
+                // Main content
                 when {
                     isLoading -> {
-                        CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+                        CircularProgressIndicator(modifier = Modifier.align(Alignment.CenterHorizontally))
                     }
                     errorMessage != null -> {
                         Text(
                             text = errorMessage ?: "Ein unbekannter Fehler ist aufgetreten.",
                             color = MaterialTheme.colorScheme.error,
                             modifier = Modifier
-                                .align(Alignment.Center)
+                                .align(Alignment.CenterHorizontally)
                                 .padding(16.dp)
                         )
                     }
                     scannedDriverId == null -> {
-                        Text(
-                            text = "Bitte scannen Sie einen QR-Code, um Termine anzuzeigen.",
-                            modifier = Modifier.align(Alignment.Center)
-                        )
-                    }
+                        Column(
+                            modifier = Modifier
+                                .border(1.dp, Color.Black, RectangleShape)
+                                .fillMaxSize()
+                                .fillMaxHeight()
+                                .background(Color(0xFFF8F8F8))
+
+                        ) {
+                            Column(
+                                modifier = Modifier
+                                    .padding(15.dp)
+                                    .background(Color.White)
+                                    .border(1.dp, Color.Black, RectangleShape),
+
+                            ) {
+
+
+                                Text(
+                                    text = "Herzlich willkommen beim Mobilitätsportal der Fuhpark-Demo AG!\n",
+                                    fontWeight = FontWeight.Bold,
+                                    modifier = Modifier.padding(15.dp)
+
+
+                                )
+                                Text(
+                                    text = "Hier finden Sie alle unsere Angebote rund um die Themen Fuhrpark, Car Sharing und Mobilität.\n" +
+                                            "Für Fragen und Kritik haben wir immer ein offenes Ohr.",
+                                    modifier = Modifier.padding(15.dp)
+                                    )
+                            }
+
+
+                        }
+
+
+                            Text(
+                                text = "Bitte scannen Sie einen QR-Code, um Termine anzuzeigen.",
+                                modifier = Modifier
+                                    .align(Alignment.CenterHorizontally)
+                                    .padding(100.dp)
+                            )
+                        }
+
+
                     appointments.isEmpty() -> {
                         Text(
                             text = "Keine Termine für Fahrer-ID ${scannedDriverId ?: "N/A"} gefunden. Tippen Sie auf „Aktualisieren“, um es erneut zu versuchen.",
-                            modifier = Modifier.align(Alignment.Center)
+                            modifier = Modifier.align(Alignment.CenterHorizontally)
                         )
                     }
                     else -> {
@@ -485,14 +572,15 @@ fun AppointmentListScreen(viewModel: AppointmentViewModel) {
                                         viewModel.toggleAppointmentChecked(appointment.id)
                                     }
                                 )
-                            }
-                        }
+
+                        }}
                     }
                 }
             }
         }
     }
 }
+
 
 @Composable
 fun AppointmentItem(appointment: Appointment, isChecked: Boolean, onCheckedChange: (Boolean) -> Unit) {
