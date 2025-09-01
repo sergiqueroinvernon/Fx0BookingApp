@@ -361,18 +361,11 @@ fun MainAppScreen(viewModel: AppointmentViewModel) {
                                 if (title == "Start") {
                                     Icon(
                                         painter = painterResource(id = R.drawable.start),
-                                        contentDescription = "Start Tab Icon",
-                                        modifier = Modifier.size(24.dp)
-                                    )
-                                } else {
-                                    // Placeholder for other icons. You'll need to define your own logic here.
-                                    Icon(
-                                        imageVector = Icons.Filled.Refresh,
-                                        contentDescription = "$title Tab Icon"
+                                        contentDescription = "Start Tab Icon" ,
+                                        modifier = Modifier.size(25.dp)// Add the contentDescription here
                                     )
                                 }
                             }
-
                         )
                     }
                 }
