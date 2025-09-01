@@ -38,19 +38,17 @@ import retrofit2.http.Path
 import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.*
-
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.camera.core.CameraSelector
-import androidx.camera.core.ExperimentalGetImage
-import androidx.camera.core.ImageAnalysis
-import androidx.camera.core.ImageProxy
-import androidx.camera.core.Preview
+import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import com.example.appointmentlistapp.ui.theme.LoginScreen
 import com.google.mlkit.vision.barcode.BarcodeScanner
 import com.google.mlkit.vision.barcode.BarcodeScannerOptions
@@ -59,50 +57,7 @@ import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.mlkit.vision.common.InputImage
 import java.util.concurrent.Executors
 
-// =====================================================================================
-// == BUILD.GRADLE.KTS DEPENDENCIES - (Instructions remain in comments for reference) ==
-// =====================================================================================
-// dependencies {
-//      ...
-//      // ViewModel for Compose (ensure you have version 2.8.3 from previous instructions)
-//      implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.3")
-//
-//      // Retrofit for networking
-//      implementation("com.squareup.retrofit2:retrofit:2.9.0")
-//      implementation("com.squareup.retrofit2:converter-gson:2.9.0")
-//
-//      // CameraX dependencies (ensure consistent versions, e.g., 1.3.3)
-//      implementation("androidx.camera:camera-core:1.3.3")
-//      implementation("androidx.camera:camera-camera2:1.3.3")
-//      implementation("androidx.camera:camera-lifecycle:1.3.3")
-//      implementation("androidx.camera:camera-view:1.3.3")
-//      implementation("androidx.camera:camera-extensions:1.3.3")
-//
-//      // ML Kit Barcode Scanning
-//      implementation("com.google.mlkit:barcode-scanning:17.2.0")
-// }
-// =====================================================================================
-
-
-// =====================================================================================
-// == ANDROIDMANIFEST.XML - (Instructions remain in comments for reference) ==
-// =====================================================================================
-// <manifest ...>
-//      <uses-permission android:name="android.permission.INTERNET" />
-//      <uses-permission android:name="android.permission.CAMERA" />
-//
-//      <application
-//          ...
-//          android:usesCleartextTraffic="true">
-//          ...
-//      </application>
-// </manifest>
-// =====================================================================================
-
-
-// =====================================================================================
-// == DATA MODELS ==
-// =====================================================================================
+// DATA MODELS
 data class Appointment(
     val id: String,
     val driverId: String,
@@ -119,9 +74,7 @@ data class Driver(
     val email: String
 )
 
-// =====================================================================================
-// == CAMERA PREVIEW AND BARCODE ANALYZER ==
-// =====================================================================================
+// CAMERA PREVIEW AND BARCODE ANALYZER
 typealias BarcodeAnalyserListener = (barcodeValue: String?) -> Unit
 
 @Composable
@@ -131,7 +84,7 @@ fun CameraPreview(
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
-    val cameraProviderFuture = remember { ProcessCameraProvider.getInstance(context)}
+    val cameraProviderFuture = remember { ProcessCameraProvider.getInstance(context) }
 
     AndroidView(
         factory = { ctx ->
@@ -189,7 +142,6 @@ private class BarcodeAnalyzer(
         val mediaImage = imageProxy.image
         if (mediaImage != null) {
             val image = InputImage.fromMediaImage(mediaImage, imageProxy.imageInfo.rotationDegrees)
-
             barcodeScanner.process(image)
                 .addOnSuccessListener { barcodes ->
                     barcodes.firstOrNull()?.rawValue?.let {
@@ -208,15 +160,16 @@ private class BarcodeAnalyzer(
     }
 }
 
+// Login function moved to a shared location for use by LoginScreen
+fun login(email: String, password: String): Boolean {
+    return email == "s.quero@fleetone.de" && password == "Catalunya2025!"
+}
 
-// =====================================================================================
-// == NETWORKING LAYER (Retrofit) ==
-// =====================================================================================
-private const val BASE_URL = "http://172.26.140.23:5251/" // IMPORTANT: Change port if yours is different
+// NETWORKING LAYER (Retrofit)
+private const val BASE_URL = "http://172.26.140.23:5251/"
 
 interface ApiService {
-
-    @GET(value="api/appointments/driver/{driverId}")
+    @GET(value = "api/appointments/driver/{driverId}")
     suspend fun getAppointmentsByDriverId(@Path("driverId") id: String): List<Appointment>
 
     @POST("api/appointments/{id}/checkin")
@@ -233,10 +186,7 @@ object RetrofitInstance {
     }
 }
 
-
-// =====================================================================================
-// == VIEWMODEL (To hold state and handle logic) ==
-// =====================================================================================
+// VIEWMODEL (To hold state and handle logic)
 class AppointmentViewModel : ViewModel() {
     private val _appointments = MutableStateFlow<List<Appointment>>(emptyList())
     val appointments: StateFlow<List<Appointment>> = _appointments
@@ -244,15 +194,12 @@ class AppointmentViewModel : ViewModel() {
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading
 
-    // Corrected: Public getter for errorMessage
     private val _errorMessage = MutableStateFlow<String?>(null)
     val errorMessage: StateFlow<String?> = _errorMessage
 
-    // DriverID
     private val _scannedDriverId = MutableStateFlow<String?>(null)
     val scannedDriverId: StateFlow<String?> = _scannedDriverId
 
-    // Function to set the error message from outside the ViewModel
     fun setErrorMessage(message: String?) {
         _errorMessage.value = message
     }
@@ -265,68 +212,55 @@ class AppointmentViewModel : ViewModel() {
     }
 
     fun fetchAppointments(driverId: String? = _scannedDriverId.value) {
-        if (driverId == null) {
+        if (driverId.isNullOrBlank()) {
             _appointments.value = emptyList()
-            // Using setErrorMessage to update the public errorMessage
             setErrorMessage("Bitte scannen Sie einen QR-Code, um Fahrertermine zu erhalten.")
             return
         }
 
         viewModelScope.launch {
             _isLoading.value = true
-            setErrorMessage(null) // Clear previous errors on new fetch attempt
+            setErrorMessage(null)
             try {
                 val driverAppointments = RetrofitInstance.api.getAppointmentsByDriverId(driverId)
                 _appointments.value = driverAppointments
             } catch (e: IOException) {
-                setErrorMessage("Network error. Please check your connection and ensure the API is running.")
+                setErrorMessage("Netzwerkfehler. Bitte überprüfen Sie Ihre Verbindung und stellen Sie sicher, dass die API läuft.")
             } catch (e: HttpException) {
-                setErrorMessage("API error: ${e.message()}")
+                setErrorMessage("API-Fehler: ${e.message()}")
             } catch (e: Exception) {
-                setErrorMessage("An unexpected error occurred: ${e.message}")
+                setErrorMessage("Ein unerwarteter Fehler ist aufgetreten: ${e.message}")
             } finally {
                 _isLoading.value = false
             }
         }
     }
 
-    //Toggle the checked state of a specific appointment
     fun toggleAppointmentChecked(appointmentId: String) {
-
         _appointments.value = _appointments.value.map { appointment ->
-            if (appointment.id == appointmentId) {
-                // Only allow toggling for "Pending" appointments
-                if (appointment.status.equals("Pending", ignoreCase = true) || appointment.status.isEmpty()) { // <-- CHANGED LINE
-                    appointment.copy(isChecked = !appointment.isChecked)
-                } else {
-                    appointment // Do not change checked state if not pending // <-- CHANGED LINE
-                }
+            if (appointment.id == appointmentId && appointment.status.equals("Pending", ignoreCase = true)) {
+                appointment.copy(isChecked = !appointment.isChecked)
             } else {
                 appointment
             }
         }
     }
 
-    // New: Toggle the checked state of all appointments
-
     fun toggleSelectAll(selectAll: Boolean) {
         _appointments.value = _appointments.value.map { appointment ->
-            // Only toggle if the appointment status is "Pending"
-            if (appointment.status.equals("Pending", ignoreCase = true) || appointment.status.isEmpty()) { // <-- CHANGED LINE
+            if (appointment.status.equals("Pending", ignoreCase = true)) {
                 appointment.copy(isChecked = selectAll)
             } else {
-                appointment // Keep non-pending appointments as they are // <-- CHANGED LINE
+                appointment
             }
         }
     }
 
-    //Check-in selected appointments
-    // New: Check-in selected appointments
     fun checkInSelectedAppointments() {
         viewModelScope.launch {
-            val selectedAppointments = _appointments.value.filter { it.isChecked && it.status.equals("Pending", ignoreCase = true) || it.status.isEmpty() }
+            val selectedAppointments = _appointments.value.filter { it.isChecked && it.status.equals("Pending", ignoreCase = true) }
             if (selectedAppointments.isEmpty()) {
-                setErrorMessage("No pending appointments selected for check-in.")
+                setErrorMessage("Keine ausstehenden Termine für den Check-in ausgewählt.")
                 return@launch
             }
 
@@ -342,53 +276,28 @@ class AppointmentViewModel : ViewModel() {
                         successCount++
                     } else {
                         errorOccurred = true
-                        setErrorMessage("Failed to check in appointment ${appointment.description}: ${response.code()} ${response.message()}")
-                        // Break or continue based on desired behavior for multiple failures
+                        setErrorMessage("Fehler beim Einchecken des Termins ${appointment.description}: ${response.code()} ${response.message()}")
                     }
                 } catch (e: Exception) {
                     errorOccurred = true
-                    setErrorMessage("Error checking in appointment ${appointment.description}: ${e.message}")
-                    // Break or continue
+                    setErrorMessage("Fehler beim Einchecken des Termins ${appointment.description}: ${e.message}")
                 }
             }
 
-            if(successCount > 0 && !errorOccurred){
-                setErrorMessage("Successfully checked in $successCount appointment(s)")
-            } else if(successCount > 0 && errorOccurred) {
-                setErrorMessage("Some appointments checked in, but errors occurred with others. Please check logs for details.")
+            if (successCount > 0 && !errorOccurred) {
+                setErrorMessage("Erfolgreich $successCount Termin(e) eingecheckt.")
+            } else if (successCount > 0 && errorOccurred) {
+                setErrorMessage("Einige Termine wurden eingecheckt, aber bei anderen sind Fehler aufgetreten. Bitte überprüfen Sie die Protokolle auf Details.")
             } else if (successCount == 0 && errorOccurred) {
-                if(errorMessage.value == null || errorMessage.value == "No pending appointments selected for check-in."){
-                    setErrorMessage("Failed to check in all selected appointments.")
-                }
+                setErrorMessage("Alle ausgewählten Termine konnten nicht eingecheckt werden.")
             }
-
-            fetchAppointments(_scannedDriverId.value) // Refresh the list after attempted check-ins
+            fetchAppointments(_scannedDriverId.value)
             _isLoading.value = false
-        }
-    }
-
-
-    // This fetchAppointments is for the refresh button, using the current scanned ID
-    fun fetchAppointments() {
-        fetchAppointments(_scannedDriverId.value)
-    }
-
-    fun checkInAppointment(id: String) {
-        viewModelScope.launch {
-            try {
-                RetrofitInstance.api.checkInAppointment(id)
-                fetchAppointments(_scannedDriverId.value)
-            } catch (e: Exception) {
-                setErrorMessage("Failed to check in: ${e.message}")
-            }
         }
     }
 }
 
-
-// =====================================================================================
-// == MAIN ACTIVITY & UI (Jetpack Compose) ==
-// =====================================================================================
+// MAIN ACTIVITY & UI (Jetpack Compose)
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -398,9 +307,22 @@ class MainActivity : ComponentActivity() {
                 color = MaterialTheme.colorScheme.background
             ) {
                 val viewModel: AppointmentViewModel = viewModel()
-                LoginScreen(viewModel = viewModel
-                )
-               // AppointmentListScreen(viewModel = viewModel)
+                val navController = rememberNavController()
+                NavHost(navController = navController, startDestination = "login") {
+                    composable("login") {
+                        LoginScreen(
+                            viewModel = viewModel,
+                            onLoginSuccess = {
+                                navController.navigate("appointmentList") {
+                                    popUpTo("login") { inclusive = true }
+                                }
+                            }
+                        )
+                    }
+                    composable("appointmentList") {
+                        AppointmentListScreen(viewModel = viewModel)
+                    }
+                }
             }
         }
     }
@@ -411,40 +333,21 @@ class MainActivity : ComponentActivity() {
 fun AppointmentListScreen(viewModel: AppointmentViewModel) {
     val appointments by viewModel.appointments.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
-    // Corrected: Collect errorMessage directly from ViewModel
-    //state for selected appointments count
+    val errorMessage by viewModel.errorMessage.collectAsState()
+    val scannedDriverId by viewModel.scannedDriverId.collectAsState()
+    val context = LocalContext.current
+    var showQrScanner by remember { mutableStateOf(false) }
 
-    val selectedAppointmentCount by remember(appointments){
-        derivedStateOf {appointments.count { it.isChecked && it.status.equals("Pending", ignoreCase = true) || it.status.isEmpty()}}
+    val selectedAppointmentCount by remember(appointments) {
+        derivedStateOf { appointments.count { it.isChecked && it.status.equals("Pending", ignoreCase = true) } }
     }
 
-    //Derived state for "Select all" checkbox
     val allAppointmentsChecked by remember(appointments) {
         derivedStateOf {
             val pendingAppointments = appointments.filter { it.status.equals("Pending", ignoreCase = true) }
-
-            // If there are no pending appointments, "Select All" cannot logically be "all checked".
-            // If there are pending appointments, check if all of them are currently checked.
             pendingAppointments.isNotEmpty() && pendingAppointments.all { it.isChecked }
         }
     }
-
-
-
-
-
-
-
-    val errorMessage by viewModel.errorMessage.collectAsState() // This line is correct now
-    val scannedDriverId by viewModel.scannedDriverId.collectAsState()
-
-    val context = LocalContext.current
-
-    var showQrScanner by remember { mutableStateOf(false) }
-
-    // Removed the problematic duplicate MutableStateFlow declaration
-    // private val _errorMessageAppointment = MutableStateFlow<String?>(null)
-    // val errorMessageAppointment: StateFlow<String?> = _errorMessage // This was causing conflict
 
     val requestPermissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -452,8 +355,8 @@ fun AppointmentListScreen(viewModel: AppointmentViewModel) {
         if (isGranted) {
             showQrScanner = true
         } else {
-            Toast.makeText(context, "Camera permission denied. Cannot scan QR code.", Toast.LENGTH_LONG).show()
-            viewModel.setErrorMessage("Camera permission denied. Cannot scan QR code.")
+            Toast.makeText(context, "Kamera-Berechtigung verweigert. QR-Code kann nicht gescannt werden.", Toast.LENGTH_LONG).show()
+            viewModel.setErrorMessage("Kamera-Berechtigung verweigert. QR-Code kann nicht gescannt werden.")
         }
     }
 
@@ -473,13 +376,13 @@ fun AppointmentListScreen(viewModel: AppointmentViewModel) {
                             contentDescription = "Refresh"
                         )
                     }
-                    if (scannedDriverId != null && !showQrScanner) { // Only show if a driver is scanned and scanner is not open
+                    if (scannedDriverId != null && !showQrScanner) {
                         Button(
                             onClick = { viewModel.checkInSelectedAppointments() },
                             enabled = selectedAppointmentCount > 0,
                             colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary)
                         ) {
-                            Text("Check In Selected ($selectedAppointmentCount)")
+                            Text("Check In ($selectedAppointmentCount)")
                         }
                     }
                     IconButton(onClick = {
@@ -487,7 +390,7 @@ fun AppointmentListScreen(viewModel: AppointmentViewModel) {
                             ContextCompat.checkSelfPermission(
                                 context,
                                 Manifest.permission.CAMERA
-                            ) == PackageManager.PERMISSION_GRANTED -> { // Fully qualified name
+                            ) == PackageManager.PERMISSION_GRANTED -> {
                                 showQrScanner = true
                             }
                             else -> {
@@ -517,7 +420,7 @@ fun AppointmentListScreen(viewModel: AppointmentViewModel) {
                             viewModel.setScannedDriverId(barcodeValue)
                             showQrScanner = false
                         } else {
-                            Toast.makeText(context, "QR code not detected or invalid.", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, "QR-Code nicht erkannt oder ungültig.", Toast.LENGTH_SHORT).show()
                         }
                     }
                 )
@@ -526,10 +429,9 @@ fun AppointmentListScreen(viewModel: AppointmentViewModel) {
                     isLoading -> {
                         CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
                     }
-                    // Use the errorMessage collected from the ViewModel
                     errorMessage != null -> {
                         Text(
-                            text = errorMessage ?: "An unknown error occurred.",
+                            text = errorMessage ?: "Ein unbekannter Fehler ist aufgetreten.",
                             color = MaterialTheme.colorScheme.error,
                             modifier = Modifier
                                 .align(Alignment.Center)
@@ -544,7 +446,7 @@ fun AppointmentListScreen(viewModel: AppointmentViewModel) {
                     }
                     appointments.isEmpty() -> {
                         Text(
-                            text = "Keine Termine für Fahrer-ID gefunden ${scannedDriverId ?: "N/A"}. Tippen Sie auf „Aktualisieren“, um es erneut zu versuchen.",
+                            text = "Keine Termine für Fahrer-ID ${scannedDriverId ?: "N/A"} gefunden. Tippen Sie auf „Aktualisieren“, um es erneut zu versuchen.",
                             modifier = Modifier.align(Alignment.Center)
                         )
                     }
@@ -554,7 +456,6 @@ fun AppointmentListScreen(viewModel: AppointmentViewModel) {
                             contentPadding = PaddingValues(16.dp),
                             verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            // New: Select All Checkbox
                             item {
                                 Row(
                                     modifier = Modifier
@@ -567,22 +468,20 @@ fun AppointmentListScreen(viewModel: AppointmentViewModel) {
                                         onCheckedChange = { isChecked ->
                                             viewModel.toggleSelectAll(isChecked)
                                         },
-                                        enabled = appointments.any { it.status.equals("Pending", ignoreCase = true) || it.status.isEmpty() } // Only enable if there are pending appointments
+                                        enabled = appointments.any { it.status.equals("Pending", ignoreCase = true) }
                                     )
                                     Text(text = "Alle auswählen", fontWeight = FontWeight.Bold)
                                 }
-                                Divider() 
+                                Divider()
                             }
-
                             items(
                                 appointments,
                                 key = { appointment -> appointment.id }
                             ) { appointment ->
                                 AppointmentItem(
                                     appointment = appointment,
-                                    isChecked = appointment.isChecked, // <--- FIXED: Removed the '!' here
-                                    onCheckedChange = { checked ->
-
+                                    isChecked = appointment.isChecked,
+                                    onCheckedChange = {
                                         viewModel.toggleAppointmentChecked(appointment.id)
                                     }
                                 )
@@ -595,12 +494,10 @@ fun AppointmentListScreen(viewModel: AppointmentViewModel) {
     }
 }
 
-
-
 @Composable
 fun AppointmentItem(appointment: Appointment, isChecked: Boolean, onCheckedChange: (Boolean) -> Unit) {
+    val isPending = appointment.status.equals("Pending", ignoreCase = true)
     val isCompleted = appointment.status.equals("Completed", ignoreCase = true)
-
     Card(
         modifier = Modifier.fillMaxWidth(),
         elevation = CardDefaults.cardElevation(defaultElevation = 20.dp),
@@ -612,43 +509,29 @@ fun AppointmentItem(appointment: Appointment, isChecked: Boolean, onCheckedChang
                 .padding(15.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Only show checkbox for pending appointments
-
-
-
-            if (!isCompleted) {
+            if (isPending) {
                 Checkbox(
                     checked = isChecked,
                     onCheckedChange = onCheckedChange,
-                    enabled = !isCompleted,
-                    // --- NEW / CHANGED CODE START ---
                     colors = CheckboxDefaults.colors(
-                        checkedColor = Color.Red, // Color when the checkbox is checked
-                        uncheckedColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f), // Default unchecked color
-                        checkmarkColor = Color.White // Color of the checkmark itself (often white on a dark checked box)
+                        checkedColor = Color.Red,
+                        uncheckedColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                        checkmarkColor = Color.White
                     ),
-                    // --- NEW / CHANGED CODE END ---
                     modifier = Modifier.padding(end = 8.dp)
                 )
             } else {
-                // Optional: A placeholder or just empty space for completed appointments
-                Spacer(modifier = Modifier.width(48.dp)) // Aligns content if checkbox were present
+                Spacer(modifier = Modifier.width(48.dp))
             }
-
-
-
-
             Column(modifier = Modifier.padding(16.dp)) {
                 Text(
                     text = appointment.description,
                     fontWeight = FontWeight.Bold,
                     fontSize = 18.sp,
-
-                    )
+                )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(text = "Driver: ${appointment.driver?.name ?: "N/A"}")
                 Text(text = "Date: ${formatDate(appointment.appointmentDateTime)}")
-
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(text = "Status: ")
                     Text(
@@ -657,12 +540,9 @@ fun AppointmentItem(appointment: Appointment, isChecked: Boolean, onCheckedChang
                         fontWeight = FontWeight.Bold
                     )
                 }
-
                 Spacer(modifier = Modifier.height(12.dp))
-
             }
         }
-
     }
 }
 
@@ -675,5 +555,3 @@ fun formatDate(dateString: String): String {
         dateString
     }
 }
-
-

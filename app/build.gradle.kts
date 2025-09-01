@@ -66,6 +66,7 @@ dependencies {
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
     implementation(libs.androidx.animation.core.android)
     implementation(libs.androidx.runtime)
+    implementation(libs.androidx.navigation.compose)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
@@ -83,10 +84,15 @@ dependencies {
     implementation("androidx.camera:camera-view:${camerax_version}")
     implementation("androidx.camera:camera-extensions:${camerax_version}") // For CameraX extensions (optional but recommended)
 
-    // ML Kit Barcode Scanning
+    // ML Kit Barcode Scanninimplementation("androidx.navigation:navigation-compose:2.9.0-alpha01")
+// Use the latest versiong
     implementation("com.google.mlkit:barcode-scanning:17.2.0") // This is the current latest stable version for ML Kit Barcode Scanning
     implementation("androidx.compose.material:material-icons-extended:1.7.0-beta01") // Use the latest stable or beta if targeting newer Compose BOM
     implementation("io.coil-kt:coil-compose:2.6.0")
+
+
+    implementation("androidx.navigation:navigation-compose:2.9.0-alpha01")
+// Use the latest version
 
 
 }
