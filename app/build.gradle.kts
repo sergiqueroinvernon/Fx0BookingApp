@@ -13,8 +13,6 @@ android {
         minSdk = 24
         targetSdk = 36 // Keeping your chosen target SDK version
         versionCode = 1
-        versionName = "1.0"
-        buildConfigField("String", "BASE_URL", "\"http://172.26.140.23:5251/\"")
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -67,6 +65,7 @@ dependencies {
     implementation(libs.androidx.animation.core.android)
     implementation(libs.androidx.runtime)
     implementation(libs.androidx.navigation.compose)
+    implementation(libs.ui)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

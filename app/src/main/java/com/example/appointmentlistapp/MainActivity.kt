@@ -48,6 +48,7 @@ import androidx.compose.foundation.border
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -355,7 +356,23 @@ fun MainAppScreen(viewModel: AppointmentViewModel) {
                         Tab(
                             text = { Text(title) },
                             selected = selectedTabIndex == index,
-                            onClick = { selectedTabIndex = index }
+                            onClick = { selectedTabIndex = index },
+                            icon = {
+                                if (title == "Start") {
+                                    Icon(
+                                        painter = painterResource(id = R.drawable.start),
+                                        contentDescription = "Start Tab Icon",
+                                        modifier = Modifier.size(24.dp)
+                                    )
+                                } else {
+                                    // Placeholder for other icons. You'll need to define your own logic here.
+                                    Icon(
+                                        imageVector = Icons.Filled.Refresh,
+                                        contentDescription = "$title Tab Icon"
+                                    )
+                                }
+                            }
+
                         )
                     }
                 }
