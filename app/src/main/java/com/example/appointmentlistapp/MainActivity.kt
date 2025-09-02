@@ -439,11 +439,9 @@ fun AppointmentListScreen(viewModel: AppointmentViewModel) {
         } else {
             Column(modifier = Modifier.fillMaxSize()) {
                 // Actions bar specific to the AppointmentListScreen
-                /*CenterAlignedTopAppBar(
+               CenterAlignedTopAppBar(
                     title = {  },
                     colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                        titleContentColor = Color.White,
-                        actionIconContentColor = Color.White
                     ),
                     actions = {
                         IconButton(onClick = { viewModel.fetchAppointments() }) {
@@ -480,7 +478,7 @@ fun AppointmentListScreen(viewModel: AppointmentViewModel) {
                             )
                         }
                     }
-                )*/
+                )
 
                 // Main content
                 when {
