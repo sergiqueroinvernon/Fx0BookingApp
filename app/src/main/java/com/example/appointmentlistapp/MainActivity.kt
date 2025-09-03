@@ -47,7 +47,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
@@ -55,10 +54,10 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.appointmentlistapp.ui.screens.BookingScreen
 import com.example.appointmentlistapp.ui.screens.LoginScreen
 import com.example.appointmentlistapp.ui.viewmodel.BookingViewModel
 
-import com.google.mlkit.common.sdkinternal.model.ModelFileHelper
 import com.google.mlkit.vision.barcode.BarcodeScanner
 import com.google.mlkit.vision.barcode.BarcodeScannerOptions
 import com.google.mlkit.vision.barcode.BarcodeScanning
@@ -347,9 +346,6 @@ fun MainAppScreen(viewModel: AppointmentViewModel) {
     val tabs = listOf("Start", "Meine Buchungen", "Mein Fahrtenbuch", "Fahrtenbuchprüfung")
     var selectedTabIndex by remember { mutableIntStateOf(1) } // Default to "Terminliste"
 
-
-    val bookingViewModel = BookingViewModel()
-
     Scaffold(
         topBar = {
             Column {
@@ -388,12 +384,17 @@ fun MainAppScreen(viewModel: AppointmentViewModel) {
         ) {
             when (selectedTabIndex) {
                 0 -> AppointmentListScreen(viewModel = viewModel)
-                1 -> BookingList(viewModel = viewModel)
+                1 -> BookingScreen()
                 2 -> Text("Mein Fahrtenbuch", modifier = Modifier.align(Alignment.Center))
                 3 -> Text("Fahrtenbuchprüfung", modifier = Modifier.align(Alignment.Center))
             }
         }
     }
+}
+
+@Composable
+fun BookingList(viewModel: AppointmentViewModel) {
+    TODO("Not yet implemented")
 }
 
 @OptIn(ExperimentalMaterial3Api::class)

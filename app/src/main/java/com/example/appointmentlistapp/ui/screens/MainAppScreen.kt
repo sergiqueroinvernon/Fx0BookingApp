@@ -14,6 +14,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.example.appointmentlistapp.AppointmentListScreen
+import com.example.appointmentlistapp.BookingList
 import com.example.appointmentlistapp.R
 import com.example.appointmentlistapp.ui.viewmodel.AppointmentViewModel
 import java.text.SimpleDateFormat
@@ -64,7 +65,7 @@ fun MainAppScreen(viewModel: AppointmentViewModel) {
         ) {
             when (selectedTabIndex) {
                 0 -> AppointmentListScreen(viewModel = viewModel)
-                1 -> Text("Meine Buchungen", modifier = Modifier.align(Alignment.Center))
+                1 -> BookingScreen()
                 2 -> Text("Mein Fahrtenbuch", modifier = Modifier.align(Alignment.Center))
                 3 -> Text("Fahrtenbuchprüfung", modifier = Modifier.align(Alignment.Center))
             }

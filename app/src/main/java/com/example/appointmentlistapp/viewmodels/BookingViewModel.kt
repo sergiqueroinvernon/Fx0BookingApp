@@ -26,6 +26,7 @@ class BookingViewModel: ViewModel() {
 
     //This will hold the booking that the user clicks on
     private val _selectedBooking = MutableStateFlow<Booking?>(null)
+    val selectedBooking: StateFlow<Booking?> = _selectedBooking
 
     // This function is called when a user clicks an item in the list
     fun selectBooking(booking: Booking) {
