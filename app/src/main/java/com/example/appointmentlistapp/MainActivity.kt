@@ -317,7 +317,7 @@ class MainActivity : ComponentActivity() {
                 val viewModel: AppointmentViewModel = viewModel()
 
                 val navController = rememberNavController()
-                NavHost(navController = navController, startDestination = "login") { // Start with "login"
+                NavHost(navController = navController, startDestination = "main") { // Start with "login"
                     composable("login") {
                         LoginScreen(
                             // ERROR 1 FIX: You were missing the viewModel parameter.

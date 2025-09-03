@@ -7,7 +7,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.appointmentlistapp.AppointmentViewModel
 import com.example.appointmentlistapp.ui.components.BookingDetails
 import com.example.appointmentlistapp.ui.components.BookingList
 import com.example.appointmentlistapp.ui.viewmodel.BookingViewModel
@@ -24,7 +23,10 @@ fun BookingScreen(viewModel: BookingViewModel = viewModel()) {
             onBookingSelected = { booking ->
                 viewModel.selectBooking(booking)
             },
-            modifier = Modifier.weight(1f) // Takes 1/3 of the space
+            onBookingCheckedChange = { bookingId ->
+                viewModel.toggleBookingChecked(bookingId)
+            },
+            modifier = Modifier.weight(2f) // Give more space to the list
         )
 
         VerticalDivider()
@@ -32,7 +34,7 @@ fun BookingScreen(viewModel: BookingViewModel = viewModel()) {
         // Detail Pane
         BookingDetails(
             booking = selectedBooking,
-            modifier = Modifier.weight(1.5f) // Takes 2/3 of the space
+            modifier = Modifier.weight(1f) // Give less space to details
         )
     }
 }
