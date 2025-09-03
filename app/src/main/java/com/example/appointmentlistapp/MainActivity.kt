@@ -55,7 +55,9 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.appointmentlistapp.ui.theme.LoginScreen
+import com.example.appointmentlistapp.ui.screens.LoginScreen
+import com.example.appointmentlistapp.ui.viewmodel.BookingViewModel
+
 import com.google.mlkit.common.sdkinternal.model.ModelFileHelper
 import com.google.mlkit.vision.barcode.BarcodeScanner
 import com.google.mlkit.vision.barcode.BarcodeScannerOptions
@@ -314,13 +316,17 @@ class MainActivity : ComponentActivity() {
                 color = MaterialTheme.colorScheme.background
             ) {
                 val viewModel: AppointmentViewModel = viewModel()
+
                 val navController = rememberNavController()
-                NavHost(navController = navController, startDestination = "main") {
-                   composable("login") {
+                NavHost(navController = navController, startDestination = "login") { // Start with "login"
+                    composable("login") {
                         LoginScreen(
+                            // ERROR 1 FIX: You were missing the viewModel parameter.
                             viewModel = viewModel,
+
+                            // ERROR 2 FIX: The onLoginSuccess lambda was missing.
                             onLoginSuccess = {
-                                navController.navigate("appointmentList") {
+                                navController.navigate("main") { // Navigate to "main", not "appointmentList"
                                     popUpTo("login") { inclusive = true }
                                 }
                             }
@@ -340,6 +346,9 @@ class MainActivity : ComponentActivity() {
 fun MainAppScreen(viewModel: AppointmentViewModel) {
     val tabs = listOf("Start", "Meine Buchungen", "Mein Fahrtenbuch", "Fahrtenbuchprüfung")
     var selectedTabIndex by remember { mutableIntStateOf(1) } // Default to "Terminliste"
+
+
+    val bookingViewModel = BookingViewModel()
 
     Scaffold(
         topBar = {
@@ -379,7 +388,7 @@ fun MainAppScreen(viewModel: AppointmentViewModel) {
         ) {
             when (selectedTabIndex) {
                 0 -> AppointmentListScreen(viewModel = viewModel)
-                1 -> Text("Meine Buchungen", modifier = Modifier.align(Alignment.Center))
+                1 -> BookingList(viewModel = viewModel)
                 2 -> Text("Mein Fahrtenbuch", modifier = Modifier.align(Alignment.Center))
                 3 -> Text("Fahrtenbuchprüfung", modifier = Modifier.align(Alignment.Center))
             }
