@@ -1,5 +1,6 @@
 package com.example.appointmentlistapp.data
 
+import com.google.android.libraries.mapsplatform.transportation.consumer.model.Vehicle
 import java.time.LocalDate
 import java.time.LocalDateTime
 
