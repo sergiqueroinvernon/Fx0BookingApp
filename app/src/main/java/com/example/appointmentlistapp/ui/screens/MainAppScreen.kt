@@ -1,6 +1,8 @@
 package com.example.appointmentlistapp.ui.screens
 
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -17,10 +19,12 @@ import com.example.appointmentlistapp.AppointmentListScreen
 import com.example.appointmentlistapp.BookingList
 import com.example.appointmentlistapp.R
 import com.example.appointmentlistapp.ui.viewmodel.AppointmentViewModel
+import com.example.appointmentlistapp.ui.viewmodel.LogBookViewModel
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
+@RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainAppScreen(viewModel: AppointmentViewModel) {
@@ -66,11 +70,16 @@ fun MainAppScreen(viewModel: AppointmentViewModel) {
             when (selectedTabIndex) {
                 0 -> AppointmentListScreen(viewModel = viewModel)
                 1 -> BookingScreen()
-                2 -> Text("Mein Fahrtenbuch", modifier = Modifier.align(Alignment.Center))
+                2 -> LogBookScreen()
                 3 -> Text("Fahrtenbuchprüfung", modifier = Modifier.align(Alignment.Center))
             }
         }
     }
+}
+
+@Composable
+fun LogBookScreen() {
+    TODO("Not yet implemented")
 }
 
 fun formatDate(dateString: String): String {
