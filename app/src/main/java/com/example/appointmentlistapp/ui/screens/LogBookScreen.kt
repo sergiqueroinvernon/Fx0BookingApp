@@ -17,17 +17,21 @@ import com.example.appointmentlistapp.ui.viewmodel.LogBookViewModel
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun LogbookScreen(viewModel: LogBookViewModel = viewModel()) {
+    // 1. State collection from the ViewModel, using the correct variable names.
     val entries by viewModel.logbookEntries.collectAsState()
     val selectedEntry by viewModel.selectedEntry.collectAsState()
     val checkedEntryIds by viewModel.checkedEntryIds.collectAsState()
 
+    // The Row composable arranges the list and detail view side-by-side.
     Row(Modifier.fillMaxSize()) {
-        // Master Pane (List)
+
+        // 2. Master Pane (List) - Calling the correct component with the correct parameters.
         LogbookList(
             entries = entries,
             selectedEntry = selectedEntry,
             checkedEntryIds = checkedEntryIds,
             onEntrySelected = { entry ->
+                // Calling the correct ViewModel function to select an entry.
                 viewModel.selectEntry(entry)
             },
             onEntryCheckedChange = { entryId ->
@@ -38,7 +42,7 @@ fun LogbookScreen(viewModel: LogBookViewModel = viewModel()) {
 
         VerticalDivider()
 
-        // Detail Pane
+        // 3. Detail Pane - Calling the correct component with the correct parameter name.
         LogbookDetailView(
             logbook = selectedEntry,
             modifier = Modifier.weight(1f) // Give less space to details

@@ -2,6 +2,7 @@ package com.example.appointmentlistapp
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -40,6 +41,7 @@ import java.text.SimpleDateFormat
 import java.util.*
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.annotation.RequiresApi
 import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
@@ -55,8 +57,10 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.appointmentlistapp.ui.screens.BookingScreen
+import com.example.appointmentlistapp.ui.screens.LogbookScreen
 import com.example.appointmentlistapp.ui.screens.LoginScreen
 import com.example.appointmentlistapp.ui.viewmodel.BookingViewModel
+import com.example.appointmentlistapp.ui.viewmodel.LogBookViewModel
 
 import com.google.mlkit.vision.barcode.BarcodeScanner
 import com.google.mlkit.vision.barcode.BarcodeScannerOptions
@@ -340,6 +344,7 @@ class MainActivity : ComponentActivity() {
         }
     }
 }
+@RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainAppScreen(viewModel: AppointmentViewModel) {
@@ -385,17 +390,14 @@ fun MainAppScreen(viewModel: AppointmentViewModel) {
             when (selectedTabIndex) {
                 0 -> AppointmentListScreen(viewModel = viewModel)
                 1 -> BookingScreen()
-                2 -> Text("Mein Fahrtenbuch", modifier = Modifier.align(Alignment.Center))
+                2 -> LogbookScreen()
                 3 -> Text("Fahrtenbuchprüfung", modifier = Modifier.align(Alignment.Center))
             }
         }
     }
 }
 
-@Composable
-fun BookingList(viewModel: AppointmentViewModel) {
-    TODO("Not yet implemented")
-}
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

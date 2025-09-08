@@ -16,7 +16,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.example.appointmentlistapp.AppointmentListScreen
-import com.example.appointmentlistapp.BookingList
 import com.example.appointmentlistapp.R
 import com.example.appointmentlistapp.ui.viewmodel.AppointmentViewModel
 import com.example.appointmentlistapp.ui.viewmodel.LogBookViewModel
@@ -70,17 +69,14 @@ fun MainAppScreen(viewModel: AppointmentViewModel) {
             when (selectedTabIndex) {
                 0 -> AppointmentListScreen(viewModel = viewModel)
                 1 -> BookingScreen()
-                2 -> LogBookScreen()
+                2 -> LogbookScreen()
                 3 -> Text("Fahrtenbuchprüfung", modifier = Modifier.align(Alignment.Center))
             }
         }
     }
 }
 
-@Composable
-fun LogBookScreen() {
-    TODO("Not yet implemented")
-}
+
 
 fun formatDate(dateString: String): String {
     return try {
