@@ -2,12 +2,20 @@ package com.example.appointmentlistapp.ui.screens
 
 import android.os.Build
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.material3.Button
+import androidx.compose.material3.Text
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.appointmentlistapp.ui.components.LogbookDetailView
@@ -22,7 +30,18 @@ fun LogbookScreen(viewModel: LogBookViewModel = viewModel()) {
     val selectedEntry by viewModel.selectedEntry.collectAsState()
     val checkedEntryIds by viewModel.checkedEntryIds.collectAsState()
 
+    var showDetails by remember {mutableStateOf(true)}
     // The Row composable arranges the list and detail view side-by-side.
+
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Row(modifier =  Modifier.fillMaxWidth()){
+
+
+            Button(onClick = { showDetails = !showDetails}) { // <-- Toggle the state here
+                // Change button text based on the state
+                Text("Details")
+            }
+        }
     Row(Modifier.fillMaxSize()) {
 
         // 2. Master Pane (List) - Calling the correct component with the correct parameters.
@@ -42,11 +61,13 @@ fun LogbookScreen(viewModel: LogBookViewModel = viewModel()) {
 
         VerticalDivider()
 
-        // 3. Detail Pane - Calling the correct component with the correct parameter name.
-        LogbookDetailView(
-            logbook = selectedEntry,
-            modifier = Modifier.weight(1f) // Give less space to details
-        )
-    }
+        if(showDetails) {
+            // 3. Detail Pane - Calling the correct component with the correct parameter name.
+            LogbookDetailView(
+                logbook = selectedEntry,
+                modifier = Modifier.weight(1f) // Give less space to details
+            )
+        }
+    }}
 }
 
