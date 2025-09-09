@@ -311,6 +311,7 @@ class AppointmentViewModel : ViewModel() {
 
 // MAIN ACTIVITY & UI (Jetpack Compose)
 class MainActivity : ComponentActivity() {
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -391,7 +392,7 @@ fun MainAppScreen(viewModel: AppointmentViewModel) {
                 0 -> AppointmentListScreen(viewModel = viewModel)
                 1 -> BookingScreen()
                 2 -> LogbookScreen()
-                3 -> Text("Fahrtenbuchprüfung", modifier = Modifier.align(Alignment.Center))
+                3 -> Text("Fahrtenbuchprüfungs", modifier = Modifier.align(Alignment.Center))
             }
         }
     }
