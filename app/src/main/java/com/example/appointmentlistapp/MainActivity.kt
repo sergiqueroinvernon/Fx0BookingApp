@@ -58,6 +58,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.appointmentlistapp.ui.screens.BookingScreen
 import com.example.appointmentlistapp.ui.screens.LogbookScreen
+import com.example.appointmentlistapp.ui.screens.LogbookScreenCheck
 import com.example.appointmentlistapp.ui.screens.LoginScreen
 import com.example.appointmentlistapp.ui.viewmodel.BookingViewModel
 import com.example.appointmentlistapp.ui.viewmodel.LogBookViewModel
@@ -392,7 +393,7 @@ fun MainAppScreen(viewModel: AppointmentViewModel) {
                 0 -> AppointmentListScreen(viewModel = viewModel)
                 1 -> BookingScreen()
                 2 -> LogbookScreen()
-                3 -> Text("Fahrtenbuchprüfungs", modifier = Modifier.align(Alignment.Center))
+                3 -> LogbookScreenCheck()
             }
         }
     }
