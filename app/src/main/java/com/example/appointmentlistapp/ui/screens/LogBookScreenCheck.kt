@@ -21,6 +21,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.appointmentlistapp.R
 import com.example.appointmentlistapp.ui.components.LogbookCheckDetailsView
@@ -36,13 +37,16 @@ import com.example.appointmentlistapp.ui.viewmodel.LogBookCheckViewModel
 fun LogbookScreenCheck(viewModel: LogBookCheckViewModel = viewModel()) {
 
     var showDetails by remember { mutableStateOf(true) }
-
+    var criteriaFilter by remember { mutableStateOf(true) }
 
     // 1. State collection from the ViewModel, using the correct variable names.
     val entries by viewModel.logbookEntries.collectAsState()
     val selectedEntry by viewModel.selectedEntry.collectAsState()
     val checkedEntryIds by viewModel.checkedEntryIds.collectAsState()
     Column(modifier = Modifier.fillMaxWidth()) {
+        Row(modifier = Modifier.fillMaxWidth()) {
+            Text(text = "Prüfung der Fahrtenbücher meines Teams", modifier = Modifier.padding(10.dp), fontSize = 25.sp)
+        }
         Row(modifier =  Modifier.fillMaxWidth()){
 
 
@@ -55,6 +59,105 @@ fun LogbookScreenCheck(viewModel: LogBookCheckViewModel = viewModel()) {
                 // Change button text based on the state
                 Text(if (showDetails) "Hide Details" else "Show Details")
 
+            }
+            Button(onClick = { showDetails = !showDetails}) {
+                Icon(
+                    painter = painterResource(id = R.drawable.filter),
+                    contentDescription = "Logo",
+                    modifier = Modifier.size(24.dp).padding(end = 4.dp)
+                )
+                // Change button text based on the state
+                Text(if (criteriaFilter) "Filterkriterien" else "Filterkriterien")
+
+            }
+            Button(onClick = { showDetails = !showDetails}) {
+                Icon(
+                    painter = painterResource(id = R.drawable.layout),
+                    contentDescription = "Logo",
+                    modifier = Modifier.size(24.dp).padding(end = 4.dp)
+                )
+                // Change button text based on the state
+                Text(if (showDetails) "Layout" else "Layout")
+
+            }
+        }
+        Row(modifier =  Modifier.fillMaxWidth()){
+
+
+            Button(onClick = { showDetails = !showDetails}) {
+                Icon(
+                    painter = painterResource(id = R.drawable.add_dis),
+                    contentDescription = "Logo",
+                    modifier = Modifier.size(24.dp).padding(end = 4.dp)
+                )
+                // Change button text based on the state
+                Text("Hinzufügen")
+
+            }
+            Button(onClick = { showDetails = !showDetails}) {
+                Icon(
+                    painter = painterResource(id = R.drawable.edit_dis),
+                    contentDescription = "Logo",
+                    modifier = Modifier.size(24.dp).padding(end = 4.dp)
+                )
+                // Change button text based on the state
+                Text("Bearbeiten")
+
+            }
+            Button(onClick = { showDetails = !showDetails}) {
+                Icon(
+                    painter = painterResource(id = R.drawable.cancel_dis),
+                    contentDescription = "Logo",
+                    modifier = Modifier.size(24.dp).padding(end = 4.dp)
+                )
+                // Change button text based on the state
+                Text("Stornieren")
+
+            }
+            Button(onClick = { showDetails = !showDetails}) {
+                Icon(
+                   painter = painterResource(id = R.drawable.copy_dis),
+                    contentDescription = "Logo",
+                    modifier = Modifier.size(24.dp).padding(end = 4.dp)
+                )
+                // Change button text based on the state
+                Text("Kopieren")
+
+            }
+        }
+        Row(modifier =  Modifier.fillMaxWidth()){
+
+
+            Button(onClick = { showDetails = !showDetails}) {
+                Icon(
+                    painter = painterResource(id = R.drawable.finish),
+                    contentDescription = "Logo",
+                    modifier = Modifier.size(24.dp).padding(end = 4.dp)
+                )
+                // Change button text based on the state
+                Text("Beenden")
+
+            }
+            Button(onClick = { showDetails = !showDetails}) {
+                Icon(
+                    painter = painterResource(id = R.drawable.confirm),
+                    contentDescription = "Logo",
+                    modifier = Modifier.size(24.dp).padding(end = 4.dp)
+                )
+                // Change button text based on the state
+                Text("Bestätigen")
+
+            }
+        }
+        Row(modifier =  Modifier.fillMaxWidth()){
+            Button(onClick = { showDetails = !showDetails}) {
+                Icon(
+                    painter = painterResource(id = R.drawable.approve),
+                    contentDescription = "Logo",
+                    modifier = Modifier.size(24.dp).padding(end = 4.dp)
+                )
+                // Change button text based on the state
+                Text("Genehmigen")
             }
         }
 
@@ -91,4 +194,5 @@ fun LogbookScreenCheck(viewModel: LogBookCheckViewModel = viewModel()) {
     }
 
 }
+
 
