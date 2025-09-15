@@ -7,7 +7,9 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
@@ -17,8 +19,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.appointmentlistapp.R
 import com.example.appointmentlistapp.ui.components.LogbookCheckDetailsView
 import com.example.appointmentlistapp.ui.components.LogbookDetailView
 import com.example.appointmentlistapp.ui.components.LogbookCheckList
@@ -42,10 +46,16 @@ fun LogbookScreenCheck(viewModel: LogBookCheckViewModel = viewModel()) {
         Row(modifier =  Modifier.fillMaxWidth()){
 
 
-                   Button(onClick = { showDetails = !showDetails}) { // <-- Toggle the state here
-                    // Change button text based on the state
-                    Text("Details")
-                }
+            Button(onClick = { showDetails = !showDetails}) {
+                Icon(
+                    painter = painterResource(id = R.drawable.info),
+                    contentDescription = "Logo",
+                    modifier = Modifier.size(24.dp).padding(end = 4.dp)
+                )
+                // Change button text based on the state
+                Text(if (showDetails) "Hide Details" else "Show Details")
+
+            }
         }
 
         // The Row composable arranges the list and detail view side-by-side.

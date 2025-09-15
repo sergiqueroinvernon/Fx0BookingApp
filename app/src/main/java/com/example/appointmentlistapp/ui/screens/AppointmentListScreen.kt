@@ -32,6 +32,7 @@ import com.example.appointmentlistapp.ui.viewmodel.AppointmentViewModel
 @Composable
 fun AppointmentListScreen(viewModel: AppointmentViewModel) {
     val appointments by viewModel.appointments.collectAsState()
+
     val isLoading by viewModel.isLoading.collectAsState()
     val errorMessage by viewModel.errorMessage.collectAsState()
     val scannedDriverId by viewModel.scannedDriverId.collectAsState()
