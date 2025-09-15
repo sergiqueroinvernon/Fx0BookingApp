@@ -10,6 +10,17 @@ import kotlinx.coroutines.flow.asStateFlow
 import java.time.LocalDate
 import java.time.LocalDateTime
 
+
+
+data class LogBookUiState(
+    val entries: List<LogbookEntry> = emptyList(),
+    val selectedEntry: LogbookEntry? = null,
+    val checkedEntryIds: Set<Long> = emptySet(),
+    val isDetailPlainVisible: Boolean = false,
+    val isFilterPlaneVisible: Boolean = false,
+    val isInEditMode: Boolean = false
+)
+
 @RequiresApi(Build.VERSION_CODES.O)
 class LogBookViewModel : ViewModel() {
 
@@ -94,4 +105,15 @@ class LogBookViewModel : ViewModel() {
         }
         _checkedEntryIds.value = currentChecked
     }
+
+    //Private mutable state
+    private val _uiState = MutableStateFlow(LogBookUiState())
+    //Public immutable state that the UI can observe
+
+    //Entry Selected
+    fun onEntrySelected(entry: LogbookEntry){
+        _uiState
+    }
+
+
 }
