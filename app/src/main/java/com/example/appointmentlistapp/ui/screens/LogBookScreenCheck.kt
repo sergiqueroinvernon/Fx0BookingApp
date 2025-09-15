@@ -44,6 +44,7 @@ fun LogbookScreenCheck(viewModel: LogBookCheckViewModel = viewModel()) {
     val selectedEntry by viewModel.selectedEntry.collectAsState()
     val checkedEntryIds by viewModel.checkedEntryIds.collectAsState()
     Column(modifier = Modifier.fillMaxWidth()) {
+        Column(modifier = Modifier.fillMaxWidth()) {
         Row(modifier = Modifier.fillMaxWidth()) {
             Text(text = "Prüfung der Fahrtenbücher meines Teams", modifier = Modifier.padding(10.dp), fontSize = 25.sp)
         }
@@ -189,7 +190,7 @@ fun LogbookScreenCheck(viewModel: LogBookCheckViewModel = viewModel()) {
             }
             // 3. Detail Pane - Calling the correct component with the correct parameter name.
 
-        }
+        }}
 
     }
 
