@@ -1,5 +1,9 @@
 package com.example.appointmentlistapp.data
 
+import androidx.room.Entity
+
+@Entity(tableName = "bookings")
+
 data class Booking(
     // Booking section
     val transactionId: String,

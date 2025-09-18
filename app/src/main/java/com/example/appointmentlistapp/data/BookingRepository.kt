@@ -22,6 +22,27 @@ class BookingRepository(private val bookingDao: BookingDao) {
         return bookingDao.getButtonsForClientAndScreen(clientId, screenId)
     }
 
+    // Function to get all bookings
+    // The use of "Flow" allows the UI to automatically update  //
+    // every time there is a change in the database
+    fun getAllBookings(): Flow<List<Booking>> {
+        return bookingDao.getAllBookings()
+    }
+    //Function to insert a new booking.
+    // The 'suspend' keyword indicates that this operation
+    // will be executed on a different thread so it doesn't block the UI.
+    suspend fun insertBooking(booking: Booking) {
+        bookingDao.insertBooking(booking)
+    }
+
+    // Function to delete a booking
+    // This is also an operation that should be 'suspend'
+    suspend fun deleteBooking(booking: Booking){
+        bookingDao.deleteBooking(booking)
+    }
+
+
+
 
 
 }
