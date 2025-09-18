@@ -1,7 +1,10 @@
 package com.example.appointmentlistapp.data
 
 import androidx.room.Dao
+import androidx.room.Insert
+import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import com.example.appointmentlistapp.data.components.Booking
 import com.example.appointmentlistapp.data.components.ButtonConfig
 import kotlinx.coroutines.flow.Flow
 
@@ -32,3 +35,13 @@ interface BookingDao {
 
     @Query("SELECT * FROM bookings ORDER BY bookingDate DESC")
     fun getAllBookings(): Flow<List<Booking>>
+
+    //Inserts one or more bookings in to thedatabase. THe 'onconflict' strategy handles cases where a booking with the same
+    //primary key already exists
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertBooking(booking: Booking)
+
+    @Query("SELECT * FROM bookings WHERE bookingId = :bookingId")
+    suspend fun getBookingById(bookingId: Int): Booking?
+}
