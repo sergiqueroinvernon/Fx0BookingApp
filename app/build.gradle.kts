@@ -67,6 +67,7 @@ dependencies {
     implementation(libs.androidx.navigation.compose)
     implementation(libs.ui)
     implementation(libs.transportation.consumer)
+    implementation(libs.androidx.room.common.jvm)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
@@ -93,6 +94,8 @@ dependencies {
 
     implementation("androidx.navigation:navigation-compose:2.9.0-alpha01")
 // Use the latest version
+    implementation("androidx.room:room-runtime:2.6.1")
+    implementation("androidx.room:room-ktx:2.6.1")
 
 
 }
