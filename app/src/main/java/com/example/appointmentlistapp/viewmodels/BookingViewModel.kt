@@ -2,11 +2,14 @@
 package com.example.appointmentlistapp.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.appointmentlistapp.data.Booking
 import com.example.appointmentlistapp.data.BookingRepository
 import com.example.appointmentlistapp.data.components.ButtonConfig
+import com.google.android.gms.fitness.data.Value
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
 
 /*
 * VidewModel for the BookingScreen.
@@ -29,6 +32,17 @@ class BookingViewModel(private val repository: BookingRepository) : ViewModel() 
     * @param clientId the ID of the client
     * @param screenId the ID of the screen
     * */
+
+    fun loadButtonsForClientAndScreen(clientId: String, screenId: String) {
+        viewModelScope.launch {
+            //Collect the Flow from the repository
+            repository.getButtonsForClientsAndScreen(clientId, screenId).collect {
+                //Update the state of the ViewModel
+                buttonConfigs -> _buttons.value = buttonConfigs
+            }
+        }
+    }
+
     private val _bookings = MutableStateFlow(
 
         // This holds the original, unfiltered list of all bookings

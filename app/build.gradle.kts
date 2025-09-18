@@ -68,6 +68,7 @@ dependencies {
     implementation(libs.ui)
     implementation(libs.transportation.consumer)
     implementation(libs.androidx.room.common.jvm)
+    implementation(libs.play.services.fitness)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
