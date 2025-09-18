@@ -3,12 +3,32 @@ package com.example.appointmentlistapp.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import com.example.appointmentlistapp.data.Booking
+import com.example.appointmentlistapp.data.BookingRepository
+import com.example.appointmentlistapp.data.components.ButtonConfig
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
-class BookingViewModel : ViewModel() {
+/*
+* VidewModel for the BookingScreen.
+* It manages the UI state and handles the logic for fetching button configuration from the repository
+* */
+class BookingViewModel(private val repository: BookingRepository) : ViewModel() {
 
 
+    // A private, mutable StateFlow to hold the list of buttons
+    private val _buttons = MutableStateFlow<List<ButtonConfig>>(emptyList())
+    // A public, read-only StateFlow that the UI can observe
+    val buttons: StateFlow<List<ButtonConfig>> =_buttons
+
+    /*Loads the button configurations for a specific client and screen.
+    * This function should be called from the UI when a user navigate toa new screen
+    *
+    * It launches a coroutine to collect the Flow from the repository
+    * Any change in the database will automatically update this StateFlow,
+    * triggering a recomposition in the UI
+    * @param clientId the ID of the client
+    * @param screenId the ID of the screen
+    * */
     private val _bookings = MutableStateFlow(
 
         // This holds the original, unfiltered list of all bookings
