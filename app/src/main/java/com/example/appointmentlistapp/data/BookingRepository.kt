@@ -1,4 +1,10 @@
 package com.example.appointmentlistapp.data
 
-class BookingRepository(private val bookingDao: bookingDao) {
+//Repository -> Provide/Transform the data to the ViewModel. Intermediary between UI and Data Sources./Interact with the Networking Service
+class BookingRepository(private val bookingDao: BookingDao) {
+
+
+
+
+
 }
