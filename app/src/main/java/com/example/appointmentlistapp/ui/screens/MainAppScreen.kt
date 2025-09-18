@@ -15,10 +15,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import com.example.appointmentlistapp.AppointmentListScreen
 import com.example.appointmentlistapp.R
 import com.example.appointmentlistapp.ui.viewmodel.AppointmentViewModel
-import com.example.appointmentlistapp.ui.viewmodel.LogBookViewModel
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -28,6 +26,7 @@ import java.util.Locale
 @Composable
 fun MainAppScreen(viewModel: AppointmentViewModel) {
     val tabs = listOf("Start", "Meine Buchungen", "Mein Fahrtenbuch", "Fahrtenbuchprüfung")
+    val screenIds = listOf("start_screen", "booking_screen", "logbook_screen", "reports_screen")
     var selectedTabIndex by remember { mutableIntStateOf(0) } // Start ist Tab 0
 
     Scaffold(
@@ -68,7 +67,7 @@ fun MainAppScreen(viewModel: AppointmentViewModel) {
         ) {
             when (selectedTabIndex) {
                 0 -> AppointmentListScreen(viewModel = viewModel)
-                1 -> BookingScreen()
+                1 -> BookingScreen(screenId = screenIds[1])
                 2 -> LogbookScreen()
                 3 -> Text("Fahrtenbuchprüfung", modifier = Modifier.align(Alignment.Center))
             }

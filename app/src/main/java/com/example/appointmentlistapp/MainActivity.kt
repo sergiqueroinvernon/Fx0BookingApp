@@ -60,8 +60,6 @@ import com.example.appointmentlistapp.ui.screens.BookingScreen
 import com.example.appointmentlistapp.ui.screens.LogbookScreen
 import com.example.appointmentlistapp.ui.screens.LogbookScreenCheck
 import com.example.appointmentlistapp.ui.screens.LoginScreen
-import com.example.appointmentlistapp.ui.viewmodel.BookingViewModel
-import com.example.appointmentlistapp.ui.viewmodel.LogBookViewModel
 
 import com.google.mlkit.vision.barcode.BarcodeScanner
 import com.google.mlkit.vision.barcode.BarcodeScannerOptions
