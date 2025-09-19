@@ -19,9 +19,7 @@ import kotlinx.coroutines.launch
 * */
 class BookingViewModel(private val repository: BookingRepository) : ViewModel()
 
-{
-
-
+    {
     // A private, mutable StateFlow to hold the list of buttons
     private val _buttons = MutableStateFlow<List<ButtonConfig>>(emptyList())
     // A public, read-only StateFlow that the UI can observe
@@ -187,7 +185,7 @@ class BookingViewModel(private val repository: BookingRepository) : ViewModel()
 
     fun deleteBooking(booking: Booking) {
         viewModelScope.launch {
-            repository.getAppointments(booking)
+            repository.deleteAppointment(booking)
         }
     }
 
