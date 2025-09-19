@@ -58,8 +58,10 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.appointmentlistapp.ui.screens.BookingScreen
 import com.example.appointmentlistapp.ui.screens.LogbookScreen
+import com.example.appointmentlistapp.ui.screens.LogbookScreen.bookingRepository // Corrected import
 import com.example.appointmentlistapp.ui.screens.LogbookScreenCheck
 import com.example.appointmentlistapp.ui.screens.LoginScreen
+import com.example.appointmentlistapp.viewmodels.BookingViewModel
 
 import com.google.mlkit.vision.barcode.BarcodeScanner
 import com.google.mlkit.vision.barcode.BarcodeScannerOptions
@@ -347,7 +349,7 @@ class MainActivity : ComponentActivity() {
 @RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MainAppScreen(viewModel: AppointmentViewModel) {
+fun MainAppScreen(viewModel: AppointmentViewModel, bookingViewModel: BookingViewModel = viewModel()) {
     val tabs = listOf("Start", "Meine Buchungen", "Mein Fahrtenbuch", "Fahrtenbuchprüfung")
     var selectedTabIndex by remember { mutableIntStateOf(1) } // Default to "Terminliste"
 
@@ -389,7 +391,10 @@ fun MainAppScreen(viewModel: AppointmentViewModel) {
         ) {
             when (selectedTabIndex) {
                 0 -> AppointmentListScreen(viewModel = viewModel)
-                1 -> BookingScreen()
+                1 -> BookingScreen(
+                    viewModel = bookingViewModel,
+                    screenId = TODO()
+                ) // Use BookingViewModel here
                 2 -> LogbookScreen()
                 3 -> LogbookScreenCheck()
             }
