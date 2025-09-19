@@ -2,6 +2,7 @@ package com.example.appointmentlistapp.data
 
 import androidx.camera.core.ImageProcessor
 import com.example.appointmentlistapp.data.api.BookingApiModel
+import com.example.appointmentlistapp.data.components.ButtonConfig
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
@@ -11,6 +12,11 @@ import retrofit2.http.PUT
 
 interface BookingAppService {
 
+    @GET("api/buttons/{clientId}/{screenId}")
+    suspend fun getButtonsForClientAndScreen(
+        @Path("clientId") clientId: String,
+        @Path("screenId") screenId: String
+    ): List<ButtonConfig>
     @GET("api/appointments")
     suspend fun getAppointments(): List<BookingApiModel>
     @GET("api/appointments/driver/{driverId}")

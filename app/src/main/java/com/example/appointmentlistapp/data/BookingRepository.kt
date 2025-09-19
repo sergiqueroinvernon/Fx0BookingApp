@@ -17,6 +17,14 @@ class BookingRepository(private val bookingAppService: BookingAppService) {
         emit(appointments)
     }
 
+    fun getButtonsForClientsAndScreen(clientId: String, screenId: String): Flow<List<ButtonConfig>> =
+        flow {
+            val buttonConfigs: List<ButtonConfig> = bookingAppService.getButtonsForClientAndScreen(clientId, screenId)
+            emit(buttonConfigs)
+
+
+        }
+
     suspend fun getAppointmentsByDriver(driverId: String): List<BookingApiModel> {
         // This function doesn't use a Flow because the data is a one-time request
         return bookingAppService.getAppointmentsByDriverId(driverId)
