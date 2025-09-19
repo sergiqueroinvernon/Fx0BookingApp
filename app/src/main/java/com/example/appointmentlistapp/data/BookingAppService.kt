@@ -12,9 +12,9 @@ import retrofit2.http.PUT
 interface BookingAppService {
 
     @GET("api/appointments")
-    suspend fun getAppointments(): List<Booking>
+    suspend fun getAppointments(): List<BookingApiModel>
     @GET("api/appointments/driver/{driverId}")
-    suspend fun getAppointmentsByDriverId(@Path("driverId") driverId: String): List<Booking>
+    suspend fun getAppointmentsByDriverId(@Path("driverId") driverId: String): List<BookingApiModel>
     @POST("api/appointments/{id}/checkin")
     suspend fun checkInAppointment(@Path("id") id: String): Response<Void>
     @POST("api/appointments")
