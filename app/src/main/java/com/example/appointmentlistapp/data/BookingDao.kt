@@ -1,12 +1,15 @@
 package com.example.appointmentlistapp.data
 
 import androidx.room.Dao
+import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Update
 import com.example.appointmentlistapp.data.components.Booking
 import com.example.appointmentlistapp.data.components.ButtonConfig
 import kotlinx.coroutines.flow.Flow
+import kotlin.reflect.KClass
 
 /**
  * The Data Access Object (DAO) for the 'button_configs' table.
@@ -42,6 +45,12 @@ interface BookingDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertBooking(booking: Booking)
 
-    @Query("SELECT * FROM bookings WHERE bookingId = :bookingId")
+    @Query("SELECT * FROM bookings WHERE bookingId = :bookingId" )
     suspend fun getBookingById(bookingId: Int): Booking?
+
+    @Query("DELETE FROM bookings WHERE bookingId = :bookingId")
+    suspend fun deleteBookingById(bookingId: Int)
+
+    @Update
+    suspend fun updateBooking(booking: Booking)
 }
