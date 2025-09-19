@@ -48,7 +48,7 @@ interface BookingDao {
     suspend fun getBookingById(bookingId: Int): Booking?
 
     @Query("DELETE FROM bookings WHERE bookingId = :bookingId")
-    suspend fun deleteBookingById(bookingId: Int)
+    suspend fun deleteBookingById(bookingId: String)
 
     @Update
     suspend fun updateBooking(booking: Booking)
