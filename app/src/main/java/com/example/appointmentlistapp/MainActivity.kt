@@ -58,7 +58,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.appointmentlistapp.ui.screens.BookingScreen
 import com.example.appointmentlistapp.ui.screens.LogbookScreen
-import com.example.appointmentlistapp.ui.screens.LogbookScreen.bookingRepository // Corrected import
+
 import com.example.appointmentlistapp.ui.screens.LogbookScreenCheck
 import com.example.appointmentlistapp.ui.screens.LoginScreen
 import com.example.appointmentlistapp.viewmodels.BookingViewModel
