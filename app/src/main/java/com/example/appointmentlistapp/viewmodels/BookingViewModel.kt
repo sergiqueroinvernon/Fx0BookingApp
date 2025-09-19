@@ -93,7 +93,9 @@ class BookingViewModel(private val repository: BookingRepository) : ViewModel() 
                 cancellationDate = "10.02.2025",
                 cancellationReason = "Termin abgesagt",
                 note = null,
-                isChecked = true
+                isChecked = true,
+                bookingDate = TODO()
+
             ),
             Booking(
                 bookingId = "1000016853",
@@ -114,7 +116,9 @@ class BookingViewModel(private val repository: BookingRepository) : ViewModel() 
                 cancellationDate = null,
                 cancellationReason = null,
                 note = null,
-                isChecked = false
+                isChecked = false,
+                bookingDate = TODO()
+
             ),
             Booking(
                 bookingId = "1000013976",
@@ -135,7 +139,9 @@ class BookingViewModel(private val repository: BookingRepository) : ViewModel() 
                 cancellationDate = null,
                 cancellationReason = null,
                 note = "Fahrzeug in Werkstatt.",
-                isChecked = false
+                isChecked = false,
+                bookingDate = TODO()
+
             )
         )
     )
