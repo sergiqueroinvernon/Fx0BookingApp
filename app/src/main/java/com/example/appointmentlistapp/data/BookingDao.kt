@@ -6,7 +6,6 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
-import com.example.appointmentlistapp.data.components.Booking
 import com.example.appointmentlistapp.data.components.ButtonConfig
 import kotlinx.coroutines.flow.Flow
 import kotlin.reflect.KClass
