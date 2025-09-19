@@ -60,3 +60,7 @@ abstract class AppDatabase : RoomDatabase() {
         }
     }
 }
+
+annotation class AppDataBase {
+    companion object
+}
