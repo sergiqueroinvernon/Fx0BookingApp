@@ -4,7 +4,6 @@ import com.example.appointmentlistapp.data.components.ButtonConfig
 import kotlinx.coroutines.flow.Flow
 
 //Repository -> Provide/Transform the data to the ViewModel. Intermediary between UI and Data Sources./Interact with the Networking Service
-import com.example.appointmentlistapp.data.BookingAppService
 import com.example.appointmentlistapp.data.api.BookingApiModel
 import kotlinx.coroutines.flow.flow
 
@@ -34,8 +33,12 @@ class BookingRepository(private val bookingAppService: BookingAppService) {
         return bookingAppService.checkInAppointment(id).isSuccessful
     }
 
-    suspend fun createAppointment(appointment: BookingApiModel) {
+    suspend fun createAppointment(appointment: Booking) {
         bookingAppService.createAppointment(appointment)
+    }
+
+    suspend fun deleteAppointment(appointment: Booking) {
+        bookingAppService.deleteAppointment(appointment.bookingId)
     }
 
     suspend fun updateAppointment(id: String, appointment: BookingApiModel) {

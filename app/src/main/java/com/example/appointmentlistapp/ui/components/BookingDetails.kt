@@ -29,7 +29,7 @@ fun BookingDetails(booking: Booking?, modifier: Modifier = Modifier) {
                 item {
                     SectionHeader("Buchung")
                     DetailRow(
-                        label1 = "Vorgangsnr.", value1 = booking.transactionId,
+                        label1 = "Vorgangsnr.", value1 = booking.bookingId,
                         label2 = "Status", value2 = booking.status
                     )
                     DetailRow(label1 = "Fahrer", value1 = booking.driver)
@@ -40,7 +40,7 @@ fun BookingDetails(booking: Booking?, modifier: Modifier = Modifier) {
                     SectionHeader("Angaben zur Fahrt")
                     DetailRow(
                         label1 = "Übergabedatum", value1 = booking.pickupDate,
-                        label2 = "Übergabezeit", value2 = booking.pickupTime
+                        label2 = "Übergabezeit", value2 = booking.pickupDate
                     )
                     DetailRow(
                         label1 = "Rücknahmedatum", value1 = booking.returnDate,

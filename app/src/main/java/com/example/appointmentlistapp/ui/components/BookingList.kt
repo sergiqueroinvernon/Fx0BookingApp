@@ -29,11 +29,11 @@ fun BookingList(
             HeaderRow()
             Divider()
         }
-        items(bookings, key = { it.transactionId }) { booking ->
+        items(bookings, key = { it.bookingId }) { booking ->
             DataRow(
                 booking = booking,
                 onRowClick = { onBookingSelected(booking) },
-                onCheckedChange = { onBookingCheckedChange(booking.transactionId) }
+                onCheckedChange = { onBookingCheckedChange(booking.bookingId) }
             )
             Divider()
         }
@@ -68,8 +68,8 @@ private fun DataRow(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onRowClick)
-            .padding(vertical = 8.dp),
+            .clickable { onRowClick() }
+            .padding(vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Checkbox(
@@ -77,14 +77,44 @@ private fun DataRow(
             onCheckedChange = { _ -> onCheckedChange() },
             modifier = Modifier.weight(0.5f)
         )
-        Text(booking.status, Modifier.weight(1.5f), fontSize = 14.sp)
-        Text(booking.transactionId, Modifier.weight(1f), fontSize = 14.sp)
-        Text(booking.driver, Modifier.weight(1.5f), fontSize = 14.sp)
-        Column(Modifier.weight(1.5f)) {
-            Text(text = booking.pickupDate, fontSize = 14.sp)
-            Text(text = booking.returnDate, fontSize = 14.sp, color = MaterialTheme.colorScheme.outline)
+        Text(
+            text = booking.status,
+            modifier = Modifier.weight(1.5f),
+            fontSize = 14.sp
+        )
+        Text(
+            text = booking.bookingId,
+            modifier = Modifier.weight(1f),
+            fontSize = 14.sp
+        )
+        Text(
+            text = booking.driver,
+            modifier = Modifier.weight(1.5f),
+            fontSize = 14.sp
+        )
+        Column(
+            modifier = Modifier.weight(1.5f)
+        ) {
+            booking.pickupDate?.let {
+                Text(
+                    text = it,
+                    fontSize = 14.sp
+                )
+            }
+            Text(
+                text = booking.returnDate,
+                fontSize = 14.sp,
+                color = MaterialTheme.colorScheme.outline
+            )
         }
-        Text(booking.vehiclePool, Modifier.weight(1.5f), fontSize = 14.sp)
-        Text(booking.vehicle, Modifier.weight(1f), fontSize = 14.sp)
+        Text(
+            text = booking.vehiclePool,
+            modifier = Modifier.weight(1.5f),
+            fontSize = 14.sp
+        )
+        Text(
+            text = booking.vehicle,
+            modifier = Modifier.weight(1f),
+            fontSize = 14.sp)
     }
 }
