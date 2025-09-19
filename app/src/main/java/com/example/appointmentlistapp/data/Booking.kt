@@ -6,7 +6,7 @@ import androidx.room.Entity
 
 data class Booking(
     // Booking section
-    val bookingId: String?,
+    val bookingId: String,
     val status: String?,
     val driver: String?,
     val bookingDate: String?,

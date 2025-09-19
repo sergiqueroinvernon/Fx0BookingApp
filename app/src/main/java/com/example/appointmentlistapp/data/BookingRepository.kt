@@ -37,7 +37,7 @@ class BookingRepository(private val bookingDao: BookingDao) {
 
     // Function to delete a booking
     // This is also an operation that should be 'suspend'
-    suspend fun deleteBooking(booking: Booking){
+    suspend fun deleteBooking(booking: Booking) {
         bookingDao.deleteBookingById(booking.bookingId)
     }
 
