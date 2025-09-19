@@ -1,12 +1,11 @@
 // In ui/viewmodel/BookingViewModel.kt
-package com.example.appointmentlistapp.ui.viewmodel
+package com.example.appointmentlistapp.viewmodels
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.appointmentlistapp.data.Booking
 import com.example.appointmentlistapp.data.BookingRepository
 import com.example.appointmentlistapp.data.components.ButtonConfig
-import com.google.android.gms.fitness.data.Value
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -53,7 +52,7 @@ class BookingViewModel(private val repository: BookingRepository) : ViewModel() 
         // Populated list with more sample bookings
         listOf(
             Booking(
-                transactionId = "1000117078",
+                bookingId = "1000117078",
                 status = "Bereit zur Übergabe",
                 driver = "Schulz-Eltern, Torsten",
                 pickupDate = "20.02.2025",
@@ -71,11 +70,12 @@ class BookingViewModel(private val repository: BookingRepository) : ViewModel() 
                 cancellationDate = null,
                 cancellationReason = null,
                 note = "Fahrzeug bitte volltanken.",
-                isChecked = false
+                isChecked = false,
+                bookingDate = TODO()
             ),
             // --- ADDED EXAMPLES ---
             Booking(
-                transactionId = "1000016973",
+                bookingId = "1000016973",
                 status = "Storniert",
                 driver = "Schulz-Eltern, Torsten",
                 pickupDate = "13.02.2025",
@@ -96,7 +96,7 @@ class BookingViewModel(private val repository: BookingRepository) : ViewModel() 
                 isChecked = true
             ),
             Booking(
-                transactionId = "1000016853",
+                bookingId = "1000016853",
                 status = "Bereit zur Übergabe",
                 driver = "Schulz-Eltern, Torsten",
                 pickupDate = "06.02.2025",
@@ -117,7 +117,7 @@ class BookingViewModel(private val repository: BookingRepository) : ViewModel() 
                 isChecked = false
             ),
             Booking(
-                transactionId = "1000013976",
+                bookingId = "1000013976",
                 status = "Nicht verfügbar",
                 driver = "Schulz-Eltern, Torsten",
                 pickupDate = "23.05.2024",
@@ -153,7 +153,7 @@ class BookingViewModel(private val repository: BookingRepository) : ViewModel() 
 
     fun toggleBookingChecked(bookingId: String) {
         _bookings.value = _bookings.value.map { booking ->
-            if (booking.transactionId == bookingId) {
+            if (booking.bookingId == bookingId) {
                 booking.copy(isChecked = !booking.isChecked)
             } else {
                 booking
