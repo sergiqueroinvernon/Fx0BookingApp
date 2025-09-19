@@ -18,7 +18,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.appointmentlistapp.R
 import com.example.appointmentlistapp.ui.components.BookingDetails
 import com.example.appointmentlistapp.ui.components.BookingList
-import com.example.appointmentlistapp.ui.viewmodel.BookingViewModel
+import com.example.appointmentlistapp.viewmodels.BookingViewModel
 
 @Composable
 fun BookingScreen(viewModel: BookingViewModel = viewModel(), screenId: String) {
