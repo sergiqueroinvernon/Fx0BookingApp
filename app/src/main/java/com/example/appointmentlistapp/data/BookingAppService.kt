@@ -1,10 +1,10 @@
 package com.example.appointmentlistapp.data
 
-import androidx.camera.core.ImageProcessor
 import com.example.appointmentlistapp.data.api.BookingApiModel
 import com.example.appointmentlistapp.data.components.ButtonConfig
 import retrofit2.Response
 import retrofit2.http.Body
+import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.http.Path
@@ -24,8 +24,11 @@ interface BookingAppService {
     @POST("api/appointments/{id}/checkin")
     suspend fun checkInAppointment(@Path("id") id: String): Response<Void>
     @POST("api/appointments")
-    suspend fun createAppointment(@Body appointment: BookingApiModel): BookingApiModel
+    suspend fun createAppointment(@Body appointment: Booking): BookingApiModel
     @PUT("api/appointments/{id}")
     suspend fun updateAppointment(@Path("id") id: String, @Body appointment: BookingApiModel): BookingApiModel
+
+    @DELETE("api/appointments/{id}")
+    suspend fun deleteAppointment(@Path("id") id: String): Response<Void>
 
 }

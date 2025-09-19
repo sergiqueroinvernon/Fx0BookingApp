@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.appointmentlistapp.data.Booking
 import com.example.appointmentlistapp.data.BookingRepository
+import com.example.appointmentlistapp.data.api.BookingApiModel
 import com.example.appointmentlistapp.data.components.ButtonConfig
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -171,7 +172,7 @@ class BookingViewModel(private val repository: BookingRepository) : ViewModel()
     }
 
 
-    val allBookings: StateFlow<List<Booking>> = repository.getAllBookings()
+    val allBookings: StateFlow<List<BookingApiModel>> = repository.getAppointments()
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
@@ -180,14 +181,15 @@ class BookingViewModel(private val repository: BookingRepository) : ViewModel()
 
     fun insertBooking(booking: Booking) {
         viewModelScope.launch {
-            repository.insertBooking(booking)
+            repository.createAppointment(booking)
         }
     }
 
     fun deleteBooking(booking: Booking) {
         viewModelScope.launch {
-            repository.deleteBooking(booking)
+            repository.getAppointments(booking)
         }
     }
+
 
 }
