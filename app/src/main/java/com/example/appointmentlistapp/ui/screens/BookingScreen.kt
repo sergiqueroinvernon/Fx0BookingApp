@@ -25,8 +25,27 @@ fun BookingScreen(viewModel: BookingViewModel = viewModel(), screenId: String) {
     val bookings by viewModel.bookings.collectAsState()
     val selectedBooking by viewModel.selectedBooking.collectAsState()
     var showDetails by remember { mutableStateOf(true) }
+    val buttonConfigs by viewModel.buttonsConfig.collectAsState()
 
-    Column(modifier = Modifier.fillMaxWidth()) {
+    Column {
+        Text(text = "BookingScreen Content")
+        Spacer(modifier = Modifier.height(16.dp))
+
+        if(buttonConfigs.isNotEmpty()){
+            //Iterate through all the items
+            buttonConfigs.forEach{ config ->Button(onClick = { showDetails = !showDetails}) {
+                Icon(
+                    painter = painterResource(id = R.drawable.info),
+                    contentDescription = "Logo",
+                    modifier = Modifier.size(24.dp).padding(end = 4.dp)
+                )
+                // Change button text based on the state
+                Text(if (showDetails) "Hide Details" else "Show Details")
+            }}
+        }
+
+
+        /*
         Row(modifier =  Modifier.fillMaxWidth()){
             Button(onClick = { showDetails = !showDetails}) {
                 Icon(
@@ -49,7 +68,7 @@ fun BookingScreen(viewModel: BookingViewModel = viewModel(), screenId: String) {
                 viewModel.toggleBookingChecked(bookingId)
             },
             modifier = Modifier.weight(2f) // Give more space to the list
-        )
+        )*/
 
         VerticalDivider()
 
@@ -60,4 +79,4 @@ fun BookingScreen(viewModel: BookingViewModel = viewModel(), screenId: String) {
             modifier = Modifier.weight(1f) // Give less space to details
         )}
     }
-}}
+}
