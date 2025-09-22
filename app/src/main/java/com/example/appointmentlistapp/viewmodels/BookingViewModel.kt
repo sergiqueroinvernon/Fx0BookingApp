@@ -7,6 +7,7 @@ import com.example.appointmentlistapp.data.Booking
 import com.example.appointmentlistapp.data.BookingRepository
 import com.example.appointmentlistapp.data.api.BookingApiModel
 import com.example.appointmentlistapp.data.components.ButtonConfig
+import com.example.appointmentlistapp.data.model.Appointment
 import com.example.appointmentlistapp.data.remote.RetrofitInstance
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -34,24 +35,33 @@ class BookingViewModel(private val repository: BookingRepository) : ViewModel() 
     val errorMessage: StateFlow<String?> = _errorMessage.asStateFlow()
 
     fun loadButtonsForScreen(clientId: String, screenId: String) {
+
+        if (clientId.isBlank() || screenId.isBlank()) {
+            _buttonConfigs.value = emptyList()
+            setErrorMessage("Client-ID oder Bildschirm-ID fehlt.")
+            return
+        }
+
         viewModelScope.launch {
             //Collect the Flow from the repository
             try{
                 // Access the companion object method correctly
-                val buttons = repository.getButtonsForClientsAndScreen(clientId, screenId)
-                // If getButtonsForClientAndScreen is not a companion object method,
-                // and assuming it's an instance method of BookingRepository,
-                // you would call it like this:
-                // val buttons = repository.getButtonsForClientAndScreen(clientId, screenId)
-                _buttonConfigs.value = buttons as List<ButtonConfig>
-            } catch (e: Exception) {
+                val buttons = RetrofitInstance.api.getButtonsForClientAndScreen(clientId, screenId)
 
+                _buttonConfigs.value = buttons
+            } catch (e: IOException) {
+                setErrorMessage("Netzwerkfehler. Bitte überprüfen Sie Ihre Verbindung")
+            } catch(e: HttpException) {
+                setErrorMessage("API-Fehler: ${e.message()}")
+            } catch (e: Exception) {
+                setErrorMessage("Ein unerwarteter Fehler ist aufgetreten: ${e.message}")
+            } finally {
+                _isLoading.value = false;
             }
 
         }
     }
 
-    // Fetch buttons
     private fun setErrorMessage(message: String?) {
         _errorMessage.value = message
     }
@@ -81,12 +91,6 @@ class BookingViewModel(private val repository: BookingRepository) : ViewModel() 
             }
         }
     }
-
-
-
-
-
-
 
     private val _bookings = MutableStateFlow(
 
@@ -212,7 +216,7 @@ class BookingViewModel(private val repository: BookingRepository) : ViewModel() 
     }
 
 
-    val allBookings: StateFlow<List<BookingApiModel>> = repository.getAppointments()
+    val allBookings: StateFlow<List<Appointment>> = repository.getAppointments()
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
