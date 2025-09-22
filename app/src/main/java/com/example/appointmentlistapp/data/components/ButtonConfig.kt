@@ -8,5 +8,6 @@ data class ButtonConfig(
     val text: String,
     val isVisible: Boolean,
     val clientId: String,
-    val screenId: String
+    val screenId: String,
+    val type: String
 )
