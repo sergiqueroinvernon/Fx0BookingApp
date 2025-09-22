@@ -115,8 +115,8 @@ class BookingViewModel(private val repository: BookingRepository) : ViewModel() 
                 odometerReadingPickup = "12345 km",
                 odometerReadingReturn = "12500 km",
                 distance = "155 km",
-                cancellationDate = null,
-                cancellationReason = null,
+                cancellationDate = "",
+                cancellationReason = "",
                 note = "Fahrzeug bitte volltanken.",
                 isChecked = false,
                 bookingDate = TODO()
@@ -140,7 +140,7 @@ class BookingViewModel(private val repository: BookingRepository) : ViewModel() 
                 distance = "0 km",
                 cancellationDate = "10.02.2025",
                 cancellationReason = "Termin abgesagt",
-                note = null,
+                note = "",
                 isChecked = true,
                 bookingDate = TODO()
 
@@ -161,9 +161,9 @@ class BookingViewModel(private val repository: BookingRepository) : ViewModel() 
                 odometerReadingPickup = "54321 km",
                 odometerReadingReturn = "54400 km",
                 distance = "79 km",
-                cancellationDate = null,
-                cancellationReason = null,
-                note = null,
+                cancellationDate = "null",
+                cancellationReason = "",
+                note = "",
                 isChecked = false,
                 bookingDate = TODO()
 
@@ -184,8 +184,8 @@ class BookingViewModel(private val repository: BookingRepository) : ViewModel() 
                 odometerReadingPickup = "33210 km",
                 odometerReadingReturn = "33290 km",
                 distance = "80 km",
-                cancellationDate = null,
-                cancellationReason = null,
+                cancellationDate = "null",
+                cancellationReason = "",
                 note = "Fahrzeug in Werkstatt.",
                 isChecked = false,
                 bookingDate = TODO()

@@ -18,6 +18,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.appointmentlistapp.R
 import com.example.appointmentlistapp.ui.components.BookingDetails
 import com.example.appointmentlistapp.ui.components.BookingList
+import com.example.appointmentlistapp.util.getIconForType
 import com.example.appointmentlistapp.viewmodels.BookingViewModel
 
 @Composable
@@ -31,52 +32,42 @@ fun BookingScreen(viewModel: BookingViewModel = viewModel(), screenId: String) {
         Text(text = "BookingScreen Content")
         Spacer(modifier = Modifier.height(16.dp))
 
-        if(buttonConfigs.isNotEmpty()){
+        if (buttonConfigs.isNotEmpty()) {
             //Iterate through all the items
-            buttonConfigs.forEach{ config ->Button(onClick = { showDetails = !showDetails}) {
-                Icon(
-                    painter = painterResource(id = if (config.type) R.drawable.info else R.drawable.add),
-                    contentDescription = "Logo",
-                    modifier = Modifier.size(24.dp).padding(end = 4.dp)
-                )
-                // Change button text based on the state
-                Text(if (showDetails) "Hide Details" else "Show Details")
-            }}
-        }
-
-
-        /*
-        Row(modifier =  Modifier.fillMaxWidth()){
-            Button(onClick = { showDetails = !showDetails}) {
-                Icon(
-                    painter = painterResource(id = R.drawable.info),
-                    contentDescription = "Logo",
-                    modifier = Modifier.size(24.dp).padding(end = 4.dp)
-                )
-                // Change button text based on the state
-                Text(if (showDetails) "Hide Details" else "Show Details")
+            buttonConfigs.forEach { config ->
+                Button(onClick = { showDetails = !showDetails }) {
+                    Icon(
+                        painter = painterResource(getIconForType(config.type)),
+                        contentDescription = "Logo",
+                        modifier = Modifier.size(24.dp).padding(end = 4.dp)
+                    )
+                    // Change button text based on the state
+                    Text(if (showDetails) "Hide Details" else "Show Details")
+                }
             }
         }
-    Row(Modifier.fillMaxSize()) {
-        // Master Pane (List)
-        BookingList(
-            bookings = bookings,
-            onBookingSelected = { booking ->
-                viewModel.selectBooking(booking)
-            },
-            onBookingCheckedChange = { bookingId ->
-                viewModel.toggleBookingChecked(bookingId)
-            },
-            modifier = Modifier.weight(2f) // Give more space to the list
-        )*/
 
-        VerticalDivider()
+        Row(Modifier.fillMaxSize()) {
+            // Master Pane (List)
+            BookingList(
+                bookings = bookings,
+                onBookingSelected = { booking ->
+                    viewModel.selectBooking(booking)
+                },
+                onBookingCheckedChange = { bookingId ->
+                    viewModel.toggleBookingChecked(bookingId)
+                },
+                modifier = Modifier.weight(2f) // Give more space to the list
+            )
 
-        if(showDetails)
-        {// Detail Pane
-        BookingDetails(
-            booking = selectedBooking,
-            modifier = Modifier.weight(1f) // Give less space to details
-        )}
+            VerticalDivider()
+
+            if (showDetails) {// Detail Pane
+                BookingDetails(
+                    booking = selectedBooking,
+                    modifier = Modifier.weight(1f) // Give less space to details
+                )
+            }
+        }
     }
 }
