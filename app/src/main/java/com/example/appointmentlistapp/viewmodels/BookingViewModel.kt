@@ -25,11 +25,7 @@ class BookingViewModel(private val repository: BookingRepository) : ViewModel() 
     // A public, read-only StateFlow that the UI can observe
     val buttonsConfig: StateFlow<List<ButtonConfig>> = _buttonConfigs.asStateFlow()
 
-
-
     fun loadButtonsForScreen(clientId: String, screenId: String) {
-
-
         viewModelScope.launch {
             //Collect the Flow from the repository
             try{
