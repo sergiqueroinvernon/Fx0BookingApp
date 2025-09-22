@@ -29,7 +29,7 @@ interface BookingAppService {
     suspend fun updateAppointment(@Path("id") id: String, @Body appointment: BookingApiModel): BookingApiModel
 
     @DELETE("api/appointments/{id}")
-    suspend fun deleteAppointment(@Path("id") id: String): Response<Void>
+    suspend fun deleteAppointment(@Path("id") id: String?): Response<Void>
 
     companion object
 
