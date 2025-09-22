@@ -44,4 +44,6 @@ class BookingRepository(private val bookingAppService: BookingAppService) {
     suspend fun updateAppointment(id: String, appointment: BookingApiModel) {
         bookingAppService.updateAppointment(id, appointment)
     }
+
+    companion object
 }

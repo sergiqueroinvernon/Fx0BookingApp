@@ -31,4 +31,6 @@ interface BookingAppService {
     @DELETE("api/appointments/{id}")
     suspend fun deleteAppointment(@Path("id") id: String): Response<Void>
 
+    companion object
+
 }

@@ -10,6 +10,7 @@ import com.example.appointmentlistapp.data.components.ButtonConfig
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
@@ -17,34 +18,42 @@ import kotlinx.coroutines.launch
 * VidewModel for the BookingScreen.
 * It manages the UI state and handles the logic for fetching button configuration from the repository
 * */
-class BookingViewModel(private val repository: BookingRepository) : ViewModel()
-
-    {
+class BookingViewModel(private val repository: BookingRepository) : ViewModel() {
     // A private, mutable StateFlow to hold the list of buttons
-    private val _buttons = MutableStateFlow<List<ButtonConfig>>(emptyList())
+    private val _buttonConfigs = MutableStateFlow<List<ButtonConfig>>(emptyList())
+
     // A public, read-only StateFlow that the UI can observe
-    val buttons: StateFlow<List<ButtonConfig>> = _buttons
+    val buttonsConfig: StateFlow<List<ButtonConfig>> = _buttonConfigs.asStateFlow()
 
-    /*Loads the button configurations for a specific client and screen.
-    * This function should be called from the UI when a user navigate toa new screen
-    *
-    * It launches a coroutine to collect the Flow from the repository
-    * Any change in the database will automatically update this StateFlow,
-    * triggering a recomposition in the UI
-    * @param clientId the ID of the client
-    * @param screenId the ID of the screen
-    * */
 
-    fun loadButtonsForClientAndScreen(clientId: String, screenId: String) {
+
+    fun loadButtonsForScreen(clientId: String, screenId: String) {
+
+
         viewModelScope.launch {
             //Collect the Flow from the repository
-            repository.getButtonsForClientsAndScreen(clientId, screenId).collect {
-                //Update the state of the ViewModel
-                    buttonConfigs ->
-                _buttons.value = buttonConfigs
+            try{
+                // Access the companion object method correctly
+                val buttons = repository.getButtonsForClientsAndScreen(clientId, screenId)
+                // If getButtonsForClientAndScreen is not a companion object method,
+                // and assuming it's an instance method of BookingRepository,
+                // you would call it like this:
+                // val buttons = repository.getButtonsForClientAndScreen(clientId, screenId)
+                _buttonConfigs.value = buttons as List<ButtonConfig>
             }
+            catch(e: Exception){
+
+            }
+
         }
+
+
+
+
     }
+
+
+
 
     private val _bookings = MutableStateFlow(
 
@@ -162,7 +171,7 @@ class BookingViewModel(private val repository: BookingRepository) : ViewModel()
     fun toggleBookingChecked(bookingId: String) {
         _bookings.value = _bookings.value.map { booking ->
             if (booking.bookingId == bookingId) {
-                booking.copy(isChecked = !booking.isChecked)
+                booking.copy( isChecked = !booking.isChecked!!,)
             } else {
                 booking
             }
