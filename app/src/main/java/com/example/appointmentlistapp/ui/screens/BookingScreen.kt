@@ -35,7 +35,7 @@ fun BookingScreen(viewModel: BookingViewModel = viewModel(), screenId: String) {
             //Iterate through all the items
             buttonConfigs.forEach{ config ->Button(onClick = { showDetails = !showDetails}) {
                 Icon(
-                    painter = painterResource(id = R.drawable.info),
+                    painter = painterResource(id = if (config.type) R.drawable.info else R.drawable.add),
                     contentDescription = "Logo",
                     modifier = Modifier.size(24.dp).padding(end = 4.dp)
                 )

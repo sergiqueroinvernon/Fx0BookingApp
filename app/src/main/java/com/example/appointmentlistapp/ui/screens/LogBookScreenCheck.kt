@@ -25,7 +25,6 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.appointmentlistapp.R
 import com.example.appointmentlistapp.ui.components.LogbookCheckDetailsView
-import com.example.appointmentlistapp.ui.components.LogbookDetailView
 import com.example.appointmentlistapp.ui.components.LogbookCheckList
 import com.example.appointmentlistapp.ui.viewmodel.LogBookCheckViewModel
 
@@ -87,7 +86,7 @@ fun LogbookScreenCheck(viewModel: LogBookCheckViewModel = viewModel()) {
 
             Button(onClick = { showDetails = !showDetails}) {
                 Icon(
-                    painter = painterResource(id = R.drawable.add_dis),
+                    painter = painterResource(id = R.drawable.add),
                     contentDescription = "Logo",
                     modifier = Modifier.size(24.dp).padding(end = 4.dp)
                 )
@@ -97,7 +96,7 @@ fun LogbookScreenCheck(viewModel: LogBookCheckViewModel = viewModel()) {
             }
             Button(onClick = { showDetails = !showDetails}) {
                 Icon(
-                    painter = painterResource(id = R.drawable.edit_dis),
+                    painter = painterResource(id = R.drawable.edit),
                     contentDescription = "Logo",
                     modifier = Modifier.size(24.dp).padding(end = 4.dp)
                 )
@@ -107,7 +106,7 @@ fun LogbookScreenCheck(viewModel: LogBookCheckViewModel = viewModel()) {
             }
             Button(onClick = { showDetails = !showDetails}) {
                 Icon(
-                    painter = painterResource(id = R.drawable.cancel_dis),
+                    painter = painterResource(id = R.drawable.cancel),
                     contentDescription = "Logo",
                     modifier = Modifier.size(24.dp).padding(end = 4.dp)
                 )
@@ -117,7 +116,7 @@ fun LogbookScreenCheck(viewModel: LogBookCheckViewModel = viewModel()) {
             }
             Button(onClick = { showDetails = !showDetails}) {
                 Icon(
-                   painter = painterResource(id = R.drawable.copy_dis),
+                   painter = painterResource(id = R.drawable.copy),
                     contentDescription = "Logo",
                     modifier = Modifier.size(24.dp).padding(end = 4.dp)
                 )
