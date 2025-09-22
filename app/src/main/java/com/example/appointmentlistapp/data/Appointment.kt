@@ -9,5 +9,8 @@ import com.example.appointmentlistapp.Driver
     val appointmentDateTime: String,
     val status: String,
     val description: String,
-    var isChecked: Boolean = false
+    var isChecked: Boolean = false,
+    var createdAt: String,
+    var updatedAt: String
+
 )

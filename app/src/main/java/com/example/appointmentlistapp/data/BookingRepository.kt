@@ -5,14 +5,15 @@ import kotlinx.coroutines.flow.Flow
 
 //Repository -> Provide/Transform the data to the ViewModel. Intermediary between UI and Data Sources./Interact with the Networking Service
 import com.example.appointmentlistapp.data.api.BookingApiModel
+import com.example.appointmentlistapp.data.model.Appointment
 import kotlinx.coroutines.flow.flow
 
 // Repository -> Intermediary between UI and Data Sources. Now using Networking Service.
 class BookingRepository(private val bookingAppService: BookingAppService) {
 
-    fun getAppointments(): Flow<List<BookingApiModel>> = flow {
+    fun getAppointments(): Flow<List<Appointment>> = flow {
         // Here, we call the API service and emit the result
-        val appointments: List<BookingApiModel> = bookingAppService.getAppointments()
+        val appointments: List<Appointment> = bookingAppService.getAppointments()
         emit(appointments)
     }
 
@@ -24,7 +25,7 @@ class BookingRepository(private val bookingAppService: BookingAppService) {
 
         }
 
-    suspend fun getAppointmentsByDriver(driverId: String): List<BookingApiModel> {
+    suspend fun getAppointmentsByDriver(driverId: String): List<Appointment> {
         // This function doesn't use a Flow because the data is a one-time request
         return bookingAppService.getAppointmentsByDriverId(driverId)
     }
@@ -41,7 +42,7 @@ class BookingRepository(private val bookingAppService: BookingAppService) {
         bookingAppService.deleteAppointment(appointment.bookingId)
     }
 
-    suspend fun updateAppointment(id: String, appointment: BookingApiModel) {
+    suspend fun updateAppointment(id: String, appointment: Appointment) {
         bookingAppService.updateAppointment(id, appointment)
     }
 

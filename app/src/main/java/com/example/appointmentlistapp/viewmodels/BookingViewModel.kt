@@ -7,12 +7,15 @@ import com.example.appointmentlistapp.data.Booking
 import com.example.appointmentlistapp.data.BookingRepository
 import com.example.appointmentlistapp.data.api.BookingApiModel
 import com.example.appointmentlistapp.data.components.ButtonConfig
+import com.example.appointmentlistapp.data.remote.RetrofitInstance
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import retrofit2.HttpException
+import java.io.IOException
 
 /*
 * VidewModel for the BookingScreen.
@@ -24,6 +27,11 @@ class BookingViewModel(private val repository: BookingRepository) : ViewModel() 
 
     // A public, read-only StateFlow that the UI can observe
     val buttonsConfig: StateFlow<List<ButtonConfig>> = _buttonConfigs.asStateFlow()
+    private val _isLoading = MutableStateFlow(false)
+    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
+
+    private val _errorMessage = MutableStateFlow<String?>(null)
+    val errorMessage: StateFlow<String?> = _errorMessage.asStateFlow()
 
     fun loadButtonsForScreen(clientId: String, screenId: String) {
         viewModelScope.launch {
@@ -36,17 +44,46 @@ class BookingViewModel(private val repository: BookingRepository) : ViewModel() 
                 // you would call it like this:
                 // val buttons = repository.getButtonsForClientAndScreen(clientId, screenId)
                 _buttonConfigs.value = buttons as List<ButtonConfig>
-            }
-            catch(e: Exception){
+            } catch (e: Exception) {
 
             }
 
         }
-
-
-
-
     }
+
+    // Fetch buttons
+    private fun setErrorMessage(message: String?) {
+        _errorMessage.value = message
+    }
+
+
+    fun fetchButtons(driverId: String?, screenId: String) {
+        if (driverId.isNullOrBlank() || screenId.isNullOrBlank()) {
+            _buttonConfigs.value = emptyList()
+            setErrorMessage("Fahrer-ID oder Bildschirm-ID fehlt.")
+            return
+        }
+
+        viewModelScope.launch {
+            _isLoading.value = true
+            setErrorMessage(null)
+            try {
+                val buttons = RetrofitInstance.api.getAppointmentsByDriverId(driverId)
+                // _appointments.value = driverAppointments // Assuming _appointments is defined elsewhere or this is a placeholder
+            } catch (e: IOException) {
+                setErrorMessage("Netzwerkfehler. Bitte überprüfen Sie Ihre Verbindung und stellen Sie sicher, dass die API läuft.")
+            } catch (e: HttpException) {
+                setErrorMessage("API-Fehler: ${e.message()}")
+            } catch (e: Exception) {
+                setErrorMessage("Ein unerwarteter Fehler ist aufgetreten: ${e.message}")
+            } finally {
+                _isLoading.value = false
+            }
+        }
+    }
+
+
+
 
 
 
