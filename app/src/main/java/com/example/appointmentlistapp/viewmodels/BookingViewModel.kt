@@ -3,81 +3,70 @@ package com.example.appointmentlistapp.viewmodels
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.appointmentlistapp.data.Booking
 import com.example.appointmentlistapp.data.BookingRepository
 import com.example.appointmentlistapp.data.components.ButtonConfig
-import com.example.appointmentlistapp.data.remote.RetrofitInstance
-import com.example.appointmentlistapp.ui.viewmodel.LogBookViewModel
+import com.example.appointmentlistapp.data.model.Appointment
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import retrofit2.HttpException
 import java.io.IOException
 
+// FIX: The ViewModel must have a constructor that accepts a BookingRepository.
+// The factory will provide this dependency.
+class BookingViewModel(private val repository: BookingRepository) : ViewModel() {
 
-class BookingViewModel : ViewModel() {
-    // A private, mutable StateFlow to hold the list of buttons
+    // Private StateFlows to hold the data
     private val _buttonConfigs = MutableStateFlow<List<ButtonConfig>>(emptyList())
+    private val _bookings = MutableStateFlow<List<Booking>>(
+        // FIX: Remove hardcoded data. It should come from the repository.
+        emptyList()
+    )
+    private val _selectedBooking = MutableStateFlow<Booking?>(null)
 
-    // A public, read-only StateFlow that the UI can observe
+    // Public StateFlows that the UI can observe
     val buttonsConfig: StateFlow<List<ButtonConfig>> = _buttonConfigs.asStateFlow()
+    val bookings: StateFlow<List<Booking>> = _bookings.asStateFlow()
+    val selectedBooking: StateFlow<Booking?> = _selectedBooking.asStateFlow()
+
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
     private val _errorMessage = MutableStateFlow<String?>(null)
     val errorMessage: StateFlow<String?> = _errorMessage.asStateFlow()
 
-    fun loadButtonsForScreen(clientId: String, screenId: String) {
+    // FIX: This flow should use the repository to get the list of appointments
+    val allAppointments: StateFlow<List<Appointment>> = repository.getAppointments()
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList()
+        )
 
+    init {
+        // You can start loading initial data here
+    }
+
+    fun loadButtonsForScreen(clientId: String, screenId: String) {
         if (clientId.isBlank() || screenId.isBlank()) {
-            _buttonConfigs.value = emptyList()
             setErrorMessage("Client-ID oder Bildschirm-ID fehlt.")
             return
         }
-
         viewModelScope.launch {
-            //Collect the Flow from the repository
-            try{
-                // Access the companion object method correctly
-                val buttons = RetrofitInstance.api.getButtonsForClientAndScreen(clientId, screenId)
-
-                _buttonConfigs.value = buttons
+            _isLoading.value = true
+            try {
+                // FIX: Use the repository method to get data
+                repository.getButtonsForClientAndScreen(clientId, screenId)
+                    .collect { buttons ->
+                        _buttonConfigs.value = buttons
+                    }
             } catch (e: IOException) {
                 setErrorMessage("Netzwerkfehler. Bitte überprüfen Sie Ihre Verbindung")
             } catch(e: HttpException) {
-                setErrorMessage("API-Fehler: ${e.message()}")
-            } catch (e: Exception) {
-                setErrorMessage("Ein unerwarteter Fehler ist aufgetreten: ${e.message}")
-            } finally {
-                _isLoading.value = false;
-            }
-
-        }
-    }
-
-    private fun setErrorMessage(message: String?) {
-        _errorMessage.value = message
-    }
-
-
-    fun fetchButtons(driverId: String?, screenId: String) {
-        if (driverId.isNullOrBlank() || screenId.isNullOrBlank()) {
-            _buttonConfigs.value = emptyList()
-            setErrorMessage("Fahrer-ID oder Bildschirm-ID fehlt.")
-            return
-        }
-
-        viewModelScope.launch {
-            _isLoading.value = true
-            setErrorMessage(null)
-            try {
-                val buttons = RetrofitInstance.api.getAppointmentsByDriverId(driverId)
-                // _appointments.value = driverAppointments // Assuming _appointments is defined elsewhere or this is a placeholder
-            } catch (e: IOException) {
-                setErrorMessage("Netzwerkfehler. Bitte überprüfen Sie Ihre Verbindung und stellen Sie sicher, dass die API läuft.")
-            } catch (e: HttpException) {
                 setErrorMessage("API-Fehler: ${e.message()}")
             } catch (e: Exception) {
                 setErrorMessage("Ein unerwarteter Fehler ist aufgetreten: ${e.message}")
@@ -87,110 +76,59 @@ class BookingViewModel : ViewModel() {
         }
     }
 
-    private val _bookings = MutableStateFlow(
+    // FIX: Renamed for clarity and to avoid confusion with loadButtonsForScreen
+    fun fetchAppointments(driverId: String?) {
+        if (driverId.isNullOrBlank()) {
+            setErrorMessage("Fahrer-ID fehlt.")
+            return
+        }
+        viewModelScope.launch {
+            _isLoading.value = true
+            try {
+                // FIX: Use the repository to get data
+                val appointments = repository.getAppointmentsByDriver(driverId)
+                // Assuming you have a way to update your bookings state from Appointments
+                // _bookings.value = appointments
+            } catch (e: Exception) {
+                setErrorMessage("Ein Fehler ist beim Abrufen der Termine aufgetreten: ${e.message}")
+            } finally {
+                _isLoading.value = false
+            }
+        }
+    }
 
-        listOf(
-            Booking(
-                bookingId = "1000117078",
-                status = "Bereit zur Übergabe",
-                driver = "Schulz-Eltern, Torsten",
-                pickupDate = "20.02.2025",
-                pickupTime = "13:15",
-                returnDate = "20.02.2025",
-                returnTime = "17:00",
-                vehicle = "D-EM 711E",
-                vehiclePool = "SWD-HW 200",
-                purposeOfTrip = "Baustelle",
-                pickupLocation = "Hauptstraße 1, Düsseldorf",
-                returnLocation = "Hauptstraße 1, Düsseldorf",
-                odometerReadingPickup = "12345 km",
-                odometerReadingReturn = "12500 km",
-                distance = "155 km",
-                cancellationDate = "",
-                cancellationReason = "",
-                note = "Fahrzeug bitte volltanken.",
-                isChecked = false,
-                bookingDate = "2025-02-20T13:15:00"
-            ),
-            // --- ADDED EXAMPLES ---
-            Booking(
-                bookingId = "1000016973",
-                status = "Storniert",
-                driver = "Schulz-Eltern, Torsten",
-                pickupDate = "13.02.2025",
-                pickupTime = "15:00",
-                returnDate = "13.02.2025",
-                returnTime = "19:00",
-                vehicle = "D-EM 719",
-                vehiclePool = "SWD HW 200",
-                purposeOfTrip = "Dienstreise",
-                pickupLocation = "Nebenweg 5, Köln",
-                returnLocation = "Nebenweg 5, Köln",
-                odometerReadingPickup = "22100 km",
-                odometerReadingReturn = "22100 km",
-                distance = "0 km",
-                cancellationDate = "10.02.2025",
-                cancellationReason = "Termin abgesagt",
-                note = "",
-                isChecked = true,
-                bookingDate = "2025-02-20T13:15:00"
+    fun insertBooking(booking: Booking) {
+        viewModelScope.launch {
+            _isLoading.value = true
+            setErrorMessage(null)
+            try {
+                repository.createAppointment(booking)
+                // FIX: After a successful insert, you should refresh the data shown in the UI.
+                // This is a simple example; consider a single source of truth for your data.
+                // refreshBookings()
+            } catch (e: Exception) {
+                setErrorMessage("Fehler beim Einfügen der Buchung: ${e.message}")
+            } finally {
+                _isLoading.value = false
+            }
+        }
+    }
 
-            ),
-            Booking(
-                bookingId = "1000016853",
-                status = "Bereit zur Übergabe",
-                driver = "Schulz-Eltern, Torsten",
-                pickupDate = "06.02.2025",
-                pickupTime = "11:00",
-                returnDate = "06.02.2025",
-                returnTime = "15:00",
-                vehicle = "D-WG 450",
-                vehiclePool = "SWD HW 200",
-                purposeOfTrip = "Baustelle",
-                pickupLocation = "Baustelle B1, Essen",
-                returnLocation = "Hauptstraße 1, Düsseldorf",
-                odometerReadingPickup = "54321 km",
-                odometerReadingReturn = "54400 km",
-                distance = "79 km",
-                cancellationDate = "null",
-                cancellationReason = "",
-                note = "",
-                isChecked = false,
-                bookingDate = "2025-02-20T13:15:00"
-
-            ),
-            Booking(
-                bookingId = "1000013976",
-                status = "Nicht verfügbar",
-                driver = "Schulz-Eltern, Torsten",
-                pickupDate = "23.05.2024",
-                pickupTime = "09:00",
-                returnDate = "23.05.2024",
-                returnTime = "13:00",
-                vehicle = "D-EM 313",
-                vehiclePool = "SWD HW 200",
-                purposeOfTrip = "Baustelle",
-                pickupLocation = "Südring 20, Wuppertal",
-                returnLocation = "Südring 20, Wuppertal",
-                odometerReadingPickup = "33210 km",
-                odometerReadingReturn = "33290 km",
-                distance = "80 km",
-                cancellationDate = "null",
-                cancellationReason = "",
-                note = "Fahrzeug in Werkstatt.",
-                isChecked = false,
-                bookingDate = "2025-02-20T13:15:00"
-
-            )
-        )
-    )
-    //Private state for the current filter values
-
-
-    val bookings: StateFlow<List<Booking>> = _bookings
-
-    private val _selectedBooking = MutableStateFlow<Booking?>(_bookings.value.firstOrNull())
-    val selectedBooking: StateFlow<Booking?> = _selectedBooking
+    fun deleteBooking(booking: Booking) {
+        viewModelScope.launch {
+            _isLoading.value = true
+            setErrorMessage(null)
+            try {
+                repository.deleteAppointment(booking)
+                // FIX: After a successful delete, you should refresh the data shown in the UI.
+                // refreshBookings()
+            } catch (e: Exception) {
+                setErrorMessage("Fehler beim Löschen der Buchung: ${e.message}")
+            } finally {
+                _isLoading.value = false
+            }
+        }
+    }
 
     fun selectBooking(booking: Booking) {
         _selectedBooking.value = booking
@@ -206,28 +144,7 @@ class BookingViewModel : ViewModel() {
         }
     }
 
-    /*
-
-    val allBookings: StateFlow<List<Appointment>> = repository.getAppointments()
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
-            initialValue = emptyList()
-        )
-
-    fun insertBooking(booking: Booking) {
-        viewModelScope.launch {
-            repository.createAppointment(booking)
-        }
+    private fun setErrorMessage(message: String?) {
+        _errorMessage.value = message
     }
-
-    fun deleteBooking(booking: Booking) {
-        viewModelScope.launch {
-            repository.deleteAppointment(booking)
-        }
-    }
-    */
-
-
-
 }

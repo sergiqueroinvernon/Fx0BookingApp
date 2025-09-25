@@ -95,7 +95,13 @@ dependencies {
     implementation(libs.play.services.fitness)
 
     // Test dependencies
-    testImplementation(libs.junit)
+    testImplementation("junit:junit:4.13.2")
+
+    // Coroutines testing library
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
+
+    // AndroidX Core testing for InstantTaskExecutorRule
+    testImplementation("androidx.arch.core:core-testing:2.2.0")
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))

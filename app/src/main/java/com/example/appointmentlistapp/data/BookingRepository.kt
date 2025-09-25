@@ -9,9 +9,9 @@ import com.example.appointmentlistapp.data.model.Appointment
 import kotlinx.coroutines.flow.flow
 
 // Repository -> Intermediary between UI and Data Sources. Now using Networking Service.
-class BookingRepository(private val bookingAppService: BookingAppService) {
+open class BookingRepository(private val bookingAppService: BookingAppService) {
 
-    fun getAppointments(): Flow<List<Appointment>> = flow {
+    open fun getAppointments(): Flow<List<Appointment>> = flow {
         // Here, we call the API service and emit the result
         val appointments: List<Appointment> = bookingAppService.getAppointments()
         emit(appointments)
@@ -25,7 +25,7 @@ class BookingRepository(private val bookingAppService: BookingAppService) {
 
         }
 
-    suspend fun getAppointmentsByDriver(driverId: String): List<Appointment> {
+    open suspend fun getAppointmentsByDriver(driverId: String): List<Appointment> {
         // This function doesn't use a Flow because the data is a one-time request
         return bookingAppService.getAppointmentsByDriverId(driverId)
     }
@@ -34,11 +34,11 @@ class BookingRepository(private val bookingAppService: BookingAppService) {
         return bookingAppService.checkInAppointment(id).isSuccessful
     }
 
-    suspend fun createAppointment(appointment: Booking) {
+    open suspend fun createAppointment(appointment: Booking) {
         bookingAppService.createAppointment(appointment)
     }
 
-    suspend fun deleteAppointment(appointment: Booking) {
+    open suspend fun deleteAppointment(appointment: Booking) {
         bookingAppService.deleteAppointment(appointment.bookingId)
     }
 
@@ -47,4 +47,11 @@ class BookingRepository(private val bookingAppService: BookingAppService) {
     }
 
     companion object
+
+    open open fun getButtonsForClientAndScreen(
+        clientId: String,
+        screenId: String
+    ): Flow<List<ButtonConfig>> {
+        TODO("Not yet implemented")
+    }
 }
