@@ -56,6 +56,8 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.appointmentlistapp.data.Booking
+import com.example.appointmentlistapp.data.BookingRepository
 import com.example.appointmentlistapp.ui.screens.BookingScreen
 import com.example.appointmentlistapp.ui.screens.LogbookScreen
 
@@ -349,7 +351,7 @@ class MainActivity : ComponentActivity() {
 @RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MainAppScreen(viewModel: AppointmentViewModel, bookingViewModel: BookingViewModel = viewModel()) {
+fun MainAppScreen(viewModel: AppointmentViewModel) {
     val tabs = listOf("Start", "Meine Buchungen", "Mein Fahrtenbuch", "Fahrtenbuchprüfung")
     var selectedTabIndex by remember { mutableIntStateOf(1) } // Default to "Terminliste"
 
@@ -391,10 +393,10 @@ fun MainAppScreen(viewModel: AppointmentViewModel, bookingViewModel: BookingView
         ) {
             when (selectedTabIndex) {
                 0 -> AppointmentListScreen(viewModel = viewModel)
-                1 -> BookingScreen(
-                    viewModel = bookingViewModel,
-                    screenId = TODO()
-                ) // Use BookingViewModel here
+              //  1 -> BookingScreen(
+                   // viewModel = TODO(),
+                 //   screenId = TODO()
+               // ) // Use BookingViewModel here
                 2 -> LogbookScreen()
                 3 -> LogbookScreenCheck()
             }
@@ -407,6 +409,7 @@ fun MainAppScreen(viewModel: AppointmentViewModel, bookingViewModel: BookingView
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppointmentListScreen(viewModel: AppointmentViewModel) {
+
     val appointments by viewModel.appointments.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val errorMessage by viewModel.errorMessage.collectAsState()

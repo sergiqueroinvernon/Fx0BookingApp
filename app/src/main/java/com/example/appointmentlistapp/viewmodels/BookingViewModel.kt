@@ -95,8 +95,6 @@ class BookingViewModel(private val repository: BookingRepository) : ViewModel() 
     private val _bookings = MutableStateFlow(
 
         // This holds the original, unfiltered list of all bookings
-
-
         // Populated list with more sample bookings
         listOf(
             Booking(

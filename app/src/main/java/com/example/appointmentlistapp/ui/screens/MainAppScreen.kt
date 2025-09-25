@@ -25,6 +25,7 @@ import java.util.Locale
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainAppScreen(viewModel: AppointmentViewModel) {
+
     val tabs = listOf("Start", "Meine Buchungen", "Mein Fahrtenbuch", "Fahrtenbuchprüfung")
     val screenIds = listOf("start_screen", "booking_screen", "logbook_screen", "reports_screen")
     var selectedTabIndex by remember { mutableIntStateOf(0) } // Start ist Tab 0
@@ -67,7 +68,7 @@ fun MainAppScreen(viewModel: AppointmentViewModel) {
         ) {
             when (selectedTabIndex) {
                 0 -> AppointmentListScreen(viewModel = viewModel)
-                1 -> BookingScreen(screenId = screenIds[1])
+                1 -> BookingScreen()
                 2 -> LogbookScreen()
                 3 -> Text("Fahrtenbuchprüfung", modifier = Modifier.align(Alignment.Center))
             }

@@ -18,11 +18,12 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.appointmentlistapp.R
 import com.example.appointmentlistapp.ui.components.BookingDetails
 import com.example.appointmentlistapp.ui.components.BookingList
+import com.example.appointmentlistapp.ui.viewmodel.LogBookViewModel
 import com.example.appointmentlistapp.util.getIconForType
 import com.example.appointmentlistapp.viewmodels.BookingViewModel
 
 @Composable
-fun BookingScreen(viewModel: BookingViewModel = viewModel(), screenId: String) {
+fun BookingScreen(viewModel: BookingViewModel = viewModel()) {
     val bookings by viewModel.bookings.collectAsState()
     val selectedBooking by viewModel.selectedBooking.collectAsState()
     var showDetails by remember { mutableStateOf(true) }
