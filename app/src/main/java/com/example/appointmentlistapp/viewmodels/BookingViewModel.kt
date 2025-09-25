@@ -18,10 +18,7 @@ import kotlinx.coroutines.launch
 import retrofit2.HttpException
 import java.io.IOException
 
-/*
-* VidewModel for the BookingScreen.
-* It manages the UI state and handles the logic for fetching button configuration from the repository
-* */
+
 class BookingViewModel(private val repository: BookingRepository) : ViewModel() {
     // A private, mutable StateFlow to hold the list of buttons
     private val _buttonConfigs = MutableStateFlow<List<ButtonConfig>>(emptyList())
@@ -94,8 +91,6 @@ class BookingViewModel(private val repository: BookingRepository) : ViewModel() 
 
     private val _bookings = MutableStateFlow(
 
-        // This holds the original, unfiltered list of all bookings
-        // Populated list with more sample bookings
         listOf(
             Booking(
                 bookingId = "1000117078",
