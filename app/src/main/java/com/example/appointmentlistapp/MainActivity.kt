@@ -393,10 +393,7 @@ fun MainAppScreen(viewModel: AppointmentViewModel) {
         ) {
             when (selectedTabIndex) {
                 0 -> AppointmentListScreen(viewModel = viewModel)
-              //  1 -> BookingScreen(
-                   // viewModel = TODO(),
-                 //   screenId = TODO()
-               // ) // Use BookingViewModel here
+              1 -> BookingScreen() // Use BookingViewModel here
                 2 -> LogbookScreen()
                 3 -> LogbookScreenCheck()
             }

@@ -21,13 +21,13 @@ import com.example.appointmentlistapp.ui.components.BookingList
 import com.example.appointmentlistapp.ui.viewmodel.LogBookViewModel
 import com.example.appointmentlistapp.util.getIconForType
 import com.example.appointmentlistapp.viewmodels.BookingViewModel
-
 @Composable
-fun BookingScreen(viewModel: BookingViewModel = viewModel()) {
-    val bookings by viewModel.bookings.collectAsState()
-    val selectedBooking by viewModel.selectedBooking.collectAsState()
+fun BookingScreen() {
+    val bookingViewModel = viewModel<BookingViewModel>()
+    val bookings by bookingViewModel.bookings.collectAsState()
+    val selectedBooking by bookingViewModel.selectedBooking.collectAsState()
     var showDetails by remember { mutableStateOf(true) }
-    val buttonConfigs by viewModel.buttonsConfig.collectAsState()
+    val buttonConfigs by bookingViewModel.buttonsConfig.collectAsState()
 
     Column {
         Text(text = "BookingScreen Content")
@@ -53,10 +53,10 @@ fun BookingScreen(viewModel: BookingViewModel = viewModel()) {
             BookingList(
                 bookings = bookings,
                 onBookingSelected = { booking ->
-                    viewModel.selectBooking(booking)
+                    bookingViewModel.selectBooking(booking)
                 },
                 onBookingCheckedChange = { bookingId ->
-                    viewModel.toggleBookingChecked(bookingId)
+                    bookingViewModel.toggleBookingChecked(bookingId)
                 },
                 modifier = Modifier.weight(2f) // Give more space to the list
             )

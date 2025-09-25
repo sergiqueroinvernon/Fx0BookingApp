@@ -1,6 +1,5 @@
 package com.example.appointmentlistapp.ui.screens
 
-
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Box
@@ -15,8 +14,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.appointmentlistapp.R
+import com.example.appointmentlistapp.data.BookingRepository
 import com.example.appointmentlistapp.ui.viewmodel.AppointmentViewModel
+import com.example.appointmentlistapp.viewmodels.BookingViewModel
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -29,6 +31,10 @@ fun MainAppScreen(viewModel: AppointmentViewModel) {
     val tabs = listOf("Start", "Meine Buchungen", "Mein Fahrtenbuch", "Fahrtenbuchprüfung")
     val screenIds = listOf("start_screen", "booking_screen", "logbook_screen", "reports_screen")
     var selectedTabIndex by remember { mutableIntStateOf(0) } // Start ist Tab 0
+
+    // MOVE THE VIEWMODEL INSTANTIATION HERE!
+// A la teva MainAppScreen
+    val bookingRepository = remember { com.example.appointmentlistapp.data.BookingRepository }
 
     Scaffold(
         topBar = {
@@ -49,7 +55,7 @@ fun MainAppScreen(viewModel: AppointmentViewModel) {
                             icon = {
                                 if (title == "Start") {
                                     Icon(
-                                        painter = painterResource(id = R.drawable.start), // Stellen Sie sicher, dass Sie diese Ressource haben
+                                        painter = painterResource(id = R.drawable.start),
                                         contentDescription = "Start Tab Icon",
                                         modifier = Modifier.size(25.dp)
                                     )
@@ -66,6 +72,7 @@ fun MainAppScreen(viewModel: AppointmentViewModel) {
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
+            //SCREENS ARE ADMINISTRATED IN MAINACTIVITY
             when (selectedTabIndex) {
                 0 -> AppointmentListScreen(viewModel = viewModel)
                 1 -> BookingScreen()
@@ -75,7 +82,6 @@ fun MainAppScreen(viewModel: AppointmentViewModel) {
         }
     }
 }
-
 
 
 fun formatDate(dateString: String): String {

@@ -3,23 +3,21 @@ package com.example.appointmentlistapp.viewmodels
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.appointmentlistapp.data.Booking
 import com.example.appointmentlistapp.data.BookingRepository
-import com.example.appointmentlistapp.data.api.BookingApiModel
 import com.example.appointmentlistapp.data.components.ButtonConfig
-import com.example.appointmentlistapp.data.model.Appointment
 import com.example.appointmentlistapp.data.remote.RetrofitInstance
+import com.example.appointmentlistapp.ui.viewmodel.LogBookViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import retrofit2.HttpException
 import java.io.IOException
 
 
-class BookingViewModel(private val repository: BookingRepository) : ViewModel() {
+class BookingViewModel : ViewModel() {
     // A private, mutable StateFlow to hold the list of buttons
     private val _buttonConfigs = MutableStateFlow<List<ButtonConfig>>(emptyList())
 
@@ -112,7 +110,7 @@ class BookingViewModel(private val repository: BookingRepository) : ViewModel() 
                 cancellationReason = "",
                 note = "Fahrzeug bitte volltanken.",
                 isChecked = false,
-                bookingDate = TODO()
+                bookingDate = "2025-02-20T13:15:00"
             ),
             // --- ADDED EXAMPLES ---
             Booking(
@@ -135,7 +133,7 @@ class BookingViewModel(private val repository: BookingRepository) : ViewModel() 
                 cancellationReason = "Termin abgesagt",
                 note = "",
                 isChecked = true,
-                bookingDate = TODO()
+                bookingDate = "2025-02-20T13:15:00"
 
             ),
             Booking(
@@ -158,7 +156,7 @@ class BookingViewModel(private val repository: BookingRepository) : ViewModel() 
                 cancellationReason = "",
                 note = "",
                 isChecked = false,
-                bookingDate = TODO()
+                bookingDate = "2025-02-20T13:15:00"
 
             ),
             Booking(
@@ -181,7 +179,7 @@ class BookingViewModel(private val repository: BookingRepository) : ViewModel() 
                 cancellationReason = "",
                 note = "Fahrzeug in Werkstatt.",
                 isChecked = false,
-                bookingDate = TODO()
+                bookingDate = "2025-02-20T13:15:00"
 
             )
         )
@@ -208,6 +206,7 @@ class BookingViewModel(private val repository: BookingRepository) : ViewModel() 
         }
     }
 
+    /*
 
     val allBookings: StateFlow<List<Appointment>> = repository.getAppointments()
         .stateIn(
@@ -227,6 +226,8 @@ class BookingViewModel(private val repository: BookingRepository) : ViewModel() 
             repository.deleteAppointment(booking)
         }
     }
+    */
+
 
 
 }
