@@ -109,7 +109,14 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 
-   
+    // Retrofit
+    implementation("com.squareup.retrofit2:retrofit:2.9.0")
+    // Gson converter (for JSON serialization/deserialization)
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+    // Kotlin Coroutine support for Retrofit
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
+
+
 
     // Hilt ViewModel integration
 
