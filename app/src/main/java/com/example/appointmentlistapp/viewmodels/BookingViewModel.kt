@@ -6,7 +6,7 @@ import com.example.appointmentlistapp.data.Booking
 import com.example.appointmentlistapp.data.BookingRepository
 import com.example.appointmentlistapp.data.components.ButtonConfig
 import com.example.appointmentlistapp.data.model.Appointment
-import dagger.hilt.android.lifecycle.HiltViewModel
+import com.example.appointmentlistapp.data.remote.RetrofitInstance
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -17,10 +17,9 @@ import retrofit2.HttpException
 import java.io.IOException
 import javax.inject.Inject
 
-@HiltViewModel
-class BookingViewModel @Inject constructor(
-    private val repository: BookingRepository
-) : ViewModel() {
+class BookingViewModel : ViewModel() {
+
+    public val repository = BookingRepository(RetrofitInstance.api)
 
     // Private MutableStateFlows to hold the data
     private val _buttonConfigs = MutableStateFlow<List<ButtonConfig>>(emptyList())
