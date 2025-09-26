@@ -1,4 +1,3 @@
-// In ui/viewmodel/BookingViewModel.kt
 package com.example.appointmentlistapp.viewmodels
 
 import androidx.lifecycle.ViewModel
@@ -7,6 +6,7 @@ import com.example.appointmentlistapp.data.Booking
 import com.example.appointmentlistapp.data.BookingRepository
 import com.example.appointmentlistapp.data.components.ButtonConfig
 import com.example.appointmentlistapp.data.model.Appointment
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -15,31 +15,29 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import retrofit2.HttpException
 import java.io.IOException
+import javax.inject.Inject
 
-// FIX: The ViewModel must have a constructor that accepts a BookingRepository.
-// The factory will provide this dependency.
-class BookingViewModel(private val repository: BookingRepository) : ViewModel() {
+@HiltViewModel
+class BookingViewModel @Inject constructor(
+    private val repository: BookingRepository
+) : ViewModel() {
 
-    // Private StateFlows to hold the data
+    // Private MutableStateFlows to hold the data
     private val _buttonConfigs = MutableStateFlow<List<ButtonConfig>>(emptyList())
-    private val _bookings = MutableStateFlow<List<Booking>>(
-        // FIX: Remove hardcoded data. It should come from the repository.
-        emptyList()
-    )
+    private val _bookings = MutableStateFlow<List<Booking>>(emptyList())
     private val _selectedBooking = MutableStateFlow<Booking?>(null)
+
+    private val _isLoading = MutableStateFlow(false)
+    private val _errorMessage = MutableStateFlow<String?>(null)
 
     // Public StateFlows that the UI can observe
     val buttonsConfig: StateFlow<List<ButtonConfig>> = _buttonConfigs.asStateFlow()
     val bookings: StateFlow<List<Booking>> = _bookings.asStateFlow()
     val selectedBooking: StateFlow<Booking?> = _selectedBooking.asStateFlow()
-
-    private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
-
-    private val _errorMessage = MutableStateFlow<String?>(null)
     val errorMessage: StateFlow<String?> = _errorMessage.asStateFlow()
 
-    // FIX: This flow should use the repository to get the list of appointments
+    // Flow from the repository to be collected by the UI
     val allAppointments: StateFlow<List<Appointment>> = repository.getAppointments()
         .stateIn(
             scope = viewModelScope,
@@ -48,7 +46,7 @@ class BookingViewModel(private val repository: BookingRepository) : ViewModel() 
         )
 
     init {
-        // You can start loading initial data here
+        // Initialization logic here
     }
 
     fun loadButtonsForScreen(clientId: String, screenId: String) {
@@ -59,7 +57,6 @@ class BookingViewModel(private val repository: BookingRepository) : ViewModel() 
         viewModelScope.launch {
             _isLoading.value = true
             try {
-                // FIX: Use the repository method to get data
                 repository.getButtonsForClientAndScreen(clientId, screenId)
                     .collect { buttons ->
                         _buttonConfigs.value = buttons
@@ -76,7 +73,6 @@ class BookingViewModel(private val repository: BookingRepository) : ViewModel() 
         }
     }
 
-    // FIX: Renamed for clarity and to avoid confusion with loadButtonsForScreen
     fun fetchAppointments(driverId: String?) {
         if (driverId.isNullOrBlank()) {
             setErrorMessage("Fahrer-ID fehlt.")
@@ -85,10 +81,8 @@ class BookingViewModel(private val repository: BookingRepository) : ViewModel() 
         viewModelScope.launch {
             _isLoading.value = true
             try {
-                // FIX: Use the repository to get data
                 val appointments = repository.getAppointmentsByDriver(driverId)
-                // Assuming you have a way to update your bookings state from Appointments
-                // _bookings.value = appointments
+                // Logic to process appointments and update _bookings should go here
             } catch (e: Exception) {
                 setErrorMessage("Ein Fehler ist beim Abrufen der Termine aufgetreten: ${e.message}")
             } finally {
@@ -103,9 +97,7 @@ class BookingViewModel(private val repository: BookingRepository) : ViewModel() 
             setErrorMessage(null)
             try {
                 repository.createAppointment(booking)
-                // FIX: After a successful insert, you should refresh the data shown in the UI.
-                // This is a simple example; consider a single source of truth for your data.
-                // refreshBookings()
+                // Consider calling fetchAppointments or implementing a data refresh mechanism
             } catch (e: Exception) {
                 setErrorMessage("Fehler beim Einfügen der Buchung: ${e.message}")
             } finally {
@@ -120,8 +112,7 @@ class BookingViewModel(private val repository: BookingRepository) : ViewModel() 
             setErrorMessage(null)
             try {
                 repository.deleteAppointment(booking)
-                // FIX: After a successful delete, you should refresh the data shown in the UI.
-                // refreshBookings()
+                // Consider calling fetchAppointments or implementing a data refresh mechanism
             } catch (e: Exception) {
                 setErrorMessage("Fehler beim Löschen der Buchung: ${e.message}")
             } finally {
@@ -137,7 +128,8 @@ class BookingViewModel(private val repository: BookingRepository) : ViewModel() 
     fun toggleBookingChecked(bookingId: String) {
         _bookings.value = _bookings.value.map { booking ->
             if (booking.bookingId == bookingId) {
-                booking.copy( isChecked = !booking.isChecked!!,)
+                // Assuming isChecked is a non-null property, otherwise handle nullability
+                booking.copy( isChecked = !(booking.isChecked ?: false),)
             } else {
                 booking
             }

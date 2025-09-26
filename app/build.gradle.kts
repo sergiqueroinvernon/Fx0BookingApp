@@ -108,4 +108,17 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+
+    implementation("com.google.dagger:hilt-android:2.49")
+    kapt("com.google.dagger:hilt-android-compiler:2.49")
+
+
+    // Hilt ViewModel integration
+    implementation("androidx.hilt:hilt-lifecycle-viewmodel:1.0.0-alpha03") // Older, but sometimes needed for backward compatibility
+    kapt("androidx.hilt:hilt-compiler:1.1.0") // Use the latest stable version
+
+    // Hilt ViewModel integration
+    implementation("androidx.hilt:hilt-lifecycle-viewmodel:1.0.0-alpha03") // Older, but sometimes needed for backward compatibility
+    kapt("androidx.hilt:hilt-compiler:1.1.0") // Use the latest stable version
+
 }
