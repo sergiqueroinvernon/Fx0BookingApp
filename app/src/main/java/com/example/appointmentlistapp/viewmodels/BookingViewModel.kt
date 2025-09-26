@@ -45,7 +45,6 @@ class BookingViewModel : ViewModel() {
         )
 
     init {
-        // Initialization logic here
     }
 
     fun loadButtonsForScreen(clientId: String, screenId: String) {
