@@ -6,6 +6,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -27,38 +28,69 @@ fun BookingScreen() {
     val bookings by bookingViewModel.bookings.collectAsState()
     val selectedBooking by bookingViewModel.selectedBooking.collectAsState()
     var showDetails by remember { mutableStateOf(true) }
-    var testResult by remember { mutableStateOf<String?>(null) }
+    // 💡 REMOVED: Deleted the unused 'testResult' state
+    // var testResult by remember { mutableStateOf<String?>(null) }
     val buttonConfigs by bookingViewModel.buttonsConfig.collectAsState()
 
+    // Trigger API call once when the screen is first created
+    LaunchedEffect(Unit) {
+        bookingViewModel.fetchButtonsForClientAndScreen("client123", "BookingScreen")
+    }
 
-    Column {
+
+    Column(modifier = Modifier.fillMaxSize()) {
         Text(text = "BookingScreen Content")
         Spacer(modifier = Modifier.height(16.dp))
 
-        if (buttonConfigs.isNotEmpty()) {
-            //Iterate through all the items
-            buttonConfigs.forEach { config ->
-                Button(onClick = { showDetails = !showDetails }) {
-                    Icon(
-                        painter = painterResource(getIconForType(config.type)),
-                        contentDescription = "Logo",
-                        modifier = Modifier.size(24.dp).padding(end = 4.dp)
-                    )
-                    // Change button text based on the state
-                    Text(if (showDetails) "Hide Details" else "Show Details")
+        // --- Dynamic Buttons Row ---
+        // 💡 FIX 1: Wrap dynamic buttons in a Row and add spacing for a horizontal toolbar look.
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            if (buttonConfigs.isNotEmpty()) {
+                // Iterate through all the items
+                buttonConfigs.forEach { config ->
+                    Button(
+                        // 💡 FIX 2: Change the onClick action to a meaningful, but currently
+                        // placeholder action. The hardcoded 'showDetails = !showDetails'
+                        // logic is moved to a separate toggle button.
+                        onClick = {
+                            // TODO: Implement button-specific logic based on config.type/action
+                            println("API Button '${config.text}' clicked!")
+                        }
+                    ) {
+                        Icon(
+                            painter = painterResource(getIconForType(config.type.toString().trim())),
+                            // 💡 FIX 3: Use the button label for content description
+                            contentDescription = config.text,
+                            modifier = Modifier.size(15.dp).padding(end = 4.dp)
+                        )
+                        // 💡 FIX 4: Display the actual label from the API configuration
+                        Text(config.text)
+                    }
                 }
+            } else {
+                Text(text = "Loading buttons...") // Show a loading/placeholder message
             }
         }
 
-        Button(onClick = {
-            // Example: Update testResult with some data from the ViewModel
-            testResult = bookingViewModel.fetchButtonsForClientAndScreen("client123", "BookingScreen").toString()
-        }) {
-            Text("Show Test Result")
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // --- Toggle Details Button (Utility Button) ---
+        // 💡 FIX 5: Use a separate, simple button for the specific 'showDetails' logic
+        Button(onClick = { showDetails = !showDetails }) {
+            Text(if (showDetails) "Hide Details Pane" else "Show Details Pane")
         }
-        testResult?.let {
-            Text(text = "Test Result: $it")
-        }
+
+
+        // 💡 REMOVED: Deleted the old redundant 'Show Test Result' button and display block.
+        /*
+        Button(onClick = { ... }) { ... }
+        testResult?.let { ... }
+        */
+
+        Spacer(modifier = Modifier.height(8.dp))
 
         Row(Modifier.fillMaxSize()) {
             // Master Pane (List)

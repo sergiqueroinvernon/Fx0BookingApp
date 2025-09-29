@@ -1,5 +1,6 @@
 package com.example.appointmentlistapp.viewmodels
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.appointmentlistapp.data.Booking
@@ -58,14 +59,22 @@ class BookingViewModel : ViewModel() {
             _isLoading.value = true
             setErrorMessage(null)
             try {
+                // API call: This line should update the StateFlow on success
                 val buttonConfigs = RetrofitInstance.api.getButtonsForClientAndScreen(clientId, screenId)
+
+                // Log the size to confirm data was received successfully
+                Log.d("BookingViewModel", "Fetched ${buttonConfigs.size} buttons.")
+
                 _buttonConfigs.value = buttonConfigs
             } catch (e: IOException) {
                 setErrorMessage("Netzwerkfehler. Bitte überprüfen Sie Ihre Verbindung und stellen Sie sicher, dass die API läuft.")
+                Log.e("BookingViewModel", "Network error while fetching buttons.", e)
             } catch (e: HttpException) {
-                setErrorMessage("API-Fehler: ${e.message()}")
+                setErrorMessage("API-Fehler: HTTP ${e.code()}")
+                Log.e("BookingViewModel", "HTTP error while fetching buttons: ${e.code()}", e)
             } catch (e: Exception) {
                 setErrorMessage("Ein unerwarteter Fehler ist aufgetreten: ${e.message}")
+                Log.e("BookingViewModel", "Unexpected error while fetching buttons.", e)
             } finally {
                 _isLoading.value = false
             }
