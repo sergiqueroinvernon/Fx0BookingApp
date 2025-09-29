@@ -11,5 +11,6 @@ data class ButtonConfig(
     val action: String?,
     val type: String,
     val isVisible: Int,
-    val text: String
+    val text: String,
+    val IconData: ByteArray?
 )
