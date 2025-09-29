@@ -17,7 +17,7 @@ open class BookingRepository(private val bookingAppService: BookingAppService) {
         emit(appointments)
     }
 
-    fun getButtonsForClientsAndScreen(clientId: String, screenId: String): Flow<List<ButtonConfig>> =
+    open fun getButtonsForClientsAndScreen(clientId: String, screenId: String): Flow<List<ButtonConfig>> =
         flow {
             val buttonConfigs: List<ButtonConfig> = bookingAppService.getButtonsForClientAndScreen(clientId, screenId)
             emit(buttonConfigs)

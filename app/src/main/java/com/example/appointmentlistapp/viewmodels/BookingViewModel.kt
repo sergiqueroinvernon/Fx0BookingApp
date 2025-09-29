@@ -47,6 +47,33 @@ class BookingViewModel : ViewModel() {
     init {
     }
 
+    fun fetchButtonsForClientAndScreen(clientId: String, screenId: String) {
+        if (clientId.isBlank() || screenId.isNullOrBlank()) {
+            _buttonConfigs.value = emptyList()
+            setErrorMessage("Bitte scannen Sie einen QR-Code, um Fahrertermine zu erhalten.")
+            return
+        }
+
+        viewModelScope.launch {
+            _isLoading.value = true
+            setErrorMessage(null)
+            try {
+                val buttonConfigs = RetrofitInstance.api.getButtonsForClientAndScreen(clientId, screenId)
+                _buttonConfigs.value = buttonConfigs
+            } catch (e: IOException) {
+                setErrorMessage("Netzwerkfehler. Bitte überprüfen Sie Ihre Verbindung und stellen Sie sicher, dass die API läuft.")
+            } catch (e: HttpException) {
+                setErrorMessage("API-Fehler: ${e.message()}")
+            } catch (e: Exception) {
+                setErrorMessage("Ein unerwarteter Fehler ist aufgetreten: ${e.message}")
+            } finally {
+                _isLoading.value = false
+            }
+        }
+    }
+
+
+
     fun loadButtonsForScreen(clientId: String, screenId: String) {
         if (clientId.isBlank() || screenId.isBlank()) {
             setErrorMessage("Client-ID oder Bildschirm-ID fehlt.")

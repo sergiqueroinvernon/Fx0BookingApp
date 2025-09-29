@@ -27,7 +27,9 @@ fun BookingScreen() {
     val bookings by bookingViewModel.bookings.collectAsState()
     val selectedBooking by bookingViewModel.selectedBooking.collectAsState()
     var showDetails by remember { mutableStateOf(true) }
+    var testResult by remember { mutableStateOf<String?>(null) }
     val buttonConfigs by bookingViewModel.buttonsConfig.collectAsState()
+
 
     Column {
         Text(text = "BookingScreen Content")
@@ -46,6 +48,16 @@ fun BookingScreen() {
                     Text(if (showDetails) "Hide Details" else "Show Details")
                 }
             }
+        }
+
+        Button(onClick = {
+            // Example: Update testResult with some data from the ViewModel
+            testResult = bookingViewModel.fetchButtonsForClientAndScreen("client123", "BookingScreen").toString()
+        }) {
+            Text("Show Test Result")
+        }
+        testResult?.let {
+            Text(text = "Test Result: $it")
         }
 
         Row(Modifier.fillMaxSize()) {
