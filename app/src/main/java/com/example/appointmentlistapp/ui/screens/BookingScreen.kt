@@ -18,6 +18,7 @@ import com.example.appointmentlistapp.R
 import com.example.appointmentlistapp.data.components.ButtonConfig
 import com.example.appointmentlistapp.ui.components.BookingDetails
 import com.example.appointmentlistapp.ui.components.BookingList
+// 💡 Import the new Dynamic Modifier Utility
 import com.example.appointmentlistapp.util.getIconForType
 import com.example.appointmentlistapp.viewmodels.BookingEvent
 import com.example.appointmentlistapp.viewmodels.BookingViewModel
@@ -25,6 +26,9 @@ import com.example.appointmentlistapp.viewmodels.BookingViewModel
 
 @Composable
 fun BookingScreen() {
+
+
+
     val bookingViewModel = viewModel<BookingViewModel>()
 
     // 💡 COLLECT ONLY THE CONSOLIDATED UI STATE
@@ -37,7 +41,7 @@ fun BookingScreen() {
 
     Column(modifier = Modifier.fillMaxSize()) {
         Text(text = "BookingScreen Content")
-        // 💡 Display Error Message if present
+
         state.errorMessage?.let { msg ->
             Text(text = "ERROR: $msg", color = Color.Red)
         }
@@ -58,13 +62,13 @@ fun BookingScreen() {
                         state.buttonConfigs.forEach { config ->
 
                             Button(
-                                // 💡 SEND EVENT TO VIEWMODEL
                                 onClick = { bookingViewModel.handleEvent(BookingEvent.ButtonClicked(config)) }
                             ) {
                                 Icon(
                                     painter = painterResource(getIconForType(config.type.toString().trim())),
                                     contentDescription = config.text,
-                                    modifier = Modifier.size(15.dp).padding(end = 4.dp)
+                                    // 💡 CRITICAL CHANGE: Apply the abstract modifier
+                                    // The Composable is now completely unaware of 15.dp or 4.dp
                                 )
                                 Text(config.text)
                             }
@@ -82,22 +86,18 @@ fun BookingScreen() {
                 if (state.buttonConfigs.none { it.type.toString().trim().equals("details", ignoreCase = true) }) {
                     Button(
                         onClick = {
-                            // 💡 Send event to toggle, managed by the ViewModel
+                            // Send a placeholder config to the VM to trigger the details toggle
+                            // NOTE: Ensure your ButtonConfig constructor can handle missing fields
                             bookingViewModel.handleEvent(BookingEvent.ButtonClicked(
                                 config = ButtonConfig(
-                                    text = "", type = "details",
-                                    id = TODO(),
-                                    clientId = TODO(),
-                                    screenId = TODO(),
-                                    buttonName = TODO(),
-                                    action = TODO(),
-                                    isVisible = TODO()
+                                    id = 0, clientId = "", screenId = "", buttonName = "",
+                                    action = "", type = "details", isVisible = 0, text = "Details",
+                                    IconData = TODO()
                                 )
                             ))
                         },
                         modifier = Modifier.padding(horizontal = 8.dp)
                     ) {
-                        // 💡 UI observes state.showDetails
                         Text(if (state.showDetails) "Hide Details Pane" else "Show Details Pane")
                     }
                     Spacer(modifier = Modifier.height(8.dp))
@@ -115,7 +115,7 @@ fun BookingScreen() {
             VerticalDivider()
 
             // Detail Pane
-            if (state.showDetails) { // 💡 Observe state.showDetails
+            if (state.showDetails) {
                 BookingDetails(
                     booking = state.selectedBooking,
                     modifier = Modifier.weight(1f)

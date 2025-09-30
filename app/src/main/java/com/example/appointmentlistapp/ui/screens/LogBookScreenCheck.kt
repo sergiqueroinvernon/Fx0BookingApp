@@ -2,10 +2,13 @@ package com.example.appointmentlistapp.ui.screens
 
 import android.os.Build
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Button
@@ -28,171 +31,180 @@ import com.example.appointmentlistapp.ui.components.LogbookCheckDetailsView
 import com.example.appointmentlistapp.ui.components.LogbookCheckList
 import com.example.appointmentlistapp.ui.viewmodel.LogBookCheckViewModel
 
-
-
+// --- Helper Composable for Buttons (Optional but cleaner) ---
+@Composable
+fun LogbookActionButton(
+    iconResId: Int,
+    text: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Button(onClick = onClick, modifier = modifier) {
+        Icon(
+            painter = painterResource(id = iconResId),
+            contentDescription = text,
+            modifier = Modifier
+                .size(24.dp)
+                .padding(end = 4.dp)
+        )
+        Text(text)
+    }
+}
+// ---
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun LogbookScreenCheck(viewModel: LogBookCheckViewModel = viewModel()) {
 
     var showDetails by remember { mutableStateOf(true) }
-    var criteriaFilter by remember { mutableStateOf(true) }
+    var criteriaFilter by remember { mutableStateOf(false) } // Changed to false to show difference
 
-    // 1. State collection from the ViewModel, using the correct variable names.
+    // State collection from the ViewModel
     val entries by viewModel.logbookEntries.collectAsState()
     val selectedEntry by viewModel.selectedEntry.collectAsState()
     val checkedEntryIds by viewModel.checkedEntryIds.collectAsState()
-    Column(modifier = Modifier.fillMaxWidth()) {
-        Column(modifier = Modifier.fillMaxWidth()) {
-        Row(modifier = Modifier.fillMaxWidth()) {
-            Text(text = "Prüfung der Fahrtenbücher meines Teams", modifier = Modifier.padding(10.dp), fontSize = 25.sp)
-        }
-        Row(modifier =  Modifier.fillMaxWidth()){
 
+    Column(modifier = Modifier.fillMaxSize()) {
+        // Title Header for the whole screen
+        Text(
+            text = "Prüfung der Fahrtenbücher meines Teams",
+            modifier = Modifier.padding(10.dp),
+            fontSize = 25.sp
+        )
 
-            Button(onClick = { showDetails = !showDetails}) {
-                Icon(
-                    painter = painterResource(id = R.drawable.info),
-                    contentDescription = "Logo",
-                    modifier = Modifier.size(24.dp).padding(end = 4.dp)
-                )
-                // Change button text based on the state
-                Text(if (showDetails) "Hide Details" else "Show Details")
+        Spacer(modifier = Modifier.height(10.dp))
 
-            }
-            Button(onClick = { showDetails = !showDetails}) {
-                Icon(
-                    painter = painterResource(id = R.drawable.filter),
-                    contentDescription = "Logo",
-                    modifier = Modifier.size(24.dp).padding(end = 4.dp)
-                )
-                // Change button text based on the state
-                Text(if (criteriaFilter) "Filterkriterien" else "Filterkriterien")
-
-            }
-            Button(onClick = { showDetails = !showDetails}) {
-                Icon(
-                    painter = painterResource(id = R.drawable.layout),
-                    contentDescription = "Logo",
-                    modifier = Modifier.size(24.dp).padding(end = 4.dp)
-                )
-                // Change button text based on the state
-                Text(if (showDetails) "Layout" else "Layout")
-
-            }
-        }
-        Row(modifier =  Modifier.fillMaxWidth()){
-
-
-            Button(onClick = { showDetails = !showDetails}) {
-                Icon(
-                    painter = painterResource(id = R.drawable.add),
-                    contentDescription = "Logo",
-                    modifier = Modifier.size(24.dp).padding(end = 4.dp)
-                )
-                // Change button text based on the state
-                Text("Hinzufügen")
-
-            }
-            Button(onClick = { showDetails = !showDetails}) {
-                Icon(
-                    painter = painterResource(id = R.drawable.edit),
-                    contentDescription = "Logo",
-                    modifier = Modifier.size(24.dp).padding(end = 4.dp)
-                )
-                // Change button text based on the state
-                Text("Bearbeiten")
-
-            }
-            Button(onClick = { showDetails = !showDetails}) {
-                Icon(
-                    painter = painterResource(id = R.drawable.cancel),
-                    contentDescription = "Logo",
-                    modifier = Modifier.size(24.dp).padding(end = 4.dp)
-                )
-                // Change button text based on the state
-                Text("Stornieren")
-
-            }
-            Button(onClick = { showDetails = !showDetails}) {
-                Icon(
-                   painter = painterResource(id = R.drawable.copy),
-                    contentDescription = "Logo",
-                    modifier = Modifier.size(24.dp).padding(end = 4.dp)
-                )
-                // Change button text based on the state
-                Text("Kopieren")
-
-            }
-        }
-        Row(modifier =  Modifier.fillMaxWidth()){
-
-
-            Button(onClick = { showDetails = !showDetails}) {
-                Icon(
-                    painter = painterResource(id = R.drawable.finish),
-                    contentDescription = "Logo",
-                    modifier = Modifier.size(24.dp).padding(end = 4.dp)
-                )
-                // Change button text based on the state
-                Text("Beenden")
-
-            }
-            Button(onClick = { showDetails = !showDetails}) {
-                Icon(
-                    painter = painterResource(id = R.drawable.confirm),
-                    contentDescription = "Logo",
-                    modifier = Modifier.size(24.dp).padding(end = 4.dp)
-                )
-                // Change button text based on the state
-                Text("Bestätigen")
-
-            }
-        }
-        Row(modifier =  Modifier.fillMaxWidth()){
-            Button(onClick = { showDetails = !showDetails}) {
-                Icon(
-                    painter = painterResource(id = R.drawable.approve),
-                    contentDescription = "Logo",
-                    modifier = Modifier.size(24.dp).padding(end = 4.dp)
-                )
-                // Change button text based on the state
-                Text("Genehmigen")
-            }
-        }
-
-        // The Row composable arranges the list and detail view side-by-side.
+        // Master/Detail Layout Start
         Row(Modifier.fillMaxSize()) {
-            // 2. Master Pane (List) - Calling the correct component with the correct parameters.
-            LogbookCheckList(
-                entries = entries,
-                selectedEntry = selectedEntry,
-                checkedEntryIds = checkedEntryIds,
-                onEntrySelected = { entry ->
-                    // Calling the correct ViewModel function to select an entry.
-                    viewModel.selectEntry(entry)
-                },
-                onEntryCheckedChange = { entryId ->
-                    viewModel.toggleEntryChecked(entryId)
-                },
-                modifier = Modifier.weight(2f) // Give more space to the list
-            )
+
+            // Master Pane Column (List + Buttons)
+            Column(modifier = Modifier.weight(2f)) {
+
+                // --- Top Row of Buttons (View Toggles) ---
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    // Toggle Details Button
+                    LogbookActionButton(
+                        iconResId = R.drawable.info,
+                        text = if (showDetails) "Details ausblenden" else "Details anzeigen",
+                        onClick = { showDetails = !showDetails }
+                    )
+
+                    // Toggle Filter Button
+                    LogbookActionButton(
+                        iconResId = R.drawable.filter,
+                        text = "Filterkriterien",
+                        onClick = { criteriaFilter = !criteriaFilter } // Actual action for filter
+                    )
+
+                    // Layout Button (Placeholder action)
+                    LogbookActionButton(
+                        iconResId = R.drawable.layout,
+                        text = "Layout",
+                        onClick = { /* TODO: Implement layout change logic */ }
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                // --- Middle Row of Buttons (Edit Actions) ---
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    // Hinzufügen (Add) Button (Placeholder action)
+                    LogbookActionButton(
+                        iconResId = R.drawable.add,
+                        text = "Hinzufügen",
+                        onClick = { /* TODO: Implement Add Entry logic */ }
+                    )
+
+                    // Bearbeiten (Edit) Button (Placeholder action)
+                    LogbookActionButton(
+                        iconResId = R.drawable.edit,
+                        text = "Bearbeiten",
+                        onClick = { /* TODO: Implement Edit Entry logic on selectedEntry */ }
+                    )
+
+                    // Stornieren (Cancel) Button (Placeholder action)
+                    LogbookActionButton(
+                        iconResId = R.drawable.cancel,
+                        text = "Stornieren",
+                        onClick = { /* TODO: Implement Cancel Entry logic on selectedEntry */ }
+                    )
+
+                    // Kopieren (Copy) Button (Placeholder action)
+                    LogbookActionButton(
+                        iconResId = R.drawable.copy,
+                        text = "Kopieren",
+                        onClick = { /* TODO: Implement Copy Entry logic on selectedEntry */ }
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                // --- Bottom Row of Buttons (Finalization Actions) ---
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    // Beenden (Finish) Button (Placeholder action)
+                    LogbookActionButton(
+                        iconResId = R.drawable.finish,
+                        text = "Beenden",
+                        onClick = { /* TODO: Implement Finish Check process */ }
+                    )
+
+                    // Bestätigen (Confirm) Button (Placeholder action)
+                    LogbookActionButton(
+                        iconResId = R.drawable.confirm,
+                        text = "Bestätigen",
+                        onClick = { /* TODO: Implement Confirm selected entries logic */ }
+                    )
+
+                    // Genehmigen (Approve) Button (Placeholder action)
+                    LogbookActionButton(
+                        iconResId = R.drawable.approve,
+                        text = "Genehmigen",
+                        onClick = { /* TODO: Implement Approve selected entries logic */ }
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                // Master Pane (List)
+                LogbookCheckList(
+                    entries = entries,
+                    selectedEntry = selectedEntry,
+                    checkedEntryIds = checkedEntryIds,
+                    onEntrySelected = { entry ->
+                        viewModel.selectEntry(entry)
+                    },
+                    onEntryCheckedChange = { entryId ->
+                        viewModel.toggleEntryChecked(entryId)
+                    },
+                    // Fill the remaining space in the column
+                    modifier = Modifier.fillMaxSize()
+                )
+            } // END Master Pane Column
 
             VerticalDivider()
 
-            if(showDetails)
-            {
+            // Detail Pane
+            if (showDetails) {
                 LogbookCheckDetailsView(
                     logbook = selectedEntry,
-                    modifier = Modifier.weight(1f) // Give less space to details
+                    modifier = Modifier.weight(1f) // Details Pane is smaller
                 )
             }
-            // 3. Detail Pane - Calling the correct component with the correct parameter name.
-
-        }}
-
+        } // END Master/Detail Row
     }
-
 }
-
-
