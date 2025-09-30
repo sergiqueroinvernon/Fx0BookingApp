@@ -26,15 +26,10 @@ import com.example.appointmentlistapp.viewmodels.BookingViewModel
 
 @Composable
 fun BookingScreen() {
-
-
-
     val bookingViewModel = viewModel<BookingViewModel>()
 
-    // 💡 COLLECT ONLY THE CONSOLIDATED UI STATE
     val state by bookingViewModel.uiState.collectAsState()
 
-    // Trigger API call once when the screen is first created
     LaunchedEffect(Unit) {
         bookingViewModel.fetchButtonsForClientAndScreen("client123", "BookingScreen")
     }
