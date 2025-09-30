@@ -30,7 +30,7 @@ import com.example.appointmentlistapp.ui.viewmodel.LogBookViewModel
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun LogbookScreen(viewModel: LogBookViewModel = viewModel()) {
+fun LogbookScreen(viewModel: LogBookViewModel = viewModel(), scannedDriverId: String?) {
     // 1. State collection from the ViewModel, using the correct variable names.
     val entries by viewModel.logbookEntries.collectAsState()
     val selectedEntry by viewModel.selectedEntry.collectAsState()

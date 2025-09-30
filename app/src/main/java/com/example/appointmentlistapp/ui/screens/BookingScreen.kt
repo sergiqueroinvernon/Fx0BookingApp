@@ -8,13 +8,18 @@ import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.appointmentlistapp.R // <-- IMPORTANT: Ensure this import is correct for your project's resource R class
+import com.example.appointmentlistapp.AppointmentViewModel
 import com.example.appointmentlistapp.data.components.ButtonConfig
 import com.example.appointmentlistapp.ui.components.BookingDetails
 import com.example.appointmentlistapp.ui.components.BookingList
@@ -42,7 +47,30 @@ private fun ActionButton(config: ButtonConfig, viewModel: BookingViewModel) {
 // ---
 
 @Composable
-fun BookingScreen() {
+fun BookingScreen(viewModel: BookingViewModel, scannedDriverId: String?) {
+    val bookings by viewModel.bookings.collectAsState()
+
+    val isLoading by viewModel.isLoading.collectAsState()
+    val errorMessage by viewModel.errorMessage.collectAsState()
+    val scannedDriverId by viewModel.scannedDriverId.collectAsState()
+    val context = LocalContext.current
+    var showQrScanner by remember { mutableStateOf(false) }
+
+    val selectedAppointmentCount by remember(appointments) {
+        derivedStateOf { appointments.count { it.isChecked && it.status.equals("Pending", ignoreCase = true) } }
+    }
+
+    val allAppointmentsChecked by remember(appointments) {
+        derivedStateOf {
+            val pendingAppointments = appointments.filter { it.status.equals("Pending", ignoreCase = true) }
+            pendingAppointments.isNotEmpty() && pendingAppointments.all { it.isChecked }
+        }
+    }
+
+
+
+
+
     val bookingViewModel = viewModel<BookingViewModel>()
     // Single source of truth for the UI State
     val state by bookingViewModel.uiState.collectAsState()
@@ -122,6 +150,12 @@ fun BookingScreen() {
                     Spacer(modifier = Modifier.height(8.dp))
                 }
 
+                Text(
+                    text = "BookingScreen Content",
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                )
+
+
                 // Master Pane (List)
                 BookingList(
                     bookings = state.bookings,
@@ -129,6 +163,12 @@ fun BookingScreen() {
                     onBookingCheckedChange = { bookingId -> bookingViewModel.handleEvent(BookingEvent.BookingCheckedChange(bookingId)) },
                     modifier = Modifier.fillMaxSize()
                 )
+
+                Text(
+                    text = "BookingScreen Content",
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                )
+
             } // END Master Pane Column
 
             VerticalDivider()
