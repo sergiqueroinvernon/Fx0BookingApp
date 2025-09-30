@@ -14,11 +14,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.appointmentlistapp.R
 import com.example.appointmentlistapp.data.components.ButtonConfig
 import com.example.appointmentlistapp.ui.components.BookingDetails
 import com.example.appointmentlistapp.ui.components.BookingList
-// 💡 Import the new Dynamic Modifier Utility
 import com.example.appointmentlistapp.util.getIconForType
 import com.example.appointmentlistapp.viewmodels.BookingEvent
 import com.example.appointmentlistapp.viewmodels.BookingViewModel
@@ -27,7 +25,6 @@ import com.example.appointmentlistapp.viewmodels.BookingViewModel
 @Composable
 fun BookingScreen() {
     val bookingViewModel = viewModel<BookingViewModel>()
-
     val state by bookingViewModel.uiState.collectAsState()
 
     LaunchedEffect(Unit) {
@@ -42,13 +39,10 @@ fun BookingScreen() {
         }
         Spacer(modifier = Modifier.height(16.dp))
 
-        // --- MASTER/DETAIL LAYOUT START ---
         Row(Modifier.fillMaxSize()) {
 
-            // Master Pane Column (List + Buttons)
             Column(modifier = Modifier.weight(2f)) {
 
-                // --- Dynamic Buttons Row (Now fully data-driven) ---
                 Row(
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -62,8 +56,6 @@ fun BookingScreen() {
                                 Icon(
                                     painter = painterResource(getIconForType(config.type.toString().trim())),
                                     contentDescription = config.text,
-                                    // 💡 CRITICAL CHANGE: Apply the abstract modifier
-                                    // The Composable is now completely unaware of 15.dp or 4.dp
                                 )
                                 Text(config.text)
                             }
