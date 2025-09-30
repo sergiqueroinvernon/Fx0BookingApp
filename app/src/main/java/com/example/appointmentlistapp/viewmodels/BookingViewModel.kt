@@ -34,7 +34,64 @@ sealed class BookingEvent {
 
 class BookingViewModel : ViewModel() {
 
+    private val _appointments = MutableStateFlow<List<Appointment>>(emptyList())
+    val appointments: StateFlow<List<Appointment>> = _appointments
+
+    private val _isLoading = MutableStateFlow(false)
+    val isLoading: StateFlow<Boolean> = _isLoading
+
     val repository = BookingRepository(RetrofitInstance.api)
+    private val _errorMessage = MutableStateFlow<String?>(null)
+    val errorMessage: StateFlow<String?> = _errorMessage
+
+    private val _scannedDriverId = MutableStateFlow<String?>(null)
+    val scannedDriverId: StateFlow<String?> = _scannedDriverId
+
+    fun setErrorMessage(message: String?) {
+        _errorMessage.value = message
+    }
+
+    fun setScannedDriverId(driverId: String) {
+        if (_scannedDriverId.value != driverId) {
+            _scannedDriverId.value = driverId
+            fetchAppointments(driverId)
+        }
+    }
+
+    fun fetchAppointments(driverId: String? = _scannedDriverId.value) {
+        if (driverId.isNullOrBlank()) {
+            _appointments.value = emptyList()
+            setErrorMessage("Bitte scannen Sie einen QR-Code, um Fahrertermine zu erhalten.")
+            return
+        }
+
+        viewModelScope.launch {
+            _isLoading.value = true
+            setErrorMessage(null)
+            try {
+                val driverAppointments = RetrofitInstance.api.getAppointmentsByDriverId(driverId)
+                _appointments.value = driverAppointments
+            } catch (e: IOException) {
+                setErrorMessage("Netzwerkfehler. Bitte überprüfen Sie Ihre Verbindung und stellen Sie sicher, dass die API läuft.")
+            } catch (e: HttpException) {
+                setErrorMessage("API-Fehler: ${e.message()}")
+            } catch (e: Exception) {
+                setErrorMessage("Ein unerwarteter Fehler ist aufgetreten: ${e.message}")
+            } finally {
+                _isLoading.value = false
+            }
+        }
+    }
+
+    fun toggleAppointmentChecked(appointmentId: String) {
+        _appointments.value = _appointments.value.map { appointment ->
+            if (appointment.id == appointmentId && appointment.status.equals("Pending", ignoreCase = true)) {
+                appointment.copy(isChecked = !appointment.isChecked)
+            } else {
+                appointment
+            }
+        }
+    }
 
     // --- 💡 3. CONSOLIDATED UI STATE ---
     private val _uiState = MutableStateFlow(BookingUiState())
@@ -129,9 +186,7 @@ class BookingViewModel : ViewModel() {
         }
     }
 
-    private fun setErrorMessage(message: String?) {
-        _uiState.update { it.copy(errorMessage = message) }
-    }
+
 
     // ❌ REMOVE the redundant loadButtonsForScreen function if it exists here.
 }

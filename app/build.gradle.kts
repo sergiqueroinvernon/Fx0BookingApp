@@ -117,7 +117,12 @@ dependencies {
     // Kotlin Coroutine support for Retrofit
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
 
+    // 1. DataStore (Modern, safe preference storage)
+    implementation("androidx.datastore:datastore-preferences:1.0.0")
 
+    // 2. Coroutines (To handle async operations)
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.0")
+    // And ensure you are using the latest ViewModel/Compose versions
 
     // Hilt ViewModel integration
 

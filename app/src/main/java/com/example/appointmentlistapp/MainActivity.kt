@@ -56,14 +56,11 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.appointmentlistapp.data.Booking
-import com.example.appointmentlistapp.data.BookingRepository
 import com.example.appointmentlistapp.ui.screens.BookingScreen
 import com.example.appointmentlistapp.ui.screens.LogbookScreen
 
 import com.example.appointmentlistapp.ui.screens.LogbookScreenCheck
 import com.example.appointmentlistapp.ui.screens.LoginScreen
-import com.example.appointmentlistapp.viewmodels.BookingViewModel
 
 import com.google.mlkit.vision.barcode.BarcodeScanner
 import com.google.mlkit.vision.barcode.BarcodeScannerOptions
@@ -393,7 +390,7 @@ fun MainAppScreen(viewModel: AppointmentViewModel) {
         ) {
             when (selectedTabIndex) {
                 0 -> AppointmentListScreen(viewModel = viewModel)
-              1 -> BookingScreen() // Use BookingViewModel here
+                 1 -> BookingScreen(viewModel = viewModel) // Use BookingViewModel here
                 2 -> LogbookScreen()
                 3 -> LogbookScreenCheck()
             }
