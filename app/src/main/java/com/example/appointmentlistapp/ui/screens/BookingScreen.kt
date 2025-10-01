@@ -61,7 +61,6 @@ fun BookingScreen() {
     Column(modifier = Modifier.fillMaxSize()) {
 
         // --- HEADER SECTION (Title and Error) ---
-
         // FIX 1: Use Padding for layout separation, giving space at the bottom (16.dp)
         Text(
             text = "BookingScreen Content",
@@ -94,7 +93,6 @@ fun BookingScreen() {
                                 config,
                                 bookingViewModel,
                                 modifier = Modifier.width(160.dp)
-
                             )
                         }
                     } else if (state.isLoading) {
@@ -153,7 +151,6 @@ fun BookingScreen() {
                                     )
                                 )
                             },
-
                             )
                     }
 
