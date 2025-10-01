@@ -1,5 +1,6 @@
 package com.example.appointmentlistapp.ui.components
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -9,7 +10,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.appointmentlistapp.data.Booking
 import com.example.appointmentlistapp.data.model.Appointment
 import com.example.appointmentlistapp.ui.screens.formatDate
 
@@ -18,18 +18,13 @@ import com.example.appointmentlistapp.ui.screens.formatDate
 fun BookingItem(
     booking: Appointment,
     isChecked: Boolean,
-    onCheckedChange: (Boolean) -> Unit
+    onCheckedChange: (Boolean) -> Unit,
+    onClick: () -> Unit,
+    isSelected: Boolean
 ) {
     val isPending = booking.status.equals("Pending", ignoreCase = true)
     val isCompleted = booking.status.equals("Completed", ignoreCase = true)
     Card(
-        modifier = Modifier.fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth().padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
         ) {
             if (isPending) {
                 Checkbox(
@@ -47,7 +42,7 @@ fun BookingItem(
                     fontSize = 18.sp,
                 )
                 Spacer(modifier = Modifier.height(8.dp))
-                Text(text = "Driver: ${booking.driver ?: "N/A"}")
+                Text(text = "Driver: ${booking.driver?.name?: "N/A"}")
                 Text(text = "Date: ${formatDate(booking.appointmentDateTime)}")
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(text = "Status: ")
@@ -60,4 +55,3 @@ fun BookingItem(
             }
         }
     }
-}

@@ -149,7 +149,10 @@ fun BookingScreen() {
                         BookingItem(
                             booking = booking,
                             // ✅ FIX 6: onClick Handler für Auswahl hinzugefügt
-
+                            onClick={
+                                bookingViewModel.handleEvent(BookingSelected(booking))
+                            },
+                            isSelected = booking.id == selectedBooking?.id,
                             // ✅ FIX 7: isSelected Status hinzugefügt
                             isChecked = booking.isChecked ?: false, // Sicherer Null-Check
                             onCheckedChange = {

@@ -124,6 +124,33 @@ class BookingViewModel : ViewModel() {
         }
     }
 
+    private fun convertAppointmentToBooking(appointment: Appointment): Booking {
+        return Booking(
+            // Ensure you don't use non-nullable field access without safety:
+            bookingId = appointment.id ?: "0", // Safe access
+            status = appointment.status ?: "Unknown",
+            driver = TODO(),
+            bookingDate = TODO(),
+            description = TODO(),
+            pickupDate = TODO(),
+            returnDate = TODO(),
+            returnTime = TODO(),
+            vehicle = TODO(),
+            vehiclePool = TODO(),
+            purposeOfTrip = TODO(),
+            pickupLocation = TODO(),
+            returnLocation = TODO(),
+            odometerReadingPickup = TODO(),
+            odometerReadingReturn = TODO(),
+            distance = TODO(),
+            cancellationDate = TODO(),
+            cancellationReason = TODO(),
+            note = TODO(),
+            isChecked = TODO(),
+            pickupTime = TODO(), // Safe access
+            //...
+        )
+    }
     private fun handleButtonClicked(config: ButtonConfig) {
         when (config.type.lowercase().trim()) {
             "details" -> _showDetails.value = !_showDetails.value // Toggle the detail pane
