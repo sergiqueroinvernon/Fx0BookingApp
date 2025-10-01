@@ -138,6 +138,10 @@ fun BookingScreen() {
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     items(
+                        // items = state.bookings, // This was the original line
+                        // To test an empty list, you can temporarily pass an empty list:
+                        // items = emptyList(),
+                        // Or, more robustly, ensure your ViewModel state reflects emptiness when appropriate.
                         state.bookings,
                         key = { booking -> booking.bookingId }
                     ) { appointment ->

@@ -36,6 +36,51 @@ class BookingViewModel : ViewModel() {
 
     val repository = BookingRepository(RetrofitInstance.api)
 
+    private val _isLoading = MutableStateFlow(false)
+    val isLoading: StateFlow<Boolean> = _isLoading
+
+    private val _errorMessage = MutableStateFlow<String?>(null)
+    val errorMessage: StateFlow<String?> = _errorMessage
+
+    private val _scannedDriverId = MutableStateFlow<String?>(null)
+    val scannedDriverId: StateFlow<String?> = _scannedDriverId
+    private val _bookings = MutableStateFlow<List<Appointment>>(emptyList())
+    val bookings: MutableStateFlow<List<Appointment>> = _bookings
+
+
+
+    fun setScannedDriverId(driverId: String) {
+        if (_scannedDriverId.value != driverId) {
+            _scannedDriverId.value = driverId
+            fetchAppointments(driverId)
+        }
+    }
+
+    fun fetchAppointments(driverId: String? = _scannedDriverId.value) {
+        if (driverId.isNullOrBlank()) {
+            _bookings.value = emptyList()
+            setErrorMessage("Bitte scannen Sie einen QR-Code, um Fahrertermine zu erhalten.")
+            return
+        }
+
+        viewModelScope.launch {
+            _isLoading.value = true
+            setErrorMessage(null)
+            try {
+                val driverAppointments = RetrofitInstance.api.getAppointmentsByDriverId(driverId)
+                _bookings.value = driverAppointments
+            } catch (e: IOException) {
+                setErrorMessage("Netzwerkfehler. Bitte überprüfen Sie Ihre Verbindung und stellen Sie sicher, dass die API läuft.")
+            } catch (e: HttpException) {
+                setErrorMessage("API-Fehler: ${e.message()}")
+            } catch (e: Exception) {
+                setErrorMessage("Ein unerwarteter Fehler ist aufgetreten: ${e.message}")
+            } finally {
+                _isLoading.value = false
+            }
+        }
+    }
+
     // --- 💡 3. CONSOLIDATED UI STATE ---
     private val _uiState = MutableStateFlow(BookingUiState())
     val uiState: StateFlow<BookingUiState> = _uiState.asStateFlow()
