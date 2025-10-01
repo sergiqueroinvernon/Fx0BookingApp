@@ -1,11 +1,6 @@
 package com.example.appointmentlistapp.data
 
 import androidx.room.Entity
-import com.example.appointmentlistapp.data.model.Appointment
-import retrofit2.Response
-import retrofit2.http.GET
-import retrofit2.http.POST
-import retrofit2.http.Path
 
 @Entity(tableName = "bookings")
 

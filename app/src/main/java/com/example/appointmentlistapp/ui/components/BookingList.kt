@@ -87,11 +87,7 @@ private fun DataRow(
             modifier = Modifier.weight(1f),
             fontSize = 14.sp
         )
-        Text(
-            text = booking.driver,
-            modifier = Modifier.weight(1.5f),
-            fontSize = 14.sp
-        )
+
         Column(
             modifier = Modifier.weight(1.5f)
         ) {

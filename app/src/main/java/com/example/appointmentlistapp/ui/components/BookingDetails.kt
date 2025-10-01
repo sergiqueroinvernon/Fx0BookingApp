@@ -32,7 +32,7 @@ fun BookingDetails(booking: Booking?, modifier: Modifier = Modifier) {
                         label1 = "Vorgangsnr.", value1 = booking.bookingId,
                         label2 = "Status", value2 = booking.status
                     )
-                    DetailRow(label1 = "Fahrer", value1 = booking.driver)
+                    //DetailRow(label1 = "Fahrer", value1 = booking.driver)
                 }
 
                 // Section: Angaben zur Fahrt

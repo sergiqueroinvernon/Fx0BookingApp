@@ -22,11 +22,12 @@ import com.example.appointmentlistapp.ui.components.BookingDetails
 import com.example.appointmentlistapp.util.getIconForType
 import com.example.appointmentlistapp.viewmodels.BookingEvent
 import com.example.appointmentlistapp.viewmodels.BookingViewModel
-import com.example.appointmentlistapp.ui.components.AppointmentItem
 import com.example.appointmentlistapp.ui.components.BookingItem
+import com.google.accompanist.flowlayout.FlowRow // WICHTIGER IMPORT
+import com.example.appointmentlistapp.viewmodels.BookingEvent.BookingSelected
+import com.example.appointmentlistapp.viewmodels.BookingEvent.BookingCheckedChange
 
-
-// --- Helper Composable for Button (Optional, but cleaner) ---
+// --- Helper Composable for Button (Correct) ---
 @Composable
 private fun ActionButton(
     config: ButtonConfig,
@@ -37,10 +38,8 @@ private fun ActionButton(
         modifier = modifier
     ) {
         Icon(
-            // Fetches the correct icon ID based on the string 'type'
             painter = painterResource(getIconForType(config.type.toString().trim())),
             contentDescription = config.text,
-            // Standard size for icons in a button, with spacing at the end
             modifier = Modifier.size(14.dp).padding(end = 4.dp)
         )
         Text(config.text)
@@ -51,32 +50,39 @@ private fun ActionButton(
 @Composable
 fun BookingScreen() {
     val bookingViewModel = viewModel<BookingViewModel>()
-    // Single source of truth for the UI State
-    val state by bookingViewModel.uiState.collectAsState()
 
-    // Fetches button configurations on screen launch
+    // ✅ FIX 1: Sammle alle individuellen State Flows aus der ViewModel
+    val bookings by bookingViewModel.bookings.collectAsState()
+    val selectedBooking by bookingViewModel.selectedBooking.collectAsState()
+    val buttonConfigs by bookingViewModel.buttonConfigs.collectAsState()
+    val isLoading by bookingViewModel.isLoading.collectAsState()
+    val errorMessage by bookingViewModel.errorMessage.collectAsState()
+    val showDetails by bookingViewModel.showDetails.collectAsState() // NEUER FLOW
+    // Der alte "state" (z.B. val state by bookingViewModel.uiState.collectAsState()) wurde entfernt.
+
+
+    // Fetches button configurations AND initial appointments (for testing) on screen launch
     LaunchedEffect(Unit) {
         bookingViewModel.fetchButtonsForClientAndScreen("client123", "BookingScreen")
+        // ✅ FIX 2: Füge den Aufruf zum Laden der Termine hinzu (mit einer Test-ID)
+        bookingViewModel.fetchAppointments("DRIVER_TEST_ID")
     }
 
     Column(modifier = Modifier.fillMaxSize()) {
 
         // --- HEADER SECTION (Title and Error) ---
-        // FIX 1: Use Padding for layout separation, giving space at the bottom (16.dp)
         Text(
             text = "BookingScreen Content",
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
         )
 
-        state.errorMessage?.let { msg ->
+        errorMessage?.let { msg -> // ✅ Verwende den korrekten 'errorMessage' Flow
             Text(
                 text = "ERROR: $msg",
                 color = Color.Red,
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
             )
         }
-        // FIX 2: Removed the redundant Spacer(modifier = Modifier.height(16.dp))
-        // to minimize the large whitespace.
 
         // --- MASTER/DETAIL LAYOUT START ---
         Row(Modifier.fillMaxSize()) {
@@ -84,19 +90,22 @@ fun BookingScreen() {
             // Master Pane Column (Buttons + List)
             Column(modifier = Modifier.weight(2f)) {
 
-                // --- Dynamic Buttons Row ---
+                // --- Dynamic Buttons Row (FlowRow) ---
                 FlowRow(
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp),
+                    // ✅ FIX 3: Korrigierte FlowRow Spacing Parameter
+                    mainAxisSpacing = 8.dp,
+                    crossAxisSpacing = 8.dp
                 ) {
-                    if (state.buttonConfigs.isNotEmpty()) {
-                        state.buttonConfigs.forEach { config ->
+                    if (buttonConfigs.isNotEmpty()) { // ✅ Verwende den korrekten 'buttonConfigs' Flow
+                        buttonConfigs.forEach { config ->
                             ActionButton(
                                 config,
                                 bookingViewModel,
                                 modifier = Modifier.width(160.dp)
                             )
                         }
-                    } else if (state.isLoading) {
+                    } else if (isLoading) { // ✅ Verwende den korrekten 'isLoading' Flow
                         Text(text = "Loading buttons...", modifier = Modifier.padding(8.dp))
                     } else {
                         Text(text = "No buttons configured.", modifier = Modifier.padding(8.dp))
@@ -106,69 +115,61 @@ fun BookingScreen() {
                 Spacer(modifier = Modifier.height(8.dp))
 
                 // --- Utility Toggle Button (Hardcoded Details Toggle) ---
-                // This button is only shown if there isn't a "details" button from the backend
-                // and there's a selected booking to show details for.
-                if (state.selectedBooking != null && state.buttonConfigs.none { it.type.toString().trim().equals("details", ignoreCase = true) }) {
-                Button(
-                    onClick = {
-                        // Creates a synthetic ButtonConfig event to toggle the details pane
-                        bookingViewModel.handleEvent(
-                            BookingEvent.ButtonClicked(
+                // ✅ FIX 4: Nutze 'selectedBooking' und 'showDetails' Flows
+                if (selectedBooking != null && buttonConfigs.none { it.type.toString().trim().equals("details", ignoreCase = true) }) {
+                    Button(
+                        onClick = {
+                            bookingViewModel.handleEvent(BookingEvent.ButtonClicked(
                                 config = ButtonConfig(
-                                    id = 0, // Synthetic ID
-                                    clientId = "client123",
-                                    screenId = "BookingScreen",
-                                    buttonName = "DetailsToggle",
-                                    action = "TOGGLE_DETAILS",
-                                    type = "details", // Critical: This type triggers the toggle in ViewModel
-                                    isVisible = 1,
-                                    text = if (state.showDetails) "Hide Details" else "Show Details",
-                                    IconData = TODO()
+                                    id = 0, clientId = "client123", screenId = "BookingScreen",
+                                    buttonName = "DetailsToggle", action = "TOGGLE_DETAILS",
+                                    type = "details", isVisible = 1,
+                                    text = if (showDetails) "Hide Details" else "Show Details",
+                                    IconData = "" // ✅ FIX 5: TODO() entfernt
                                 )
                             ))
                         },
                         modifier = Modifier.padding(horizontal = 8.dp)
                     ) {
-                        Text(if (state.showDetails) "Hide Details Pane" else "Show Details Pane")
+                        Text(if (showDetails) "Hide Details Pane" else "Show Details Pane") // ✅ Nutze 'showDetails'
                     }
+                    Spacer(modifier = Modifier.height(8.dp))
                 }
 
+                // --- Master Pane List (LazyColumn) ---
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
                     contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     items(
-                        // items = state.bookings, // This was the original line
-                        // To test an empty list, you can temporarily pass an empty list:
-                        // items = emptyList(),
-                        // Or, more robustly, ensure your ViewModel state reflects emptiness when appropriate.
-                        state.bookings,
-                        key = { booking -> booking.id }
-                    ) { appointment ->
+                        bookings, // ✅ Nutze den korrekten 'bookings' Flow
+                        key = { booking -> booking.id ?: booking.toString() } // Sicherer Key
+                    ) { booking -> // ✅ Nutze 'booking' als Iterator
                         BookingItem(
-                            booking = appointment,
-                            isChecked = appointment.isChecked,
+                            booking = booking,
+                            // ✅ FIX 6: onClick Handler für Auswahl hinzugefügt
+
+                            // ✅ FIX 7: isSelected Status hinzugefügt
+                            isChecked = booking.isChecked ?: false, // Sicherer Null-Check
                             onCheckedChange = {
                                 bookingViewModel.handleEvent(
-                                    BookingEvent.BookingCheckedChange(
-                                        appointment.id
-                                    )
+                                    BookingCheckedChange(booking.id)
                                 )
                             },
-                            )
+                        )
                     }
-
                 }
-            }
+            } // END Master Pane Column
 
-            // Detail Pane (conditionally displayed on the right)
-            if (state.showDetails ) {
-                VerticalDivider(modifier = Modifier.fillMaxHeight().width(8.dp))
-               // Visually separates the master and detail panes
-                Box(modifier = Modifier.weight(1f).padding(16.dp)) { // Take remaining space
-                    BookingDetails(booking = state.selectedBooking as Booking?)
-                }
+            VerticalDivider()
+
+            // Detail Pane
+            if (showDetails) { // ✅ Nutze den korrekten 'showDetails' Flow
+                BookingDetails(
+                    booking = selectedBooking as Booking?, // ✅ Nutze den korrekten 'selectedBooking' Flow
+                    modifier = Modifier.weight(1f) // ✅ Gewicht hinzugefügt
+                )
             }
         } // END Master/Detail Row
     }
