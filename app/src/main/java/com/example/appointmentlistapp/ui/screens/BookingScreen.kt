@@ -16,6 +16,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.appointmentlistapp.data.Booking
 import com.example.appointmentlistapp.data.components.ButtonConfig
 import com.example.appointmentlistapp.ui.components.BookingDetails
 import com.example.appointmentlistapp.util.getIconForType
@@ -143,7 +144,7 @@ fun BookingScreen() {
                         // items = emptyList(),
                         // Or, more robustly, ensure your ViewModel state reflects emptiness when appropriate.
                         state.bookings,
-                        key = { booking -> booking.bookingId }
+                        key = { booking -> booking.id }
                     ) { appointment ->
                         BookingItem(
                             booking = appointment,
@@ -151,7 +152,7 @@ fun BookingScreen() {
                             onCheckedChange = {
                                 bookingViewModel.handleEvent(
                                     BookingEvent.BookingCheckedChange(
-                                        appointment.bookingId
+                                        appointment.id
                                     )
                                 )
                             },
@@ -166,7 +167,7 @@ fun BookingScreen() {
                 VerticalDivider(modifier = Modifier.fillMaxHeight().width(8.dp))
                // Visually separates the master and detail panes
                 Box(modifier = Modifier.weight(1f).padding(16.dp)) { // Take remaining space
-                    BookingDetails(booking = state.selectedBooking)
+                    BookingDetails(booking = state.selectedBooking as Booking?)
                 }
             }
         } // END Master/Detail Row

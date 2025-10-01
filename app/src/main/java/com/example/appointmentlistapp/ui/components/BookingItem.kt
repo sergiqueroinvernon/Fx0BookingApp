@@ -16,7 +16,7 @@ import com.example.appointmentlistapp.ui.screens.formatDate
 
 @Composable
 fun BookingItem(
-    booking: Booking,
+    booking: Appointment,
     isChecked: Boolean,
     onCheckedChange: (Boolean) -> Unit
 ) {
@@ -48,7 +48,7 @@ fun BookingItem(
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(text = "Driver: ${booking.driver ?: "N/A"}")
-                Text(text = "Date: ${formatDate(booking.bookingDate)}")
+                Text(text = "Date: ${formatDate(booking.appointmentDateTime)}")
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(text = "Status: ")
                     Text(

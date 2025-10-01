@@ -10,13 +10,14 @@ import com.example.appointmentlistapp.data.model.Appointment
 import com.example.appointmentlistapp.data.remote.RetrofitInstance
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.selects.select
 import retrofit2.HttpException
 import java.io.IOException
 
 // --- 💡 1. New UI State Data Class ---
 data class BookingUiState(
-    val bookings: List<Booking> = emptyList(),
-    val selectedBooking: Booking? = null,
+    val bookings: List<Appointment> = emptyList(),
+    val selectedBooking: Appointment? = null,
     val buttonConfigs: List<ButtonConfig> = emptyList(),
     val isLoading: Boolean = false,
     val errorMessage: String? = null,
@@ -26,7 +27,7 @@ data class BookingUiState(
 // --- 💡 2. New UI Event/Intent Sealed Class ---
 sealed class BookingEvent {
     data class ButtonClicked(val config: ButtonConfig) : BookingEvent()
-    data class BookingSelected(val booking: Booking) : BookingEvent()
+    data class BookingSelected(val booking: Appointment) : BookingEvent()
     data class BookingCheckedChange(val bookingId: String) : BookingEvent()
     // You could also add a ToggleDetails event here if you want it decoupled from buttons
 }
@@ -113,7 +114,7 @@ class BookingViewModel : ViewModel() {
                 it.copy(showDetails = !it.showDetails) // Toggle details pane
             }
             "add" -> Log.d("ViewModel", "Action: Navigate to ADD screen.")
-            "edit" -> Log.d("ViewModel", "Action: Navigate to EDIT screen for booking ID: ${uiState.value.selectedBooking?.bookingId}")
+            "edit" -> Log.d("ViewModel", "Action: Navigate to EDIT screen for booking ID: ${uiState.value.selectedBooking?.id}")
             // ... add other dynamic actions (save, cancel, etc.)
             else -> Log.w("ViewModel", "Unknown button action type: ${config.type}")
         }
@@ -157,14 +158,12 @@ class BookingViewModel : ViewModel() {
     // Other functions (fetchAppointments, insertBooking, deleteBooking) should also be updated
     // to use the _uiState.update { ... } pattern instead of individual flow updates.
 
-    fun selectBooking(booking: Booking) {
-        _uiState.update { it.copy(selectedBooking = booking) }
-    }
+
 
     fun toggleBookingChecked(bookingId: String) {
         _uiState.update { currentState ->
             val updatedBookings = currentState.bookings.map { booking ->
-                if (booking.bookingId == bookingId) {
+                if (booking.id == bookingId) {
                     booking.copy(isChecked = !(booking.isChecked ?: false))
                 } else {
                     booking
@@ -178,5 +177,11 @@ class BookingViewModel : ViewModel() {
         _uiState.update { it.copy(errorMessage = message) }
     }
 
+    private fun selectBooking(booking: Appointment) {
+        _uiState.update { it.copy(selectedBooking = booking) }
+    }
+
     // ❌ REMOVE the redundant loadButtonsForScreen function if it exists here.
 }
+
+
