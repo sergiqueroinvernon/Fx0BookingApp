@@ -72,6 +72,7 @@ dependencies {
     // Image Loading
     implementation("io.coil-kt:coil-compose:2.7.0")
     implementation(libs.runtime)
+    implementation(libs.androidx.foundation)
 
     // CameraX dependencies (using the latest stable version)
     val camerax_version = "1.5.0"

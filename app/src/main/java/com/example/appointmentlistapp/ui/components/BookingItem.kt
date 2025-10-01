@@ -15,13 +15,13 @@ import com.example.appointmentlistapp.ui.screens.formatDate
 
 
 @Composable
-fun AppointmentItem(
-    appointment: Appointment,
+fun BookingItem(
+    booking: Booking,
     isChecked: Boolean,
     onCheckedChange: (Boolean) -> Unit
 ) {
-    val isPending = appointment.status.equals("Pending", ignoreCase = true)
-    val isCompleted = appointment.status.equals("Completed", ignoreCase = true)
+    val isPending = booking.status.equals("Pending", ignoreCase = true)
+    val isCompleted = booking.status.equals("Completed", ignoreCase = true)
     Card(
         modifier = Modifier.fillMaxWidth(),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
@@ -42,17 +42,17 @@ fun AppointmentItem(
             }
             Column {
                 Text(
-                    text = appointment.description,
+                    text = booking.description,
                     fontWeight = FontWeight.Bold,
                     fontSize = 18.sp,
                 )
                 Spacer(modifier = Modifier.height(8.dp))
-                Text(text = "Driver: ${appointment.driver?.name ?: "N/A"}")
-                Text(text = "Date: ${formatDate(appointment.appointmentDateTime)}")
+                Text(text = "Driver: ${booking.driver ?: "N/A"}")
+                Text(text = "Date: ${formatDate(booking.bookingDate)}")
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(text = "Status: ")
                     Text(
-                        text = appointment.status,
+                        text = booking.status,
                         color = if (isCompleted) Color(0xFF388E3C) else Color(0xFFFBC02D),
                         fontWeight = FontWeight.Bold
                     )

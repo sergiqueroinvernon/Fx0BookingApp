@@ -1,6 +1,8 @@
 package com.example.appointmentlistapp.ui.screens
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -14,13 +16,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.appointmentlistapp.R // <-- IMPORTANT: Ensure this import is correct for your project's resource R class
 import com.example.appointmentlistapp.data.components.ButtonConfig
 import com.example.appointmentlistapp.ui.components.BookingDetails
-import com.example.appointmentlistapp.ui.components.BookingList
 import com.example.appointmentlistapp.util.getIconForType
 import com.example.appointmentlistapp.viewmodels.BookingEvent
 import com.example.appointmentlistapp.viewmodels.BookingViewModel
+import com.example.appointmentlistapp.ui.components.AppointmentItem
+import com.example.appointmentlistapp.ui.components.BookingItem
 
 
 // --- Helper Composable for Button (Optional, but cleaner) ---
@@ -85,8 +87,6 @@ fun BookingScreen() {
                 // --- Dynamic Buttons Row ---
                 FlowRow(
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     if (state.buttonConfigs.isNotEmpty()) {
                         state.buttonConfigs.forEach { config ->
@@ -107,23 +107,27 @@ fun BookingScreen() {
                 Spacer(modifier = Modifier.height(8.dp))
 
                 // --- Utility Toggle Button (Hardcoded Details Toggle) ---
-                if (state.buttonConfigs.none { it.type.toString().trim().equals("details", ignoreCase = true) }) {
+                if (state.buttonConfigs.none {
+                        it.type.toString().trim().equals("details", ignoreCase = true)
+                    }) {
                     Button(
                         onClick = {
                             // Creates a synthetic ButtonConfig event to toggle the details pane
-                            bookingViewModel.handleEvent(BookingEvent.ButtonClicked(
-                                config = ButtonConfig(
-                                    id = 0,
-                                    clientId = "client123",
-                                    screenId = "BookingScreen",
-                                    buttonName = "DetailsToggle",
-                                    action = "TOGGLE_DETAILS",
-                                    type = "details",
-                                    isVisible = 1,
-                                    text = "Details",
-                                    IconData = "" // Fixed: Replaced TODO() with empty string
+                            bookingViewModel.handleEvent(
+                                BookingEvent.ButtonClicked(
+                                    config = ButtonConfig(
+                                        id = 0,
+                                        clientId = "client123",
+                                        screenId = "BookingScreen",
+                                        buttonName = "DetailsToggle",
+                                        action = "TOGGLE_DETAILS",
+                                        type = "details",
+                                        isVisible = 1,
+                                        text = "Details",
+                                        IconData = "" // Fixed: Replaced TODO() with empty string
+                                    )
                                 )
-                            ))
+                            )
                         },
                         modifier = Modifier.padding(horizontal = 8.dp)
                     ) {
@@ -132,23 +136,38 @@ fun BookingScreen() {
                     Spacer(modifier = Modifier.height(8.dp))
                 }
 
-                // Master Pane (List)
-                BookingList(
-                    bookings = state.bookings,
-                    onBookingSelected = { booking -> bookingViewModel.handleEvent(BookingEvent.BookingSelected(booking)) },
-                    onBookingCheckedChange = { bookingId -> bookingViewModel.handleEvent(BookingEvent.BookingCheckedChange(bookingId)) },
-                    modifier = Modifier.fillMaxSize()
-                )
-            } // END Master Pane Column
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    items(
+                        state.bookings,
+                        key = { booking -> booking.bookingId }
+                    ) { appointment ->
+                        BookingItem(
+                            booking = appointment,
+                            isChecked = appointment.isChecked,
+                            onCheckedChange = {
+                                bookingViewModel.handleEvent(
+                                    BookingEvent.BookingCheckedChange(
+                                        appointment.bookingId
+                                    )
+                                )
+                            },
 
-            VerticalDivider()
+                            )
+                    }
 
-            // Detail Pane
-            if (state.showDetails) {
-                BookingDetails(
-                    booking = state.selectedBooking,
-                    modifier = Modifier.weight(1f)
-                )
+                }
+            }
+
+            // Detail Pane (conditionally displayed on the right)
+            if (state.showDetails && state.selectedBooking != null) {
+                VerticalDivider() // Visually separates the master and detail panes
+                Box(modifier = Modifier.weight(1f).padding(16.dp)) { // Take remaining space
+                    BookingDetails(booking = state.selectedBooking)
+                }
             }
         } // END Master/Detail Row
     }

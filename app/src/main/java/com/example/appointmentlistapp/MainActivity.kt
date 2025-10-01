@@ -289,10 +289,10 @@ class AppointmentViewModel : ViewModel() {
                     val response = RetrofitInstance.api.checkInAppointment(appointment.id)
                     if (response.isSuccessful) {
                         successCount++
-                    } else {
-                        errorOccurred = true
-                        setErrorMessage("Fehler beim Einchecken des Termins ${appointment.description}: ${response.code()} ${response.message()}")
-                    }
+                            } else {
+                                errorOccurred = true
+                                setErrorMessage("Fehler beim Einchecken des Termins ${appointment.description}: ${response.code()} ${response.message()}")
+                            }
                 } catch (e: Exception) {
                     errorOccurred = true
                     setErrorMessage("Fehler beim Einchecken des Termins ${appointment.description}: ${e.message}")

@@ -15,6 +15,7 @@ data class Booking(
     val status: String,
     val driver: String,
     val bookingDate: String,
+    val description: String,
 
     // Trip details section
     val pickupDate: String,
