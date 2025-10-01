@@ -116,6 +116,8 @@ dependencies {
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
     // Kotlin Coroutine support for Retrofit
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
+    implementation("com.google.accompanist:accompanist-flowlayout:0.34.0")
+// Use the latest version
 
 
 

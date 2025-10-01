@@ -25,9 +25,13 @@ import com.example.appointmentlistapp.viewmodels.BookingViewModel
 
 // --- Helper Composable for Button (Optional, but cleaner) ---
 @Composable
-private fun ActionButton(config: ButtonConfig, viewModel: BookingViewModel) {
+private fun ActionButton(
+    config: ButtonConfig,
+    viewModel: BookingViewModel,
+    modifier: Modifier = Modifier) {
     Button(
-        onClick = { viewModel.handleEvent(BookingEvent.ButtonClicked(config)) }
+        onClick = { viewModel.handleEvent(BookingEvent.ButtonClicked(config)) },
+        modifier = modifier
     ) {
         Icon(
             // Fetches the correct icon ID based on the string 'type'
@@ -79,13 +83,19 @@ fun BookingScreen() {
             Column(modifier = Modifier.weight(2f)) {
 
                 // --- Dynamic Buttons Row ---
-                Row(
+                FlowRow(
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     if (state.buttonConfigs.isNotEmpty()) {
                         state.buttonConfigs.forEach { config ->
-                            ActionButton(config, bookingViewModel)
+                            ActionButton(
+                                config,
+                                bookingViewModel,
+                                modifier = Modifier.width(160.dp)
+
+                            )
                         }
                     } else if (state.isLoading) {
                         Text(text = "Loading buttons...", modifier = Modifier.padding(8.dp))
