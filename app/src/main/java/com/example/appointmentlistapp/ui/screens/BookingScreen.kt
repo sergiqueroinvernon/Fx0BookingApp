@@ -107,33 +107,31 @@ fun BookingScreen() {
                 Spacer(modifier = Modifier.height(8.dp))
 
                 // --- Utility Toggle Button (Hardcoded Details Toggle) ---
-                if (state.buttonConfigs.none {
-                        it.type.toString().trim().equals("details", ignoreCase = true)
-                    }) {
-                    Button(
-                        onClick = {
-                            // Creates a synthetic ButtonConfig event to toggle the details pane
-                            bookingViewModel.handleEvent(
-                                BookingEvent.ButtonClicked(
-                                    config = ButtonConfig(
-                                        id = 0,
-                                        clientId = "client123",
-                                        screenId = "BookingScreen",
-                                        buttonName = "DetailsToggle",
-                                        action = "TOGGLE_DETAILS",
-                                        type = "details",
-                                        isVisible = 1,
-                                        text = "Details",
-                                        IconData = "" // Fixed: Replaced TODO() with empty string
-                                    )
+                // This button is only shown if there isn't a "details" button from the backend
+                // and there's a selected booking to show details for.
+                if (state.selectedBooking != null && state.buttonConfigs.none { it.type.toString().trim().equals("details", ignoreCase = true) }) {
+                Button(
+                    onClick = {
+                        // Creates a synthetic ButtonConfig event to toggle the details pane
+                        bookingViewModel.handleEvent(
+                            BookingEvent.ButtonClicked(
+                                config = ButtonConfig(
+                                    id = 0, // Synthetic ID
+                                    clientId = "client123",
+                                    screenId = "BookingScreen",
+                                    buttonName = "DetailsToggle",
+                                    action = "TOGGLE_DETAILS",
+                                    type = "details", // Critical: This type triggers the toggle in ViewModel
+                                    isVisible = 1,
+                                    text = if (state.showDetails) "Hide Details" else "Show Details",
+                                    IconData = TODO()
                                 )
-                            )
+                            ))
                         },
                         modifier = Modifier.padding(horizontal = 8.dp)
                     ) {
                         Text(if (state.showDetails) "Hide Details Pane" else "Show Details Pane")
                     }
-                    Spacer(modifier = Modifier.height(8.dp))
                 }
 
                 LazyColumn(
@@ -163,8 +161,9 @@ fun BookingScreen() {
             }
 
             // Detail Pane (conditionally displayed on the right)
-            if (state.showDetails && state.selectedBooking != null) {
-                VerticalDivider() // Visually separates the master and detail panes
+            if (state.showDetails ) {
+                VerticalDivider(modifier = Modifier.fillMaxHeight().width(8.dp))
+               // Visually separates the master and detail panes
                 Box(modifier = Modifier.weight(1f).padding(16.dp)) { // Take remaining space
                     BookingDetails(booking = state.selectedBooking)
                 }
