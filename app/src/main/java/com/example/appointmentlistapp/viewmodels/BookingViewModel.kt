@@ -57,6 +57,8 @@ private fun convertAppointmentToBooking(appointment: Appointment): Booking {
         // Notes section
         note = appointment.note ?: "-",
         isChecked = appointment.isChecked,
+        handOverDate = appointment.handOverDate ?: "-",
+        internNumber = appointment.internNumber ?: "-",
     )
 }
 

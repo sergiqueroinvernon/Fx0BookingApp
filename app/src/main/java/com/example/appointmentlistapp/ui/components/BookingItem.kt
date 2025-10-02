@@ -71,8 +71,22 @@ fun BookingItem(
                     fontWeight = FontWeight.Bold,
                     fontSize = 18.sp,
                 )
-                Spacer(modifier = Modifier.height(4.dp)) // Reduced height for tighter packing
-                Text(text = "Driver: ${booking.driver?.name ?: "N/A"}")
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(text = "Vorgangsnr.: ${booking.id?: "N/A"}")
+                Text(text = "Status.: ${booking.status?: "N/A"}")
+                Text(text = "Reserviert von.: ${booking.id?: "N/A"}")
+                Text(text = "Fahrer: ${booking.driver?.name ?: "N/A"}")
+
+                Text(text = "Übergabe ${booking.handOverDate?: "N/A"}")
+                Text(text = "Rücknahme: ${booking.returnDate ?: "N/A"}")
+
+                Text(text = "Fahrzeugpool ${booking.vehiclePool ?: "N/A"}")
+                Text(text = "Reisezweck: ${booking.purposeOfTrip ?: "N/A"}")
+
+                Text(text = "Fahrzeugpool ${booking.driver ?: "N/A"}")
+                Text(text = "Interne Nr.: ${booking.internNumber ?: "N/A"}")
+
+                // Reduced height for tighter packing
                 Text(text = "Date: ${formatDate(booking.appointmentDateTime)}")
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(text = "Status: ")

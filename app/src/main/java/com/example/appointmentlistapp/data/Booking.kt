@@ -14,6 +14,7 @@ data class Booking(
 
     // Trip details section
     val pickupDate: String,
+    val handOverDate: String,
     val returnDate: String,
     val returnTime: String,
     val vehicle: String,
@@ -32,6 +33,7 @@ data class Booking(
     // Notes section (nullable)
     val note: String,
     var isChecked: Boolean,
-    val pickupTime: String
+    val pickupTime: String,
+    val internNumber: String
 )
 

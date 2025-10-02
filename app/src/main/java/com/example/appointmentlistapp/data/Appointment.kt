@@ -23,6 +23,9 @@ import com.example.appointmentlistapp.Driver
     val odometerPickup: String? = null, // Used as 'odometerReadingPickup' in Booking
     val odometerReturn: String? = null, // Used as 'odometerReadingReturn' in Booking
     val distance: String? = null,
+    val handOverDate: String? = null,
+    val internNumber: String? = null,
+
 
     // Administrative/Cancellation
     val cancellationDate: String? = null,
