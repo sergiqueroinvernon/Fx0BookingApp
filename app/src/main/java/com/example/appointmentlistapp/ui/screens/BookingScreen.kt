@@ -1,21 +1,20 @@
 package com.example.appointmentlistapp.ui.screens
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Button
-import androidx.compose.material3.Icon
-import androidx.compose.material3.Text
-import androidx.compose.material3.VerticalDivider
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.ui.window.Dialog // Import for the pop-up window
+
 import com.example.appointmentlistapp.data.Booking
 import com.example.appointmentlistapp.data.components.ButtonConfig
 import com.example.appointmentlistapp.ui.components.BookingDetails
@@ -23,11 +22,16 @@ import com.example.appointmentlistapp.util.getIconForType
 import com.example.appointmentlistapp.viewmodels.BookingEvent
 import com.example.appointmentlistapp.viewmodels.BookingViewModel
 import com.example.appointmentlistapp.ui.components.BookingItem
-import com.google.accompanist.flowlayout.FlowRow // WICHTIGER IMPORT
+import com.example.appointmentlistapp.ui.components.filters.BookingFilterEvent
+import com.example.appointmentlistapp.ui.components.filters.BookingFilterState
+import com.google.accompanist.flowlayout.FlowRow
 import com.example.appointmentlistapp.viewmodels.BookingEvent.BookingSelected
 import com.example.appointmentlistapp.viewmodels.BookingEvent.BookingCheckedChange
 
-// --- Helper Composable for Button (Correct) ---
+// --- Filter State Placeholders (Should exist in your ViewModel package) ---
+// ---
+
+// --- Helper Composable for Button ---
 @Composable
 private fun ActionButton(
     config: ButtonConfig,
@@ -47,28 +51,147 @@ private fun ActionButton(
 }
 // ---
 
+// --- NEW COMPOSABLE: The Filter Mask (Content for the Dialog) ---
+@Composable
+fun BookingFilterMask(
+    filterState: BookingFilterState,
+    onEvent: (BookingFilterEvent) -> Unit,
+    onClose: () -> Unit // Function to close the dialog
+) {
+    val statusOptions = listOf("Open", "In Progress", "Completed")
+
+    // Use a Surface inside the Dialog for style and elevation
+    Surface(
+        modifier = Modifier
+            .width(400.dp) // Define a width suitable for a standard pop-up
+            .wrapContentHeight(),
+        shape = MaterialTheme.shapes.large,
+        tonalElevation = 6.dp
+    ) {
+        Column(
+            modifier = Modifier.padding(24.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            Text("Filterkriterien", style = MaterialTheme.typography.headlineSmall)
+            Divider()
+
+            // 1. Vorgangsnr.
+            OutlinedTextField(
+                value = filterState.bookingNo,
+                onValueChange = { onEvent(BookingFilterEvent.BookingNoChange(it)) },
+                label = { Text("Vorgangsnr.") },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true
+            )
+
+            // 2. Status (Dropdown Placeholder)
+            OutlinedTextField(
+                value = filterState.status.ifEmpty { "Status" },
+                onValueChange = {},
+                label = { Text("Status") },
+                readOnly = true,
+                trailingIcon = { Icon(Icons.Filled.ArrowDropDown, contentDescription = null, Modifier.clickable {}) },
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            // 3. Übergabedatum (Date Range Placeholder)
+            OutlinedTextField(
+                value = filterState.handOverDate.ifEmpty { "Übergabedatum - -" },
+                onValueChange = {},
+                label = { Text("Übergabedatum") },
+                readOnly = true,
+                trailingIcon = { Icon(Icons.Filled.ArrowDropDown, contentDescription = null, Modifier.clickable {}) },
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            // 4. Reisezweck (Dropdown Placeholder)
+            OutlinedTextField(
+                value = filterState.travelPurpose.ifEmpty { "Reisezweck" },
+                onValueChange = {},
+                label = { Text("Reisezweck") },
+                readOnly = true,
+                trailingIcon = { Icon(Icons.Filled.ArrowDropDown, contentDescription = null, Modifier.clickable {}) },
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            // 5. Fahrzeug (Dropdown Placeholder)
+            OutlinedTextField(
+                value = filterState.vehicle.ifEmpty { "Fahrzeug" },
+                onValueChange = {},
+                label = { Text("Fahrzeug") },
+                readOnly = true,
+                trailingIcon = { Icon(Icons.Filled.ArrowDropDown, contentDescription = null, Modifier.clickable {}) },
+                modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp)
+            )
+
+            // Action Buttons (Aktualisieren / Zurücksetzen)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                // Aktualisieren (Update)
+                Button(
+                    onClick = { onEvent(BookingFilterEvent.ApplyFilter); onClose() },
+                    modifier = Modifier.weight(1f).padding(end = 4.dp),
+                    // Using default primary color
+                ) {
+                    Text("Aktualisieren")
+                }
+
+                // Zurücksetzen (Reset)
+                OutlinedButton(
+                    onClick = { onEvent(BookingFilterEvent.ResetFilter); onClose() },
+                    modifier = Modifier.weight(1f).padding(start = 4.dp),
+                ) {
+                    Text("Zurücksetzen")
+                }
+            }
+        }
+    }
+}
+// ----------------------------------------------------------------------
+
+
 @Composable
 fun BookingScreen() {
     val bookingViewModel = viewModel<BookingViewModel>()
 
-    // ✅ FIX 1: Sammle alle individuellen State Flows aus der ViewModel
+    // State flows from ViewModel
     val bookings by bookingViewModel.bookings.collectAsState()
     val selectedBooking by bookingViewModel.selectedBooking.collectAsState()
     val buttonConfigs by bookingViewModel.buttonConfigs.collectAsState()
     val isLoading by bookingViewModel.isLoading.collectAsState()
     val errorMessage by bookingViewModel.errorMessage.collectAsState()
-    val showDetails by bookingViewModel.showDetails.collectAsState() // NEUER FLOW
-    // Der alte "state" (z.B. val state by bookingViewModel.uiState.collectAsState()) wurde entfernt.
+    val showDetails by bookingViewModel.showDetails.collectAsState()
 
 
-    // Fetches button configurations AND initial appointments (for testing) on screen launch
+
+    // 🆕 NEW: State to toggle the visibility of the filter mask Dialog
+    // 🆕 NEW: Placeholder for filter state (replace with actual ViewModel state)
+    val filterState by bookingViewModel.filterState.collectAsState()
+
+    var showFilterMask by remember { mutableStateOf(false) }
+
+
+
     LaunchedEffect(Unit) {
         bookingViewModel.fetchButtonsForClientAndScreen("client123", "BookingScreen")
-        // ✅ FIX 2: Füge den Aufruf zum Laden der Termine hinzu (mit einer Test-ID)
         bookingViewModel.fetchAppointments("DRIVER_TEST_ID")
     }
 
     Column(modifier = Modifier.fillMaxSize()) {
+
+        // --- FILTER DIALOG (Pop-up Window) ---
+        if (showFilterMask) {
+            Dialog(onDismissRequest = { showFilterMask = false }) {
+                BookingFilterMask(
+                    filterState = filterState, // Replace with bookingViewModel.filterState.collectAsState().value
+                    onEvent =  { event -> bookingViewModel.handleFilterEvent(event)}, /* Handle filter event in ViewModel */
+                    onClose = { showFilterMask = false }
+                )
+            }
+        }
+        // -------------------------------------
 
         // --- HEADER SECTION (Title and Error) ---
         Text(
@@ -76,7 +199,7 @@ fun BookingScreen() {
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
         )
 
-        errorMessage?.let { msg -> // ✅ Verwende den korrekten 'errorMessage' Flow
+        errorMessage?.let { msg ->
             Text(
                 text = "ERROR: $msg",
                 color = Color.Red,
@@ -87,25 +210,28 @@ fun BookingScreen() {
         // --- MASTER/DETAIL LAYOUT START ---
         Row(Modifier.fillMaxSize()) {
 
-            // Master Pane Column (Buttons + List)
+            // Master Pane Column (Filter Button + Buttons + List)
             Column(modifier = Modifier.weight(2f)) {
+
+                // 🆕 NEW: FILTERKRITERIEN BUTTON to open the Dialog
+                Button(
+                    onClick = { showFilterMask = true },
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+                ) {
+                    Text("Filterkriterien")
+                }
 
                 // --- Dynamic Buttons Row (FlowRow) ---
                 FlowRow(
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp),
-                    // ✅ FIX 3: Korrigierte FlowRow Spacing Parameter
                     mainAxisSpacing = 8.dp,
                     crossAxisSpacing = 8.dp
                 ) {
-                    if (buttonConfigs.isNotEmpty()) { // ✅ Verwende den korrekten 'buttonConfigs' Flow
+                    if (buttonConfigs.isNotEmpty()) {
                         buttonConfigs.forEach { config ->
-                            ActionButton(
-                                config,
-                                bookingViewModel,
-                                modifier = Modifier.width(160.dp)
-                            )
+                            ActionButton(config, bookingViewModel, modifier = Modifier.width(160.dp))
                         }
-                    } else if (isLoading) { // ✅ Verwende den korrekten 'isLoading' Flow
+                    } else if (isLoading) {
                         Text(text = "Loading buttons...", modifier = Modifier.padding(8.dp))
                     } else {
                         Text(text = "No buttons configured.", modifier = Modifier.padding(8.dp))
@@ -114,8 +240,7 @@ fun BookingScreen() {
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                // --- Utility Toggle Button (Hardcoded Details Toggle) ---
-                // ✅ FIX 4: Nutze 'selectedBooking' und 'showDetails' Flows
+                // --- Utility Toggle Button ---
                 if (selectedBooking != null && buttonConfigs.none { it.type.toString().trim().equals("details", ignoreCase = true) }) {
                     Button(
                         onClick = {
@@ -124,14 +249,13 @@ fun BookingScreen() {
                                     id = 0, clientId = "client123", screenId = "BookingScreen",
                                     buttonName = "DetailsToggle", action = "TOGGLE_DETAILS",
                                     type = "details", isVisible = 1,
-                                    text = if (showDetails) "Hide Details" else "Show Details",
-                                    IconData = "" // ✅ FIX 5: TODO() entfernt
+                                    text = if (showDetails) "Hide Details" else "Show Details", IconData = ""
                                 )
                             ))
                         },
                         modifier = Modifier.padding(horizontal = 8.dp)
                     ) {
-                        Text(if (showDetails) "Hide Details Pane" else "Show Details Pane") // ✅ Nutze 'showDetails'
+                        Text(if (showDetails) "Hide Details Pane" else "Show Details Pane")
                     }
                     Spacer(modifier = Modifier.height(8.dp))
                 }
@@ -142,25 +266,13 @@ fun BookingScreen() {
                     contentPadding = PaddingValues(horizontal = 16.dp, vertical = 10.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    items(
-                        bookings, // ✅ Nutze den korrekten 'bookings' Flow
-                        key = { booking -> booking.id ?: booking.toString() } // Sicherer Key
-                    ) { booking -> // ✅ Nutze 'booking' als Iterator
+                    items(bookings, key = { booking -> booking.id ?: booking.toString() }) { booking ->
                         BookingItem(
                             booking = booking,
-                             // This makes each row take up the full available width
-                            // ✅ FIX 6: onClick Handler für Auswahl hinzugefügt
-                            onClick={
-                                bookingViewModel.handleEvent(BookingSelected(booking))
-                            },
+                            onClick={ bookingViewModel.handleEvent(BookingSelected(booking)) },
                             isSelected = booking.id == selectedBooking?.bookingId,
-                            // ✅ FIX 7: isSelected Status hinzugefügt
-                            isChecked = booking.isChecked ?: false, // Sicherer Null-Check
-                            onCheckedChange = {
-                                bookingViewModel.handleEvent(
-                                    BookingCheckedChange(booking.id)
-                                )
-                            },
+                            isChecked = booking.isChecked ?: false,
+                            onCheckedChange = { bookingViewModel.handleEvent(BookingCheckedChange(booking.id)) },
                         )
                     }
                 }
@@ -169,10 +281,10 @@ fun BookingScreen() {
             VerticalDivider()
 
             // Detail Pane
-            if (showDetails) { // ✅ Nutze den korrekten 'showDetails' Flow
+            if (showDetails) {
                 BookingDetails(
-                    booking = selectedBooking as Booking?, // ✅ Nutze den korrekten 'selectedBooking' Flow
-                    modifier = Modifier.weight(1f) // ✅ Gewicht hinzugefügt
+                    booking = selectedBooking as Booking?,
+                    modifier = Modifier.weight(1f)
                 )
             }
         } // END Master/Detail Row
