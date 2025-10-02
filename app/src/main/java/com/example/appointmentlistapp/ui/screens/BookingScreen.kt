@@ -139,7 +139,7 @@ fun BookingScreen() {
                 // --- Master Pane List (LazyColumn) ---
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 10.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     items(
@@ -148,6 +148,7 @@ fun BookingScreen() {
                     ) { booking -> // ✅ Nutze 'booking' als Iterator
                         BookingItem(
                             booking = booking,
+                             // This makes each row take up the full available width
                             // ✅ FIX 6: onClick Handler für Auswahl hinzugefügt
                             onClick={
                                 bookingViewModel.handleEvent(BookingSelected(booking))

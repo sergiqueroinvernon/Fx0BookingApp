@@ -30,7 +30,7 @@ fun BookingItem(
                 Checkbox(
                     checked = isChecked,
                     onCheckedChange = onCheckedChange,
-                    modifier = Modifier.padding(end = 16.dp)
+                    modifier = Modifier.padding(end = 16.dp).fillMaxWidth()
                 )
             } else {
                 Spacer(modifier = Modifier.width(48.dp)) // Platzhalter für Konsistenz
