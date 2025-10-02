@@ -25,12 +25,13 @@ fun BookingItem(
     val isPending = booking.status.equals("Pending", ignoreCase = true)
     val isCompleted = booking.status.equals("Completed", ignoreCase = true)
     Card(
+        modifier = Modifier.fillMaxWidth()
         ) {
             if (isPending) {
                 Checkbox(
                     checked = isChecked,
                     onCheckedChange = onCheckedChange,
-                    modifier = Modifier.padding(end = 16.dp).fillMaxWidth()
+                    modifier = Modifier.padding(end = 16.dp)
                 )
             } else {
                 Spacer(modifier = Modifier.width(48.dp)) // Platzhalter für Konsistenz
