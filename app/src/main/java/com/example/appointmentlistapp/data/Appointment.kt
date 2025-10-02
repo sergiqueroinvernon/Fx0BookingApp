@@ -5,14 +5,14 @@ import com.example.appointmentlistapp.Driver
  data class Appointment(
     val id: String,
     val driverId: String,
-    val driver: Driver?,
+    val driver: Driver?, // Reference to the Driver model
     val appointmentDateTime: String,
     val status: String,
     val description: String,
-    val vehicleRegistration: String? = null,
+    val vehicleRegistration: String? = null, // Used as 'vehicle' in Booking
     val vehiclePool: String? = null,
     val purposeOfTrip: String? = null,
-    val bookingDate: String? = null, // Using String for DATETIME/DATE fields
+    val bookingDate: String? = null,
     val pickupTime: String? = null,
     val returnDate: String? = null,
     val returnTime: String? = null,
@@ -20,8 +20,8 @@ import com.example.appointmentlistapp.Driver
     // Location and Odometer
     val pickupLocation: String? = null,
     val returnLocation: String? = null,
-    val odometerPickup: String? = null, // Using String/Decimal for numerical fields
-    val odometerReturn: String? = null,
+    val odometerPickup: String? = null, // Used as 'odometerReadingPickup' in Booking
+    val odometerReturn: String? = null, // Used as 'odometerReadingReturn' in Booking
     val distance: String? = null,
 
     // Administrative/Cancellation
