@@ -3,10 +3,10 @@ package com.example.appointmentlistapp.viewmodels
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.appointmentlistapp.data.Booking
+import com.example.appointmentlistapp.data.Booking // Import the UI Model
 import com.example.appointmentlistapp.data.BookingRepository
 import com.example.appointmentlistapp.data.components.ButtonConfig
-import com.example.appointmentlistapp.data.model.Appointment
+import com.example.appointmentlistapp.data.model.Appointment // Import the API Model
 import com.example.appointmentlistapp.data.remote.RetrofitInstance
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -16,39 +16,49 @@ import java.io.IOException
 // --- UI Event/Intent Sealed Class ---
 sealed class BookingEvent {
     data class ButtonClicked(val config: ButtonConfig) : BookingEvent()
-    // NOTE: This should match the type expected by BookingDetails (assuming Booking)
+    // The event carries the API model (Appointment)
     data class BookingSelected(val booking: Appointment) : BookingEvent()
     data class BookingCheckedChange(val bookingId: String) : BookingEvent()
 }
 
+// --- Conversion Function (Mapper) ---
 private fun convertAppointmentToBooking(appointment: Appointment): Booking {
-
+    // This function is CORRECTLY implemented to map from Appointment to Booking.
+    // It provides safe defaults ("-", "N/A", etc.) for non-nullable Booking fields.
     return Booking(
-        bookingId = appointment.id ?: "",
-        status = appointment.status ?: "",
-        driver = appointment.driver?.name ?: "",
-        bookingDate = appointment.appointmentDateTime ?: "",
-        pickupDate = TODO(),
-        returnDate = appointment.returnDate ?: "",
-        returnTime = appointment.returnTime ?: "",
-        vehicle = TODO(),
-        vehiclePool = TODO(),
-        purposeOfTrip = TODO(),
-        pickupLocation = TODO(),
-        returnLocation = TODO(),
-        odometerReadingPickup = TODO(),
-        odometerReadingReturn = TODO(),
-        distance = TODO(),
-        cancellationDate = TODO(),
-        cancellationReason = TODO(),
-        note = TODO(),
-        isChecked = TODO(),
-        pickupTime = TODO(),
-        description = TODO(),
+        // Booking section
+        bookingId = appointment.id ?: "0",
+        status = appointment.status ?: "Unknown",
+        driver = appointment.driver?.name ?: "-",
+        bookingDate = appointment.appointmentDateTime ?: "-",
+        description = appointment.description ?: "N/A",
+
+        // --- Trip details section ---
+        pickupDate = appointment.bookingDate ?: "-",
+        pickupTime = appointment.pickupTime ?: "-",
+        returnDate = appointment.returnDate ?: "-",
+        returnTime = appointment.returnTime ?: "-",
+        vehicle = appointment.vehicleRegistration ?: "-",
+        vehiclePool = appointment.vehiclePool ?: "-",
+        purposeOfTrip = appointment.purposeOfTrip ?: "-",
+
+        pickupLocation = appointment.pickupLocation ?: "-",
+        returnLocation = appointment.returnLocation ?: "-",
+
+        // Odometer mapping
+        odometerReadingPickup = appointment.odometerPickup ?: "-",
+        odometerReadingReturn = appointment.odometerReturn ?: "-",
+        distance = appointment.distance ?: "-",
+
+        // Cancellation section
+        cancellationDate = appointment.cancellationDate ?: "-",
+        cancellationReason = appointment.cancellationReason ?: "-",
+
+        // Notes section
+        note = appointment.note ?: "-",
+        isChecked = appointment.isChecked,
     )
-
 }
-
 
 
 class BookingViewModel : ViewModel() {
@@ -56,6 +66,10 @@ class BookingViewModel : ViewModel() {
     val repository = BookingRepository(RetrofitInstance.api)
 
     // --- INDIVIDUAL STATE FLOWS ---
+    // ✅ FIX 1: Change the selected item type to the UI Model (Booking)
+    private val _selectedBooking = MutableStateFlow<Booking?>(null)
+    val selectedBooking: StateFlow<Booking?> = _selectedBooking.asStateFlow() // Expose Booking?
+
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
@@ -65,23 +79,15 @@ class BookingViewModel : ViewModel() {
     private val _scannedDriverId = MutableStateFlow<String?>(null)
     val scannedDriverId: StateFlow<String?> = _scannedDriverId.asStateFlow()
 
-    // List of appointments/bookings for the Master Pane
     private val _bookings = MutableStateFlow<List<Appointment>>(emptyList())
     val bookings: StateFlow<List<Appointment>> = _bookings.asStateFlow()
 
-    // Currently selected booking for the Detail Pane
-    private val _selectedBooking = MutableStateFlow<Appointment?>(null)
-    val selectedBooking: StateFlow<Appointment?> = _selectedBooking.asStateFlow()
-
-    // Dynamically loaded buttons
     private val _buttonConfigs = MutableStateFlow<List<ButtonConfig>>(emptyList())
     val buttonConfigs: StateFlow<List<ButtonConfig>> = _buttonConfigs.asStateFlow()
 
-    // Visibility state for the Detail Pane
     private val _showDetails = MutableStateFlow(true)
     val showDetails: StateFlow<Boolean> = _showDetails.asStateFlow()
 
-    // --- Removed all prior conflicting _uiState logic ---
 
     fun setScannedDriverId(driverId: String) {
         if (_scannedDriverId.value != driverId) {
@@ -124,38 +130,12 @@ class BookingViewModel : ViewModel() {
         }
     }
 
-    private fun convertAppointmentToBooking(appointment: Appointment): Booking {
-        return Booking(
-            // Ensure you don't use non-nullable field access without safety:
-            bookingId = appointment.id ?: "0", // Safe access
-            status = appointment.status ?: "Unknown",
-            driver = TODO(),
-            bookingDate = TODO(),
-            description = TODO(),
-            pickupDate = TODO(),
-            returnDate = TODO(),
-            returnTime = TODO(),
-            vehicle = TODO(),
-            vehiclePool = TODO(),
-            purposeOfTrip = TODO(),
-            pickupLocation = TODO(),
-            returnLocation = TODO(),
-            odometerReadingPickup = TODO(),
-            odometerReadingReturn = TODO(),
-            distance = TODO(),
-            cancellationDate = TODO(),
-            cancellationReason = TODO(),
-            note = TODO(),
-            isChecked = TODO(),
-            pickupTime = TODO(), // Safe access
-            //...
-        )
-    }
     private fun handleButtonClicked(config: ButtonConfig) {
         when (config.type.lowercase().trim()) {
             "details" -> _showDetails.value = !_showDetails.value // Toggle the detail pane
             "add" -> Log.d("ViewModel", "Action: Navigate to ADD screen.")
-            "edit" -> Log.d("ViewModel", "Action: Navigate to EDIT screen for booking ID: ${_selectedBooking.value?.id}")
+            // Use the correct Booking ID when the selectedBooking is now a Booking object:
+            "edit" -> Log.d("ViewModel", "Action: Navigate to EDIT screen for booking ID: ${_selectedBooking.value?.bookingId}")
             else -> Log.w("ViewModel", "Unknown button action type: ${config.type}")
         }
     }
@@ -191,14 +171,17 @@ class BookingViewModel : ViewModel() {
         }
     }
 
-    fun selectBooking(booking: Appointment) {
-        _selectedBooking.value = booking
+    // ✅ FIX 2: This function is now correctly using the conversion and assigning the right type
+    fun selectBooking(appointment: Appointment) {
+        // Convert the API model (Appointment) to the UI model (Booking)
+        _selectedBooking.value = convertAppointmentToBooking(appointment)
     }
 
     fun toggleBookingChecked(bookingId: String) {
         _bookings.value = _bookings.value.map { appointment ->
             if (appointment.id == bookingId) {
-                appointment.copy(isChecked = !(appointment.isChecked ?: false))
+                // isChecked is non-nullable Boolean in Appointment
+                appointment.copy(isChecked = !appointment.isChecked)
             } else {
                 appointment
             }
