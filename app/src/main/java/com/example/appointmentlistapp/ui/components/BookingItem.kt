@@ -10,13 +10,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.appointmentlistapp.data.Booking // Import Booking for better consistency, assuming Appointment is an alias for Booking
+import com.example.appointmentlistapp.data.model.Appointment
 import com.example.appointmentlistapp.ui.screens.formatDate
+
+
 
 
 @Composable
 fun BookingItem(
-    booking: Booking,
+    booking: Appointment,
     isChecked: Boolean,
     onCheckedChange: (Boolean) -> Unit,
     onClick: () -> Unit,
@@ -71,9 +73,9 @@ fun BookingItem(
                     fontSize = 18.sp,
                 )
                 Spacer(modifier = Modifier.height(4.dp))
-                Text(text = "Vorgangsnrs.: ${booking.bookingId?: "N/A"}")
+                Text(text = "Vorgangsnrs.: ${booking.processNumber?: "N/A"}")
                 Text(text = "Statuss.: ${booking.status?: "N/A"}")
-                Text(text = "Reserviert von.: ${booking.bookingId?: "N/A"}")
+                Text(text = "Reserviert von.: ${booking.bookingDate?: "N/A"}")
                 Text(text = "Fahrer: ${booking.driver?: "N/A"}")
 
                 Text(text = "Übergabe ${booking.handOverDate?: "N/A"}")

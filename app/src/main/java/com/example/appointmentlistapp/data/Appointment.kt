@@ -35,6 +35,8 @@ import com.example.appointmentlistapp.Driver
     // Core flags and timestamps
     var isChecked: Boolean = false,
     var createdAt: String,
-    var updatedAt: String
+    var updatedAt: String,
+
+    val processNumber: String? = null,
 
 )
