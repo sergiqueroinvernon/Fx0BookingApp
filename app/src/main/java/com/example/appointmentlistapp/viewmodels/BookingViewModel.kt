@@ -10,13 +10,10 @@ import com.example.appointmentlistapp.data.model.Appointment // Import the API M
 import com.example.appointmentlistapp.data.remote.RetrofitInstance
 import com.example.appointmentlistapp.ui.components.filters.BookingFilterState
 import com.example.appointmentlistapp.ui.components.filters.BookingFilterEvent
-
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import retrofit2.HttpException
 import java.io.IOException
-
-
 
 // --- UI Event/Intent Sealed Class (Unchanged) ---
 sealed class BookingEvent {

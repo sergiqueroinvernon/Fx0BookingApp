@@ -9,6 +9,7 @@ import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
@@ -266,16 +267,27 @@ fun BookingScreen() {
                     contentPadding = PaddingValues(horizontal = 16.dp, vertical = 10.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    items(bookings, key = { booking -> booking.id ?: booking.toString() }) { booking ->
-                        BookingItem(
-                            booking = booking,
-                            onClick={ bookingViewModel.handleEvent(BookingSelected(booking)) },
-                            isSelected = booking.id == selectedBooking?.bookingId,
-                            isChecked = booking.isChecked ?: false,
-                            onCheckedChange = { bookingViewModel.handleEvent(BookingCheckedChange(booking.id)) },
-                        )
+                    if (bookings.isEmpty() && !isLoading) {
+                        item {
+                            Box(
+                                modifier = Modifier.fillParentMaxSize(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text("Keine Termine gefunden.")
+                            }
+                        }
+                    } else {
+                        items(bookings, key = { booking -> booking.id ?: booking.toString() }) { booking ->
+                            BookingItem(
+                                booking = booking,
+                                onClick = { bookingViewModel.handleEvent(BookingSelected(booking)) },
+                                isSelected = booking.id == selectedBooking?.bookingId,
+                                isChecked = booking.isChecked ?: false,
+                                onCheckedChange = { bookingViewModel.handleEvent(BookingCheckedChange(booking.id)) },
+                            )
+                        }
                     }
-                }
+                } // END Master Pane List
             } // END Master Pane Column
 
             VerticalDivider()
