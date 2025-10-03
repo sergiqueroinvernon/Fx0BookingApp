@@ -11,13 +11,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.appointmentlistapp.data.Booking // Import Booking for better consistency, assuming Appointment is an alias for Booking
-import com.example.appointmentlistapp.data.model.Appointment
 import com.example.appointmentlistapp.ui.screens.formatDate
 
 
 @Composable
 fun BookingItem(
-    booking: Appointment,
+    booking: Booking,
     isChecked: Boolean,
     onCheckedChange: (Boolean) -> Unit,
     onClick: () -> Unit,
@@ -72,10 +71,10 @@ fun BookingItem(
                     fontSize = 18.sp,
                 )
                 Spacer(modifier = Modifier.height(4.dp))
-                Text(text = "Vorgangsnr.: ${booking.id?: "N/A"}")
-                Text(text = "Status.: ${booking.status?: "N/A"}")
-                Text(text = "Reserviert von.: ${booking.id?: "N/A"}")
-                Text(text = "Fahrer: ${booking.driver?.name ?: "N/A"}")
+                Text(text = "Vorgangsnrs.: ${booking.bookingId?: "N/A"}")
+                Text(text = "Statuss.: ${booking.status?: "N/A"}")
+                Text(text = "Reserviert von.: ${booking.bookingId?: "N/A"}")
+                Text(text = "Fahrer: ${booking.driver?: "N/A"}")
 
                 Text(text = "Übergabe ${booking.handOverDate?: "N/A"}")
                 Text(text = "Rücknahme: ${booking.returnDate ?: "N/A"}")
@@ -87,7 +86,7 @@ fun BookingItem(
                 Text(text = "Interne Nr.: ${booking.internNumber ?: "N/A"}")
 
                 // Reduced height for tighter packing
-                Text(text = "Date: ${formatDate(booking.appointmentDateTime)}")
+                Text(text = "Date: ${formatDate(booking.bookingDate)}")
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(text = "Status: ")
                     Text(
