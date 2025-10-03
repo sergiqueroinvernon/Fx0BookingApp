@@ -53,13 +53,15 @@ private fun ActionButton(
 // ---
 
 // --- NEW COMPOSABLE: The Filter Mask (Content for the Dialog) ---
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BookingFilterMask(
     filterState: BookingFilterState,
     onEvent: (BookingFilterEvent) -> Unit,
     onClose: () -> Unit // Function to close the dialog
 ) {
-    val statusOptions = listOf("Open", "In Progress", "Completed")
+    val statusOptions = listOf("Bereit zur Übergabe", "Übergeben", "Storniert")
+    var statusDropdownExpanded by remember { mutableStateOf(false) }
 
     // Use a Surface inside the Dialog for style and elevation
     Surface(
@@ -86,14 +88,35 @@ fun BookingFilterMask(
             )
 
             // 2. Status (Dropdown Placeholder)
-            OutlinedTextField(
-                value = filterState.status.ifEmpty { "Status" },
-                onValueChange = {},
-                label = { Text("Status") },
-                readOnly = true,
-                trailingIcon = { Icon(Icons.Filled.ArrowDropDown, contentDescription = null, Modifier.clickable {}) },
+            ExposedDropdownMenuBox(
+                expanded = statusDropdownExpanded,
+                onExpandedChange = { statusDropdownExpanded = !statusDropdownExpanded },
                 modifier = Modifier.fillMaxWidth()
-            )
+            ) {
+                OutlinedTextField(
+                    value = filterState.status.ifEmpty { "Status" },
+                    onValueChange = {},
+                    label = { Text("Status") },
+                    readOnly = true,
+                    trailingIcon = { Icon(Icons.Filled.ArrowDropDown, contentDescription = null) },
+                    modifier = Modifier.menuAnchor().fillMaxWidth() // Use menuAnchor()
+                )
+
+                ExposedDropdownMenu(
+                    expanded = statusDropdownExpanded, // State is now managed by the parent box
+                    onDismissRequest = { statusDropdownExpanded = false }, // Keep this to close on outside click
+                    modifier = Modifier.exposedDropdownSize() // Match the width of the anchor
+                ) {
+                    statusOptions.forEach { status ->
+                        DropdownMenuItem(
+                            text = { Text(status) },
+                            onClick = {
+                                onEvent(BookingFilterEvent.StatusChange(status))
+                                statusDropdownExpanded = false
+                            })
+                    }
+                }
+            }
 
             // 3. Übergabedatum (Date Range Placeholder)
             OutlinedTextField(
