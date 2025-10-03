@@ -98,7 +98,7 @@ class BookingViewModel : ViewModel() {
     private val _filteredAppointments = MutableStateFlow<List<Appointment>>(emptyList())
 
     // Public StateFlow for the UI: maps the filtered API models to the UI model (Booking)
-    val bookings: StateFlow<List<Booking>> = _filteredAppointments
+    val bookings: StateFlow<List<Appointment>> = _filteredAppointments
         .map { appointments ->
             appointments.map(::convertAppointmentToBooking)
         }

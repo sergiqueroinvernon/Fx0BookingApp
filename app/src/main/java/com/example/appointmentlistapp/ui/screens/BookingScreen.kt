@@ -277,13 +277,13 @@ fun BookingScreen() {
                             }
                         }
                     } else {
-                        items(bookings, key = { booking -> booking.bookingId ?: booking.toString() }) { booking ->
+                        items(bookings, key = { booking -> booking.id ?: booking.toString() }) { booking ->
                             BookingItem(
                                 booking = booking,
                                 onClick = { bookingViewModel.handleEvent(BookingSelected(booking)) },
-                                isSelected = booking.bookingId == selectedBooking?.bookingId,
+                                isSelected = booking.id == selectedBooking?.bookingId,
                                 isChecked = booking.isChecked ?: false,
-                                onCheckedChange = { bookingViewModel.handleEvent(BookingCheckedChange(booking.bookingId)) },
+                                onCheckedChange = { bookingViewModel.handleEvent(BookingCheckedChange(booking.id)) },
                             )
                         }
                     }
