@@ -17,7 +17,7 @@ import java.io.IOException
 // --- UI Event/Intent Sealed Class (Unchanged) ---
 sealed class BookingEvent {
     data class ButtonClicked(val config: ButtonConfig) : BookingEvent()
-    data class BookingSelected(val booking: Appointment) : BookingEvent()
+    data class BookingSelected(val booking: String) : BookingEvent()
     data class BookingCheckedChange(val bookingId: String) : BookingEvent()
 }
 
@@ -58,6 +58,7 @@ private fun convertAppointmentToBooking(appointment: Appointment): Booking {
         isChecked = appointment.isChecked,
         handOverDate = appointment.handOverDate ?: "-",
         internNumber = appointment.internNumber ?: "-",
+        processNumber = appointment.processNumber ?: "-"
     )
 }
 
@@ -69,6 +70,7 @@ class BookingViewModel : ViewModel() {
 
     fun handleFilterEvent(event: BookingFilterEvent) {
         when (event) {
+            // Aquests 'update' disparen automàticament el filtre 'combine'
             is BookingFilterEvent.BookingNoChange -> _filterState.update { it.copy(bookingNo = event.bookingNo) }
             is BookingFilterEvent.StatusChange -> _filterState.update { it.copy(status = event.status) }
             is BookingFilterEvent.HandOverDateChange -> _filterState.update { it.copy(handOverDate = event.date) }
@@ -76,41 +78,39 @@ class BookingViewModel : ViewModel() {
             is BookingFilterEvent.VehicleChange -> _filterState.update { it.copy(vehicle = event.vehicle) }
 
             BookingFilterEvent.ApplyFilter -> {
-                Log.d("ViewModel", "Applying filter: ${_filterState.value}")
-                // Trigger appointment fetching to apply filter to list
-                fetchAppointments(useCachedData = true) // Use cached data after initial fetch
+                // CORREGIT: No cal cridar fetchAppointments. El filtre ja és aplicat.
+                Log.d("ViewModel", "Filter applied (State updated).")
             }
             BookingFilterEvent.ResetFilter -> {
                 _filterState.value = BookingFilterState()
                 Log.d("ViewModel", "Filter reset.")
-                // Trigger appointment fetching to refresh list without filter
-                fetchAppointments(useCachedData = true) // Use cached data after initial fetch
             }
         }
     }
 
     // --- Data State ---
 
-    // Store the raw, unfiltered data from the API (mutable list)
-    private var _allAppointments = emptyList<Appointment>()
 
     // Internal flow holding the CURRENTLY filtered *API* models (Appointment)
-    private val _filteredAppointments = MutableStateFlow<List<Appointment>>(emptyList())
+    private val _allAppointments = MutableStateFlow<List<Appointment>>(emptyList())
+    // This public flow holds all appointments fetched from the API, without any filtering.
+    val allAppointments: StateFlow<List<Appointment>> = _allAppointments.asStateFlow()
 
     // Public StateFlow for the UI: maps the filtered API models to the UI model (Booking)
-    val bookings: StateFlow<List<Appointment>> = _filteredAppointments
-        .stateIn(
-            scope = viewModelScope,
-            // Adjust to fit your lifecycle needs
-            started = SharingStarted.WhileSubscribed(5000),
-            initialValue = emptyList()
-        )
+    val bookings: StateFlow<List<Booking>> = _allAppointments.combine(_filterState) { allAppointments, filter ->
+        val filteredAppointments = applyFilterToBookings(allAppointments, filter)
+        filteredAppointments.map { convertAppointmentToBooking(it) }
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = emptyList()
+    )
+
 
     private val _selectedBooking = MutableStateFlow<Booking?>(null)
     val selectedBooking: StateFlow<Booking?> = _selectedBooking.asStateFlow()
 
-    private val _isLoading = MutableStateFlow(false)
-    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
+    val isLoading = MutableStateFlow(false)
 
     private val _errorMessage = MutableStateFlow<String?>(null)
     val errorMessage: StateFlow<String?> = _errorMessage.asStateFlow()
@@ -135,15 +135,16 @@ class BookingViewModel : ViewModel() {
     // 🆕 MODIFIED: Function now checks if it should fetch new data or use cached data for filtering
     fun fetchAppointments(driverId: String? = _scannedDriverId.value, useCachedData: Boolean = false) {
         if (driverId.isNullOrBlank()) {
-            _filteredAppointments.value = emptyList()
+            _allAppointments.value = emptyList()
             setErrorMessage("Bitte scannen Sie einen QR-Code, um Fahrertermine zu erhalten.")
             return
         }
 
         if (useCachedData) {
             // Apply filter instantly without a network call
-            applyFilterToBookings(_allAppointments, _filterState.value)
+            // Data is already cached in _allAppointments, the 'bookings' flow will update automatically.
             return
+
         }
 
         viewModelScope.launch {
@@ -151,10 +152,8 @@ class BookingViewModel : ViewModel() {
             setErrorMessage(null)
             try {
                 // 1. Fetch raw data from API and store it
-                _allAppointments = RetrofitInstance.api.getAppointmentsByDriverId("FD104CC0-4756-4D24-8BDF-FF06CF716E22")
-
-                // 2. Apply current filter to the newly fetched list
-                applyFilterToBookings(_allAppointments, _filterState.value)
+                val appointments = RetrofitInstance.api.getAppointmentsByDriverId("FD104CC0-4756-4D24-8BDF-FF06CF716E22")
+                _allAppointments.value = appointments
 
             } catch (e: IOException) {
                 setErrorMessage("Netzwerkfehler. Bitte überprüfen Sie Ihre Verbindung und stellen Sie sicher, dass die API läuft.")
@@ -169,28 +168,38 @@ class BookingViewModel : ViewModel() {
     }
 
     // 🆕 NEW: Dedicated function to apply the filter logic
-    private fun applyFilterToBookings(appointments: List<Appointment>, filter: BookingFilterState) {
-        val filteredList = appointments.filter { appointment ->
-            // --- Filtering Logic ---
+    private fun applyFilterToBookings(appointments: List<Appointment>, filter: BookingFilterState): List<Appointment> {
+
+        // Si no hi ha cap filtre actiu, retornem la llista sencera
+        if (filter.bookingNo.isBlank() && filter.status.isBlank() && filter.vehicle.isBlank() &&
+            filter.handOverDate.isBlank() && filter.travelPurpose.isBlank()) {
+            return appointments
+        }
+
+        return appointments.filter { appointment ->
+            // 1. Vorgangsnr. (Booking No)
             val matchesBookingNo = filter.bookingNo.isBlank() ||
-                    appointment.id.orEmpty().contains(filter.bookingNo, ignoreCase = true)
+                    appointment.processNumber.orEmpty().contains(filter.bookingNo, ignoreCase = true)
 
+
+            // 2. Status (El teu filtre per estat!)
             val matchesStatus = filter.status.isBlank() ||
-                    appointment.status.orEmpty().contains(filter.status, ignoreCase = true)
+                    appointment.status.orEmpty().equals(filter.status, ignoreCase = true)
 
+            // 3. Date
             val matchesDate = filter.handOverDate.isBlank() ||
                     appointment.handOverDate.orEmpty().contains(filter.handOverDate, ignoreCase = true)
 
+            // 4. Purpose
             val matchesPurpose = filter.travelPurpose.isBlank() ||
                     appointment.purposeOfTrip.orEmpty().contains(filter.travelPurpose, ignoreCase = true)
 
+            // 5. Vehicle
             val matchesVehicle = filter.vehicle.isBlank() ||
                     appointment.vehicleRegistration.orEmpty().contains(filter.vehicle, ignoreCase = true)
 
             matchesBookingNo && matchesStatus && matchesDate && matchesPurpose && matchesVehicle
         }
-        // Update the internal flow, which triggers the 'bookings' flow map
-        _filteredAppointments.value = filteredList
     }
 
 
@@ -204,17 +213,15 @@ class BookingViewModel : ViewModel() {
 
     // 🆕 MODIFIED: Update the ALL appointments list, then re-apply filter to update UI
     fun toggleBookingChecked(bookingId: String) {
-        // 1. Update the original source of data (_allAppointments)
-        _allAppointments = _allAppointments.map { appointment ->
+        // 1. Actualitza el valor del Flow mestre, creant una nova llista
+        _allAppointments.value = _allAppointments.value.map { appointment ->
             if (appointment.id == bookingId) {
-                // isChecked is non-nullable Boolean in Appointment
                 appointment.copy(isChecked = !appointment.isChecked)
             } else {
                 appointment
             }
         }
-        // 2. Re-apply the current filter to force an update to _filteredAppointments
-        applyFilterToBookings(_allAppointments, _filterState.value)
+        // La línia anterior dispara automàticament el filtre 'combine'.
     }
 
     private fun handleButtonClicked(config: ButtonConfig) {
@@ -229,6 +236,8 @@ class BookingViewModel : ViewModel() {
     private fun setErrorMessage(message: String?) {
         _errorMessage.value = message
     }
+
+    private val _isLoading = MutableStateFlow(false)
 
     fun fetchButtonsForClientAndScreen(clientId: String, screenId: String) {
         // ... (function implementation remains unchanged) ...
@@ -258,8 +267,10 @@ class BookingViewModel : ViewModel() {
         }
     }
 
-    fun selectBooking(appointment: Appointment) {
-        // Convert the API model (Appointment) to the UI model (Booking)
-        _selectedBooking.value = convertAppointmentToBooking(appointment)
+    fun selectBooking(bookingId: String) {
+        val selectedAppointment = _allAppointments.value.find { it.id == bookingId }
+        if (selectedAppointment != null) {
+            _selectedBooking.value = convertAppointmentToBooking(selectedAppointment)
+        }
     }
 }

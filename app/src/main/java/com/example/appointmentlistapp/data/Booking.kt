@@ -34,6 +34,7 @@ data class Booking(
     val note: String,
     var isChecked: Boolean,
     val pickupTime: String,
-    val internNumber: String
+    val internNumber: String,
+    val processNumber: String
 )
 

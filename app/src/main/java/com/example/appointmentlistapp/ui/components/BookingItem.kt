@@ -10,7 +10,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.appointmentlistapp.data.model.Appointment
+import com.example.appointmentlistapp.data.Booking
 import com.example.appointmentlistapp.ui.screens.formatDate
 
 
@@ -18,7 +18,7 @@ import com.example.appointmentlistapp.ui.screens.formatDate
 
 @Composable
 fun BookingItem(
-    booking: Appointment,
+    booking: Booking,
     isChecked: Boolean,
     onCheckedChange: (Boolean) -> Unit,
     onClick: () -> Unit,
