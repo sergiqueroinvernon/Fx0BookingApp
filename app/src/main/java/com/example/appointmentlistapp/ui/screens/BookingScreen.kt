@@ -17,6 +17,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.ui.window.Dialog // Import for the pop-up window
 
 import com.example.appointmentlistapp.data.Booking
+import com.example.appointmentlistapp.data.PurposeOfTrip
 import com.example.appointmentlistapp.data.components.ButtonConfig
 import com.example.appointmentlistapp.ui.components.BookingDetails
 import com.example.appointmentlistapp.util.getIconForType
@@ -56,6 +57,7 @@ private fun ActionButton(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BookingFilterMask(
+    purposeOfTrips: List<PurposeOfTrip>,
     filterState: BookingFilterState,
     onEvent: (BookingFilterEvent) -> Unit,
     onClose: () -> Unit // Function to close the dialog
@@ -128,15 +130,36 @@ fun BookingFilterMask(
                 modifier = Modifier.fillMaxWidth()
             )
 
-            // 4. Reisezweck (Dropdown Placeholder)
-            OutlinedTextField(
-                value = filterState.travelPurpose.ifEmpty { "Reisezweck" },
-                onValueChange = {},
-                label = { Text("Reisezweck") },
-                readOnly = true,
-                trailingIcon = { Icon(Icons.Filled.ArrowDropDown, contentDescription = null, Modifier.clickable {}) },
+            var travelPurposeDropdownExpanded by remember { mutableStateOf(false) }
+
+            ExposedDropdownMenuBox(
+                expanded = travelPurposeDropdownExpanded,
+                onExpandedChange = { travelPurposeDropdownExpanded = !travelPurposeDropdownExpanded },
                 modifier = Modifier.fillMaxWidth()
-            )
+            ) {
+                OutlinedTextField(
+                    value = filterState.travelPurpose.ifEmpty { "Reisezweck" },
+                    onValueChange = {},
+                    label = { Text("Reisezweck") },
+                readOnly = true,
+                    trailingIcon = { Icon(Icons.Filled.ArrowDropDown, contentDescription = null) },
+                    modifier = Modifier.menuAnchor().fillMaxWidth()
+                )
+
+                ExposedDropdownMenu(
+                    expanded = travelPurposeDropdownExpanded,
+                    onDismissRequest = { travelPurposeDropdownExpanded = false }
+                ) {
+                    purposeOfTrips.forEach { purpose ->
+                        DropdownMenuItem(
+                            text = { Text(purpose.purpose) },
+                            onClick = {
+                                onEvent(BookingFilterEvent.TravelPurposeChange(purpose.purpose))
+                                travelPurposeDropdownExpanded = false
+                            })
+                    }
+                }
+            }
 
             // 5. Fahrzeug (Dropdown Placeholder)
             OutlinedTextField(
@@ -187,6 +210,7 @@ fun BookingScreen() {
     val isLoading by bookingViewModel.isLoading.collectAsState()
     val errorMessage by bookingViewModel.errorMessage.collectAsState()
     val showDetails by bookingViewModel.showDetails.collectAsState()
+    val purposeOfTrips by bookingViewModel.purposeOfTrips.collectAsState()
 
 
 
@@ -201,6 +225,7 @@ fun BookingScreen() {
     LaunchedEffect(Unit) {
         bookingViewModel.fetchButtonsForClientAndScreen("client123", "BookingScreen")
         bookingViewModel.fetchAppointments("DRIVER_TEST_ID")
+        bookingViewModel.fetchPurposeOfTrips()
     }
 
     Column(modifier = Modifier.fillMaxSize()) {
@@ -209,6 +234,7 @@ fun BookingScreen() {
         if (showFilterMask) {
             Dialog(onDismissRequest = { showFilterMask = false }) {
                 BookingFilterMask(
+                    purposeOfTrips = purposeOfTrips,
                     filterState = filterState, // Replace with bookingViewModel.filterState.collectAsState().value
                     onEvent =  { event -> bookingViewModel.handleFilterEvent(event)}, /* Handle filter event in ViewModel */
                     onClose = { showFilterMask = false }

@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.appointmentlistapp.data.Booking // Import the UI Model
+import com.example.appointmentlistapp.data.PurposeOfTrip
 import com.example.appointmentlistapp.data.components.ButtonConfig
 import com.example.appointmentlistapp.data.model.Appointment // Import the API Model
 import com.example.appointmentlistapp.data.remote.RetrofitInstance
@@ -90,6 +91,8 @@ class BookingViewModel : ViewModel() {
 
     // --- Data State ---
 
+    private val _purposeOfTrips = MutableStateFlow<List<PurposeOfTrip>>(emptyList())
+    val purposeOfTrips = MutableStateFlow<List<PurposeOfTrip>>(emptyList())
 
     // Internal flow holding the CURRENTLY filtered *API* models (Appointment)
     private val _allAppointments = MutableStateFlow<List<Appointment>>(emptyList())
@@ -153,7 +156,9 @@ class BookingViewModel : ViewModel() {
             try {
                 // 1. Fetch raw data from API and store it
                 val appointments = RetrofitInstance.api.getAppointmentsByDriverId("FD104CC0-4756-4D24-8BDF-FF06CF716E22")
+                val purposeOfTrips = RetrofitInstance.api.getPurposeOfTrips()
                 _allAppointments.value = appointments
+                _purposeOfTrips.value = purposeOfTrips
 
             } catch (e: IOException) {
                 setErrorMessage("Netzwerkfehler. Bitte überprüfen Sie Ihre Verbindung und stellen Sie sicher, dass die API läuft.")
@@ -266,6 +271,29 @@ class BookingViewModel : ViewModel() {
             }
         }
     }
+
+    fun fetchPurposeOfTrips() {
+        viewModelScope.launch {
+            _isLoading.value = true
+            setErrorMessage(null)
+            try {
+                val purposeOfTrips = RetrofitInstance.api.getPurposeOfTrips()
+                _purposeOfTrips.value = purposeOfTrips
+                Log.d("BookingViewModel", "Fetched ${purposeOfTrips.size} purpose of trips.")
+            } catch (e: Exception) {
+                val errorMsg = when (e) {
+                    is IOException -> "Netzwerkfehler beim Laden der Buttons."
+                    is HttpException -> "API-Fehler beim Laden der Buttons: HTTP ${e.code()}"
+                    else -> "Ein unerwarteter Fehler ist aufgetreten: ${e.message}"
+                }
+                setErrorMessage(errorMsg)
+            } finally {
+                _isLoading.value = false
+            }
+        }
+
+    }
+
 
     fun selectBooking(bookingId: String) {
         val selectedAppointment = _allAppointments.value.find { it.id == bookingId }
