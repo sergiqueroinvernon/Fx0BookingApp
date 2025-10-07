@@ -1,5 +1,7 @@
 package com.example.appointmentlistapp.ui.components.filters
 
+import com.example.appointmentlistapp.data.PurposeOfTrip
+
 
 // Classes que defineixen l'estat i els esdeveniments del filtre
 data class BookingFilterState(

@@ -138,23 +138,24 @@ fun BookingFilterMask(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 OutlinedTextField(
-                    value = filterState.travelPurpose.ifEmpty { "Reisezweck" },
-                    onValueChange = {},
+                    value = filterState.purposeId.ifEmpty { "Reisezweck" },
+                    onValueChange = { /* onValueChange must be defined, but can be empty for readOnly */ },
                     label = { Text("Reisezweck") },
-                readOnly = true,
+                    readOnly = true,
                     trailingIcon = { Icon(Icons.Filled.ArrowDropDown, contentDescription = null) },
                     modifier = Modifier.menuAnchor().fillMaxWidth()
                 )
 
                 ExposedDropdownMenu(
                     expanded = travelPurposeDropdownExpanded,
-                    onDismissRequest = { travelPurposeDropdownExpanded = false }
+                    onDismissRequest = { travelPurposeDropdownExpanded = false },
+                    modifier = Modifier.exposedDropdownSize()
                 ) {
                     purposeOfTrips.forEach { purpose ->
                         DropdownMenuItem(
                             text = { Text(purpose.purpose) },
                             onClick = {
-                                onEvent(BookingFilterEvent.TravelPurposeChange(purpose.purpose))
+                                onEvent(BookingFilterEvent.TravelPurposeChange(purposeId = purpose.id))
                                 travelPurposeDropdownExpanded = false
                             })
                     }
