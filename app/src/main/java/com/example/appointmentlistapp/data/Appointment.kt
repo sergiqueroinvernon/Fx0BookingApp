@@ -11,7 +11,7 @@ import com.example.appointmentlistapp.Driver
     val description: String,
     val vehicleRegistration: String? = null, // Used as 'vehicle' in Booking
     val vehiclePool: String? = null,
-    val purposeOfTrip: String? = null,
+    val purposeOfTripId: Int? = null,
     val bookingDate: String? = null,
     val pickupTime: String? = null,
     val returnDate: String? = null,
