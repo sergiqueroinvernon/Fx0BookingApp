@@ -6,15 +6,16 @@ data class BookingFilterState(
     val bookingNo: String = "",
     val status: String = "",
     val handOverDate: String = "",
-    val travelPurpose: String = "",
-    val vehicle: String = ""
+    val travelPurposeChange: Int = 0,
+    val vehicle: String = "",
+    val purposeId: Int
 )
 
 sealed class BookingFilterEvent {
     data class BookingNoChange(val bookingNo: String) : BookingFilterEvent()
     data class StatusChange(val status: String) : BookingFilterEvent()
     data class HandOverDateChange(val date: String) : BookingFilterEvent()
-    data class TravelPurposeChange(val purpose: String) : BookingFilterEvent()
+    data class TravelPurposeChange(val purposeId: Int) : BookingFilterEvent()
     data class VehicleChange(val vehicle: String) : BookingFilterEvent()
     object ApplyFilter : BookingFilterEvent()
     object ResetFilter : BookingFilterEvent()
