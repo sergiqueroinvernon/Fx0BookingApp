@@ -19,7 +19,7 @@ data class Booking(
     val returnTime: String,
     val vehicle: String,
     val vehiclePool: String,
-    val purposeOfTrip: String,
+    val purposeOfTrip: Any,
     val pickupLocation: String,
     val returnLocation: String,
     val odometerReadingPickup: String,
