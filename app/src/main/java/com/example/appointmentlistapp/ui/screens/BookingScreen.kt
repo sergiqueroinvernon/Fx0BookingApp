@@ -18,6 +18,7 @@ import androidx.compose.ui.window.Dialog // Import for the pop-up window
 
 import com.example.appointmentlistapp.data.Booking
 import com.example.appointmentlistapp.data.PurposeOfTrip
+import com.example.appointmentlistapp.data.StatusOption
 import com.example.appointmentlistapp.data.components.ButtonConfig
 import com.example.appointmentlistapp.ui.components.BookingDetails
 import com.example.appointmentlistapp.util.getIconForType
@@ -58,7 +59,7 @@ private fun ActionButton(
 @Composable
 fun BookingFilterMask(
     purposeOfTrips: List<PurposeOfTrip>,
-    statusOptions: List<PurposeOfTrip>, // New parameter for status options
+    statusOptions: List<StatusOption>, // New parameter for status options
     filterState: BookingFilterState,
     onEvent: (BookingFilterEvent) -> Unit,
     onClose: () -> Unit // Function to close the dialog
@@ -97,7 +98,11 @@ fun BookingFilterMask(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 OutlinedTextField(
-                    value = filterState.status.ifEmpty { "Status" },
+                    value = if (filterState.status.isNotEmpty()) {
+                        statusOptions.find { it.option == filterState.status }?.option ?: "Status"
+                    } else {
+                        "Status"
+                    },
                     onValueChange = {},
                     label = { Text("Status") },
                     readOnly = true,
@@ -111,12 +116,12 @@ fun BookingFilterMask(
                     modifier = Modifier.exposedDropdownSize() // Match the width of the anchor
                 ) {
                     statusOptions.forEach { status ->
-                        /*DropdownMenuItem(
-                            text = { Text(status) },
+                            DropdownMenuItem(
+                            text = { Text(status.option) },
                             onClick = {
-                                onEvent(BookingFilterEvent.StatusChange(status))
+                                onEvent(BookingFilterEvent.StatusChange(status.option))
                                 statusDropdownExpanded = false
-                            })*/
+                            })
                     }
                 }
             }
@@ -271,7 +276,7 @@ fun BookingScreen() {
                     Text("Filterkriterien")
                 }
 
-                // --- Dynamic Buttons Row (FlowRow) ---
+                // --- Dynamic Buttons Rowd (FlowRow) ---
                 FlowRow(
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp),
                     mainAxisSpacing = 8.dp,

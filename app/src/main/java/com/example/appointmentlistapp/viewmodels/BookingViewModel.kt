@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.appointmentlistapp.data.Booking // Import the UI Model
 import com.example.appointmentlistapp.data.PurposeOfTrip
+import com.example.appointmentlistapp.data.StatusOption
 import com.example.appointmentlistapp.data.components.ButtonConfig
 import com.example.appointmentlistapp.data.model.Appointment // Import the API Model
 import com.example.appointmentlistapp.data.remote.RetrofitInstance
@@ -116,8 +117,8 @@ class BookingViewModel : ViewModel() {
     private val _purposeOfTrips = MutableStateFlow<List<PurposeOfTrip>>(emptyList())
     val purposeOfTrips: StateFlow<List<PurposeOfTrip>> = _purposeOfTrips.asStateFlow()
 
-        private val _statusOptions = MutableStateFlow<List<StatusOption>>(emptyList())
-    val statusOptions: StateFlow<List<PurposeOfTrip>> = _purposeOfTrips.asStateFlow()
+    private val _statusOptions = MutableStateFlow<List<StatusOption>>(emptyList())
+    val statusOptions: StateFlow<List<StatusOption>> = _statusOptions.asStateFlow()
 
     // Internal flow holding the CURRENTLY filtered *API* models (Appointment)
     private val _allAppointments = MutableStateFlow<List<Appointment>>(emptyList())
