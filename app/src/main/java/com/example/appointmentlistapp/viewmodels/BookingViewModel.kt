@@ -40,7 +40,7 @@ private fun convertAppointmentToBooking(appointment: Appointment): Booking {
         returnTime = appointment.returnTime ?: "-",
         vehicle = appointment.vehicleRegistration ?: "-",
         vehiclePool = appointment.vehiclePool ?: "-",
-        purposeOfTrip = appointment.purposeOfTripId ?: "-",
+        purposeOfTrip = (appointment.purposeOfTrip?: "-") as String,
 
         pickupLocation = appointment.pickupLocation ?: "-",
         returnLocation = appointment.returnLocation ?: "-",
@@ -107,6 +107,9 @@ class BookingViewModel : ViewModel() {
 
     private val _purposeOfTrips = MutableStateFlow<List<PurposeOfTrip>>(emptyList())
     val purposeOfTrips: StateFlow<List<PurposeOfTrip>> = _purposeOfTrips.asStateFlow()
+
+    private val _statusOptions = MutableStateFlow<List<PurposeOfTrip>>(emptyList())
+    val statusOptions: StateFlow<List<PurposeOfTrip>> = _purposeOfTrips.asStateFlow()
 
     // Internal flow holding the CURRENTLY filtered *API* models (Appointment)
     private val _allAppointments = MutableStateFlow<List<Appointment>>(emptyList())
@@ -305,6 +308,30 @@ class BookingViewModel : ViewModel() {
                 _isLoading.value = false
             }
         }
+    }
+
+    /*
+    fun fetchStatusOptions() {
+        viewModelScope.launch {
+            _isLoading.value = true
+            setErrorMessage(null)
+            try {
+                val statusOptions = RetrofitInstance.api.getStatusOptions()
+                _statusOptions.value = statusOption
+                Log.d("BookingViewModel", "Fetched ${statusOptions.size} purpose of trips.")
+            } catch (e: Exception) {
+                val errorMsg = when (e) {
+                    is IOException -> "Netzwerkfehler beim Laden der Buttons."
+                    is HttpException -> "API-Fehler beim Laden der Buttons: HTTP ${e.code()}"
+                    else -> "Ein unerwarteter Fehler ist aufgetreten: ${e.message}"
+                }
+                setErrorMessage(errorMsg)
+            } finally {
+                _isLoading.value = false
+            }
+        }
+        */
+
     }
 
 

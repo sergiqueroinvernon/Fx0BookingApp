@@ -40,7 +40,7 @@ fun BookingDetails(booking: Booking?, modifier: Modifier = Modifier) {
                     SectionHeader("Angaben zur Fahrt")
                     DetailRow(
                         label1 = "Übergabedatum", value1 = booking.pickupDate,
-                        label2 = "Übergabezeit", value2 = booking.pickupDate
+                        label2 = "Übergabezeit", value2 = booking.pickupTime
                     )
                     DetailRow(
                         label1 = "Rücknahmedatum", value1 = booking.returnDate,
@@ -50,9 +50,15 @@ fun BookingDetails(booking: Booking?, modifier: Modifier = Modifier) {
                         label1 = "Fahrzeug", value1 = booking.vehicle,
                         label2 = "Fahrzeugpool", value2 = booking.vehiclePool
                     )
-                    DetailRow(label1 = "Reisezweck", value1 = booking.purposeOfTrip)
-                    DetailRow(label1 = "Übergabeort Adresse", value1 = booking.pickupLocation)
-                    DetailRow(label1 = "Rücknahmeort Adresse", value1 = booking.returnLocation)
+                    DetailRow(
+                        label1 = "Reisezweck", value1 = booking.purposeOfTrip,
+                        label2 = "Übergabeort", value2 = booking.pickupLocation
+                    )
+                    DetailRow(
+                        label1 = "Rücknahmeort Adresse",
+                        value1 = booking.returnLocation
+                    )
+
                     DetailRow(
                         label1 = "km-Stand Übergabe", value1 = booking.odometerReadingPickup,
                         label2 = "km-Stand Rücknahme", value2 = booking.odometerReadingReturn
@@ -110,11 +116,13 @@ private fun DetailRow(
 @Composable
 private fun InfoColumn(label: String, value: String?, modifier: Modifier = Modifier) {
     Column(modifier = modifier) {
-        Text(
-            text = label,
-            fontSize = 12.sp,
-            color = Color.Gray
-        )
+        if (label != null) {
+            Text(
+                text = label,
+                fontSize = 12.sp,
+                color = Color.Gray
+            )
+        }
         Text(
             text = value ?: "-", // Show "-" if value is null or empty
             fontWeight = FontWeight.SemiBold,

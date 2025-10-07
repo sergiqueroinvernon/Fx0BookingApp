@@ -58,12 +58,13 @@ private fun ActionButton(
 @Composable
 fun BookingFilterMask(
     purposeOfTrips: List<PurposeOfTrip>,
+    statusOptions: List<PurposeOfTrip>, // New parameter for status options
     filterState: BookingFilterState,
     onEvent: (BookingFilterEvent) -> Unit,
     onClose: () -> Unit // Function to close the dialog
 ) {
-    val statusOptions = listOf("Bereit zur Übergabe", "Übergeben", "Storniert")
     var statusDropdownExpanded by remember { mutableStateOf(false) }
+    var travelPurposeDropdownExpanded by remember { mutableStateOf(false) }
 
     // Use a Surface inside the Dialog for style and elevation
     Surface(
@@ -110,12 +111,12 @@ fun BookingFilterMask(
                     modifier = Modifier.exposedDropdownSize() // Match the width of the anchor
                 ) {
                     statusOptions.forEach { status ->
-                        DropdownMenuItem(
+                        /*DropdownMenuItem(
                             text = { Text(status) },
                             onClick = {
                                 onEvent(BookingFilterEvent.StatusChange(status))
                                 statusDropdownExpanded = false
-                            })
+                            })*/
                     }
                 }
             }
@@ -129,8 +130,6 @@ fun BookingFilterMask(
                 trailingIcon = { Icon(Icons.Filled.ArrowDropDown, contentDescription = null, Modifier.clickable {}) },
                 modifier = Modifier.fillMaxWidth()
             )
-
-            var travelPurposeDropdownExpanded by remember { mutableStateOf(false) }
 
             ExposedDropdownMenuBox(
                 expanded = travelPurposeDropdownExpanded,
@@ -212,21 +211,20 @@ fun BookingScreen() {
     val errorMessage by bookingViewModel.errorMessage.collectAsState()
     val showDetails by bookingViewModel.showDetails.collectAsState()
     val purposeOfTrips by bookingViewModel.purposeOfTrips.collectAsState()
-
+    val statusOptions by bookingViewModel.statusOptions.collectAsState() // New state
 
 
     // 🆕 NEW: State to toggle the visibility of the filter mask Dialog
-    // 🆕 NEW: Placeholder for filter state (replace with actual ViewModel state)
     val filterState by bookingViewModel.filterState.collectAsState()
 
     var showFilterMask by remember { mutableStateOf(false) }
-
 
 
     LaunchedEffect(Unit) {
         bookingViewModel.fetchButtonsForClientAndScreen("client123", "BookingScreen")
         bookingViewModel.fetchAppointments("DRIVER_TEST_ID")
         bookingViewModel.fetchPurposeOfTrips()
+       // bookingViewModel.fetchStatusOptions() // New API call
     }
 
     Column(modifier = Modifier.fillMaxSize()) {
@@ -236,8 +234,9 @@ fun BookingScreen() {
             Dialog(onDismissRequest = { showFilterMask = false }) {
                 BookingFilterMask(
                     purposeOfTrips = purposeOfTrips,
-                    filterState = filterState, // Replace with bookingViewModel.filterState.collectAsState().value
-                    onEvent =  { event -> bookingViewModel.handleFilterEvent(event)}, /* Handle filter event in ViewModel */
+                    statusOptions = statusOptions, // Pass the dynamic list
+                    filterState = filterState,
+                    onEvent = bookingViewModel::handleFilterEvent,
                     onClose = { showFilterMask = false }
                 )
             }
