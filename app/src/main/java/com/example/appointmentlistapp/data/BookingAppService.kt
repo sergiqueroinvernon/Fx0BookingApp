@@ -20,7 +20,7 @@ interface BookingAppService {
     ): List<ButtonConfig>
     @GET("api/appointments")
     suspend fun getAppointments(): List<Appointment>
-    @GET("api/purposeOfTrips")
+     @GET("api/Appointments/purposeOfTrips")
     suspend fun getPurposeOfTrips(): List<PurposeOfTrip>
 
     @GET("api/appointments/driver/{driverId}")
