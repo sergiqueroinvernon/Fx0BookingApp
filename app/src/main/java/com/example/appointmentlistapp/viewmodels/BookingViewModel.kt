@@ -92,7 +92,7 @@ class BookingViewModel : ViewModel() {
     // --- Data State ---
 
     private val _purposeOfTrips = MutableStateFlow<List<PurposeOfTrip>>(emptyList())
-    val purposeOfTrips = MutableStateFlow<List<PurposeOfTrip>>(emptyList())
+    val purposeOfTrips: StateFlow<List<PurposeOfTrip>> = _purposeOfTrips.asStateFlow()
 
     // Internal flow holding the CURRENTLY filtered *API* models (Appointment)
     private val _allAppointments = MutableStateFlow<List<Appointment>>(emptyList())
@@ -156,9 +156,7 @@ class BookingViewModel : ViewModel() {
             try {
                 // 1. Fetch raw data from API and store it
                 val appointments = RetrofitInstance.api.getAppointmentsByDriverId("FD104CC0-4756-4D24-8BDF-FF06CF716E22")
-                val purposeOfTrips = RetrofitInstance.api.getPurposeOfTrips()
                 _allAppointments.value = appointments
-                _purposeOfTrips.value = purposeOfTrips
 
             } catch (e: IOException) {
                 setErrorMessage("Netzwerkfehler. Bitte überprüfen Sie Ihre Verbindung und stellen Sie sicher, dass die API läuft.")
@@ -272,6 +270,7 @@ class BookingViewModel : ViewModel() {
         }
     }
 
+
     fun fetchPurposeOfTrips() {
         viewModelScope.launch {
             _isLoading.value = true
@@ -291,8 +290,8 @@ class BookingViewModel : ViewModel() {
                 _isLoading.value = false
             }
         }
-
     }
+
 
 
     fun selectBooking(bookingId: String) {
