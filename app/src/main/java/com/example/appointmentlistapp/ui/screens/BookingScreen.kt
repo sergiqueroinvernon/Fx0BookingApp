@@ -224,7 +224,7 @@ fun BookingScreen() {
         bookingViewModel.fetchButtonsForClientAndScreen("client123", "BookingScreen")
         bookingViewModel.fetchAppointments("DRIVER_TEST_ID")
         bookingViewModel.fetchPurposeOfTrips()
-       // bookingViewModel.fetchStatusOptions() // New API call
+        bookingViewModel.fetchStatusOptions()
     }
 
     Column(modifier = Modifier.fillMaxSize()) {
