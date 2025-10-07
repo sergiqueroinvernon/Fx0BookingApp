@@ -8,7 +8,7 @@ data class BookingFilterState(
     val handOverDate: String = "",
     val travelPurposeChange: Int = 0,
     val vehicle: String = "",
-    val purposeId: Int
+    val purposeId: String
 )
 
 sealed class BookingFilterEvent {

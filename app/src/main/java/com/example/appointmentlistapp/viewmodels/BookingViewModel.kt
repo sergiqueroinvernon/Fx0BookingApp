@@ -40,7 +40,7 @@ private fun convertAppointmentToBooking(appointment: Appointment): Booking {
         returnTime = appointment.returnTime ?: "-",
         vehicle = appointment.vehicleRegistration ?: "-",
         vehiclePool = appointment.vehiclePool ?: "-",
-        purposeOfTrip = appointment.purposeOfTrip ?: "-",
+        purposeOfTrip = appointment.purposeOfTripId ?: "-",
 
         pickupLocation = appointment.pickupLocation ?: "-",
         returnLocation = appointment.returnLocation ?: "-",
@@ -66,7 +66,14 @@ private fun convertAppointmentToBooking(appointment: Appointment): Booking {
 class BookingViewModel : ViewModel() {
 
     // --- Filter State and Handler ---
-    private val _filterState = MutableStateFlow(BookingFilterState())
+    private val _filterState = MutableStateFlow(BookingFilterState(
+        bookingNo = "",
+        status = "",
+        handOverDate = "",
+        travelPurposeChange = 0,
+        vehicle = "",
+        purposeId = ""
+    ))
     val filterState: StateFlow<BookingFilterState> = _filterState.asStateFlow()
 
     fun handleFilterEvent(event: BookingFilterEvent) {
@@ -75,7 +82,7 @@ class BookingViewModel : ViewModel() {
             is BookingFilterEvent.BookingNoChange -> _filterState.update { it.copy(bookingNo = event.bookingNo) }
             is BookingFilterEvent.StatusChange -> _filterState.update { it.copy(status = event.status) }
             is BookingFilterEvent.HandOverDateChange -> _filterState.update { it.copy(handOverDate = event.date) }
-            is BookingFilterEvent.TravelPurposeChange -> _filterState.update { it.copy(travelPurpose = event.purpose) }
+            is BookingFilterEvent.TravelPurposeChange -> _filterState.update { it.copy(travelPurposeChange = event.purposeId) }
             is BookingFilterEvent.VehicleChange -> _filterState.update { it.copy(vehicle = event.vehicle) }
 
             BookingFilterEvent.ApplyFilter -> {
@@ -83,7 +90,14 @@ class BookingViewModel : ViewModel() {
                 Log.d("ViewModel", "Filter applied (State updated).")
             }
             BookingFilterEvent.ResetFilter -> {
-                _filterState.value = BookingFilterState()
+                _filterState.value = BookingFilterState(
+                    bookingNo = "",
+                    status = "",
+                    handOverDate = "",
+                    travelPurposeChange = 0,
+                    vehicle = "",
+                    purposeId = ""
+                )
                 Log.d("ViewModel", "Filter reset.")
             }
         }
@@ -174,8 +188,8 @@ class BookingViewModel : ViewModel() {
     private fun applyFilterToBookings(appointments: List<Appointment>, filter: BookingFilterState): List<Appointment> {
 
         // Si no hi ha cap filtre actiu, retornem la llista sencera
-        if (filter.bookingNo.isBlank() && filter.status.isBlank() && filter.vehicle.isBlank() &&
-            filter.handOverDate.isBlank() && filter.travelPurpose.isBlank()) {
+        if (filter.bookingNo.isBlank() && filter.status.isNullOrBlank() && filter.vehicle.isBlank() &&
+            filter.handOverDate.isNullOrBlank() && filter.travelPurposeChange == 0) {
             return appointments
         }
 
@@ -186,16 +200,17 @@ class BookingViewModel : ViewModel() {
 
 
             // 2. Status (El teu filtre per estat!)
-            val matchesStatus = filter.status.isBlank() ||
+            val matchesStatus = filter.status.isNullOrBlank() ||
                     appointment.status.orEmpty().equals(filter.status, ignoreCase = true)
 
             // 3. Date
-            val matchesDate = filter.handOverDate.isBlank() ||
+            val matchesDate = filter.handOverDate.isNullOrBlank() ||
                     appointment.handOverDate.orEmpty().contains(filter.handOverDate, ignoreCase = true)
 
             // 4. Purpose
-            val matchesPurpose = filter.travelPurpose.isBlank() ||
-                    appointment.purposeOfTrip.orEmpty().contains(filter.travelPurpose, ignoreCase = true)
+            // The filter state uses travelPurposeChange (Int), not purposeId (String)
+            val matchesPurpose = filter.travelPurposeChange == 0 ||
+                    appointment.purposeOfTripId == filter.travelPurposeChange
 
             // 5. Vehicle
             val matchesVehicle = filter.vehicle.isBlank() ||
