@@ -5,5 +5,5 @@ import androidx.room.Entity
 @Entity(tableName = "StatusOption")
 data class StatusOption(
     val id: Int,
-    val option: String
+    val status: String
 )
