@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.appointmentlistapp.data.Booking // Import the UI Model
 import com.example.appointmentlistapp.data.PurposeOfTrip
 import com.example.appointmentlistapp.data.StatusOption
+import com.example.appointmentlistapp.data.Vehicle
 import com.example.appointmentlistapp.data.components.ButtonConfig
 import com.example.appointmentlistapp.data.model.Appointment // Import the API Model
 import com.example.appointmentlistapp.data.remote.RetrofitInstance
@@ -120,6 +121,8 @@ class BookingViewModel : ViewModel() {
     private val _statusOptions = MutableStateFlow<List<StatusOption>>(emptyList())
     val statusOptions: StateFlow<List<StatusOption>> = _statusOptions.asStateFlow()
 
+    private val _vehiclesBYDriverId = MutableStateFlow<List<Vehicle>>(emptyList())
+    val vehiclesBYDriverId: StateFlow<List<Vehicle>> = _vehiclesBYDriverId.asStateFlow()
     // Internal flow holding the CURRENTLY filtered *API* models (Appointment)
     private val _allAppointments = MutableStateFlow<List<Appointment>>(emptyList())
 
@@ -346,6 +349,27 @@ class BookingViewModel : ViewModel() {
                 val statusOptions = RetrofitInstance.api.getStatusOptions()
                 _statusOptions.value = statusOptions
                 Log.d("BookingViewModel", "Fetched ${statusOptions.size} status options.")
+            } catch (e: Exception) {
+                val errorMsg = when (e) {
+                    is IOException -> "Netzwerkfehler beim Laden der Buttons."
+                    is HttpException -> "API-Fehler beim Laden der Buttons: HTTP ${e.code()}"
+                    else -> "Ein unerwarteter Fehler ist aufgetreten: ${e.message}"
+                }
+                setErrorMessage(errorMsg)
+            } finally {
+                _isLoading.value = false
+            }
+        }
+    }
+
+    fun fetchVehiclesByDriver() {
+        viewModelScope.launch {
+            _isLoading.value = true
+            setErrorMessage(null)
+            try {
+                val vehiclesBYDriverId = RetrofitInstance.api.getVehiclesByDriverId()
+                _vehiclesBYDriverId.value = vehiclesBYDriverId
+                Log.d("BookingViewModel", "Fetched ${vehiclesBYDriverId.size} status options.")
             } catch (e: Exception) {
                 val errorMsg = when (e) {
                     is IOException -> "Netzwerkfehler beim Laden der Buttons."
