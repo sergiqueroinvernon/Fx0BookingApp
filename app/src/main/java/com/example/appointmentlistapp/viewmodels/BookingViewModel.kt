@@ -362,7 +362,7 @@ class BookingViewModel : ViewModel() {
         }
     }
 
-    fun fetchVehiclesByDriver() {
+    fun fetchVehiclesByDriver(driverId: String) {
         viewModelScope.launch {
             _isLoading.value = true
             setErrorMessage(null)

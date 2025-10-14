@@ -27,7 +27,7 @@ interface BookingAppService {
     suspend fun getStatusOptions(): List<StatusOption>
 
     @GET("api/vehicles/{driverId}")
-    suspend fun getVehiclesByDriverId(): List<Vehicle>
+    suspend fun getVehiclesByDriverId(@Path("driverId") driverId: String): List<Vehicle>
 
     @GET("api/appointments/driver/{driverId}")
     suspend fun getAppointmentsByDriverId(@Path("driverId") driverId: String): List<Appointment>
