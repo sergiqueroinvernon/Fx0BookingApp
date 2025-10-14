@@ -167,7 +167,7 @@ fun BookingFilterMask(
                             })
                     }
                 }
-
+            }
             // 5. Fahrzeug (Dropdown Placeholder)
             ExposedDropdownMenuBox(
                 expanded = vehicleDropdownExpanded,
@@ -197,7 +197,7 @@ fun BookingFilterMask(
                     }
                 }
             }
-        }
+
         // Action Buttons (Aktualisieren / Zurücksetzen)
             Row(
                 modifier = Modifier.fillMaxWidth(),
