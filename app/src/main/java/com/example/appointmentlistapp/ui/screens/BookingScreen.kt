@@ -18,6 +18,7 @@ import androidx.compose.ui.window.Dialog // Import for the pop-up window
 
 import com.example.appointmentlistapp.data.Booking
 import com.example.appointmentlistapp.data.PurposeOfTrip
+import com.example.appointmentlistapp.data.Vehicle
 import com.example.appointmentlistapp.data.StatusOption
 import com.example.appointmentlistapp.data.components.ButtonConfig
 import com.example.appointmentlistapp.ui.components.BookingDetails
@@ -59,7 +60,8 @@ private fun ActionButton(
 @Composable
 fun BookingFilterMask(
     purposeOfTrips: List<PurposeOfTrip>,
-    statusOptions: List<StatusOption>, // New parameter for status options
+    statusOptions: List<StatusOption>,
+    vehiclesByDriverId: List<Vehicle>,
     filterState: BookingFilterState,
     onEvent: (BookingFilterEvent) -> Unit,
     onClose: () -> Unit // Function to close the dialog
@@ -241,6 +243,7 @@ fun BookingScreen() {
                 BookingFilterMask(
                     purposeOfTrips = purposeOfTrips,
                     statusOptions = statusOptions, // Pass the dynamic list
+                    vehiclesByDriverId = vehiclesBYDriverId,
                     filterState = filterState,
                     onEvent = bookingViewModel::handleFilterEvent,
                     onClose = { showFilterMask = false }
