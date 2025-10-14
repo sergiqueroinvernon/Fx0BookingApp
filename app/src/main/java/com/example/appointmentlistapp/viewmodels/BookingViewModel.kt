@@ -367,7 +367,7 @@ class BookingViewModel : ViewModel() {
             _isLoading.value = true
             setErrorMessage(null)
             try {
-                val vehiclesBYDriverId = RetrofitInstance.api.getVehiclesByDriverId()
+                val vehiclesBYDriverId = RetrofitInstance.api.getVehiclesByDriverId(driverId)
                 _vehiclesBYDriverId.value = vehiclesBYDriverId
                 Log.d("BookingViewModel", "Fetched ${vehiclesBYDriverId.size} status options.")
             } catch (e: Exception) {
