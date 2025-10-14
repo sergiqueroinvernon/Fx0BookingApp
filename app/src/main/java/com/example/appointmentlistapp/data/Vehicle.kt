@@ -1,6 +1,8 @@
 package com.example.appointmentlistapp.data
 
 data class Vehicle(
-    val licensePlate: String,
-    val internNumber: String,
+    val id: Int,
+    val registration: String,
+    val poolId: Int
 )
+
