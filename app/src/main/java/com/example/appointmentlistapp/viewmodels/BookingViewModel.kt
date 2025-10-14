@@ -92,7 +92,7 @@ class BookingViewModel : ViewModel() {
                 )
             }
 
-            is BookingFilterEvent.VehicleChange -> _filterState.update { it.copy(vehicle = event.vehicle) }
+            is BookingFilterEvent.VehicleChange -> _filterState.update { it.copy(vehicle = event.registration.toString()) }
 
             BookingFilterEvent.ApplyFilter -> {
                 // CORREGIT: No cal cridar fetchAppointments. El filtre ja és aplicat.

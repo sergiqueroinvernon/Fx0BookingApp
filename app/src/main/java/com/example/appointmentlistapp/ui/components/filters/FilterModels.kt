@@ -16,7 +16,7 @@ sealed class BookingFilterEvent {
     data class StatusChange(val status: String) : BookingFilterEvent()
     data class HandOverDateChange(val date: String) : BookingFilterEvent()
     data class TravelPurposeChange(val purposeId: Int) : BookingFilterEvent()
-    data class VehicleChange(val registration: String) : BookingFilterEvent()
+    data class VehicleChange(val registration: Any) : BookingFilterEvent()
     object ApplyFilter : BookingFilterEvent()
     object ResetFilter : BookingFilterEvent()
 }
