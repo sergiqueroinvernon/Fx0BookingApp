@@ -57,8 +57,8 @@ fun LogbookDetailView(logbook: LogbookEntry?, modifier: Modifier = Modifier) {
                         label2 = "Zielzeit", value2 = logbook.endTime.format(timeFormatter)
                     )
                     DetailRow(
-                        label1 = "Fahrzeug", value1 = logbook.vehicle.licensePlate,
-                        label2 = "Interne Nr.", value2 = logbook.vehicle.internNumber
+                        label1 = "Fahrzeug", value1 = logbook.vehicle.registration,
+                        //label2 = "Interne Nr.", value2 = logbook.vehicle.internNumber
                     )
                     DetailRow(label1 = "Reisezweck", value1 = logbook.purpose)
                     DetailRow(label1 = "Startort", value1 = logbook.startLocation)
