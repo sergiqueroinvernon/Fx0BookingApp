@@ -99,7 +99,7 @@ fun BookingFilterMask(
             ) {
                 OutlinedTextField(
                     value = if (filterState.status.isNotEmpty()) {
-                        statusOptions.find { it.option == filterState.status }?.option ?: "Status"
+                        statusOptions.find { it.status == filterState.status }?.status ?: "Status"
                     } else {
                         "Status"
                     },
