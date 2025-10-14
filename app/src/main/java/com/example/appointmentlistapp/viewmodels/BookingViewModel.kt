@@ -3,56 +3,249 @@ package com.example.appointmentlistapp.viewmodels
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.appointmentlistapp.data.Booking
-import com.example.appointmentlistapp.data.BookingRepository
+import com.example.appointmentlistapp.data.Booking // Import the UI Model
+import com.example.appointmentlistapp.data.PurposeOfTrip
+import com.example.appointmentlistapp.data.StatusOption
 import com.example.appointmentlistapp.data.components.ButtonConfig
-import com.example.appointmentlistapp.data.model.Appointment
+import com.example.appointmentlistapp.data.model.Appointment // Import the API Model
 import com.example.appointmentlistapp.data.remote.RetrofitInstance
+import com.example.appointmentlistapp.ui.components.filters.BookingFilterState
+import com.example.appointmentlistapp.ui.components.filters.BookingFilterEvent
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import retrofit2.HttpException
 import java.io.IOException
 
-// --- 💡 1. New UI State Data Class ---
-data class BookingUiState(
-    val bookings: List<Booking> = emptyList(),
-    val selectedBooking: Booking? = null,
-    val buttonConfigs: List<ButtonConfig> = emptyList(),
-    val isLoading: Boolean = false,
-    val errorMessage: String? = null,
-    val showDetails: Boolean = true // UI state managed here
-)
-
-// --- 💡 2. New UI Event/Intent Sealed Class ---
+// --- UI Event/Intent Sealed Class (Unchanged) ---
 sealed class BookingEvent {
     data class ButtonClicked(val config: ButtonConfig) : BookingEvent()
-    data class BookingSelected(val booking: Booking) : BookingEvent()
+    data class BookingSelected(val booking: String) : BookingEvent()
     data class BookingCheckedChange(val bookingId: String) : BookingEvent()
-    // You could also add a ToggleDetails event here if you want it decoupled from buttons
 }
 
+// --- Conversion Function (Mapper) (Unchanged) ---
+private fun convertAppointmentToBooking(appointment: Appointment): Booking {
+    // ... (Mapper implementation omitted for brevity) ...
+    return Booking(
+        // Booking section
+        bookingId = appointment.id ?: "0",
+        status = appointment.status ?: "Unknown",
+        driver = appointment.driver?.name ?: "-",
+        bookingDate = appointment.appointmentDateTime ?: "-",
+        description = appointment.description ?: "N/A",
+
+        // --- Trip details section ---
+        pickupDate = appointment.bookingDate ?: "-",
+        pickupTime = appointment.pickupTime ?: "-",
+        returnDate = appointment.returnDate ?: "-",
+        returnTime = appointment.returnTime ?: "-",
+        vehicle = appointment.vehicleRegistration ?: "-",
+        vehiclePool = appointment.vehiclePool ?: "-",
+        purposeOfTrip = (appointment.purposeOfTrip?: "-") as String,
+
+        pickupLocation = appointment.pickupLocation ?: "-",
+        returnLocation = appointment.returnLocation ?: "-",
+
+        // Odometer mapping
+        odometerReadingPickup = appointment.odometerPickup ?: "-",
+        odometerReadingReturn = appointment.odometerReturn ?: "-",
+        distance = appointment.distance ?: "-",
+
+        // Cancellation section
+        cancellationDate = appointment.cancellationDate ?: "-",
+        cancellationReason = appointment.cancellationReason ?: "-",
+
+        // Notes section
+        note = appointment.note ?: "-",
+        isChecked = appointment.isChecked,
+        handOverDate = appointment.handOverDate ?: "-",
+        internNumber = appointment.internNumber ?: "-",
+        processNumber = appointment.processNumber ?: "-"
+    )
+}
 
 class BookingViewModel : ViewModel() {
 
-    val repository = BookingRepository(RetrofitInstance.api)
+    // --- Filter State and Handler ---
+    private val _filterState = MutableStateFlow(
+        BookingFilterState(
+            bookingNo = "",
+            status = "",
+            handOverDate = "",
+            travelPurposeChange = 0,
+            vehicle = "",
+            purposeId = ""
+        )
+    )
+    val filterState: StateFlow<BookingFilterState> = _filterState.asStateFlow()
 
-    // --- 💡 3. CONSOLIDATED UI STATE ---
-    private val _uiState = MutableStateFlow(BookingUiState())
-    val uiState: StateFlow<BookingUiState> = _uiState.asStateFlow()
+    fun handleFilterEvent(event: BookingFilterEvent) {
+        when (event) {
+            // Aquests 'update' disparen automàticament el filtre 'combine'
+            is BookingFilterEvent.BookingNoChange -> _filterState.update { it.copy(bookingNo = event.bookingNo) }
+            is BookingFilterEvent.StatusChange -> _filterState.update { it.copy(status = event.status) }
+            is BookingFilterEvent.HandOverDateChange -> _filterState.update { it.copy(handOverDate = event.date) }
+            is BookingFilterEvent.TravelPurposeChange -> _filterState.update {
+                it.copy(
+                    travelPurposeChange = event.purposeId
+                )
+            }
 
-    // Flow from the repository to be collected by the UI (still exists, but can be moved into UiState)
-    val allAppointments: StateFlow<List<Appointment>> = repository.getAppointments()
-        .stateIn(
+            is BookingFilterEvent.VehicleChange -> _filterState.update { it.copy(vehicle = event.vehicle) }
+
+            BookingFilterEvent.ApplyFilter -> {
+                // CORREGIT: No cal cridar fetchAppointments. El filtre ja és aplicat.
+                Log.d("ViewModel", "Filter applied (State updated).")
+            }
+
+            BookingFilterEvent.ResetFilter -> {
+                _filterState.value = BookingFilterState(
+                    bookingNo = "",
+                    status = "",
+                    handOverDate = "",
+                    travelPurposeChange = 0,
+                    vehicle = "",
+                    purposeId = ""
+                )
+                Log.d("ViewModel", "Filter reset.")
+            }
+        }
+    }
+
+    // --- Data State ---
+
+    private val _purposeOfTrips = MutableStateFlow<List<PurposeOfTrip>>(emptyList())
+    val purposeOfTrips: StateFlow<List<PurposeOfTrip>> = _purposeOfTrips.asStateFlow()
+
+    private val _statusOptions = MutableStateFlow<List<StatusOption>>(emptyList())
+    val statusOptions: StateFlow<List<StatusOption>> = _statusOptions.asStateFlow()
+
+    // Internal flow holding the CURRENTLY filtered *API* models (Appointment)
+    private val _allAppointments = MutableStateFlow<List<Appointment>>(emptyList())
+
+    // This public flow holds all appointments fetched from the API, without any filtering.
+    val allAppointments: StateFlow<List<Appointment>> = _allAppointments.asStateFlow()
+
+    // Public StateFlow for the UI: maps the filtered API models to the UI model (Booking)
+    val bookings: StateFlow<List<Booking>> =
+        _allAppointments.combine(_filterState) { allAppointments, filter ->
+            val filteredAppointments = applyFilterToBookings(allAppointments, filter)
+            filteredAppointments.map { convertAppointmentToBooking(it) }
+        }.stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
             initialValue = emptyList()
         )
 
-    init {
-        // Initial fetch call is now handled by the UI (BookingScreen) using LaunchedEffect
+
+    private val _selectedBooking = MutableStateFlow<Booking?>(null)
+    val selectedBooking: StateFlow<Booking?> = _selectedBooking.asStateFlow()
+
+    val isLoading = MutableStateFlow(false)
+
+    private val _errorMessage = MutableStateFlow<String?>(null)
+    val errorMessage: StateFlow<String?> = _errorMessage.asStateFlow()
+
+    private val _scannedDriverId = MutableStateFlow<String?>(null)
+    val scannedDriverId: StateFlow<String?> = _scannedDriverId.asStateFlow()
+
+    private val _buttonConfigs = MutableStateFlow<List<ButtonConfig>>(emptyList())
+    val buttonConfigs: StateFlow<List<ButtonConfig>> = _buttonConfigs.asStateFlow()
+
+    private val _showDetails = MutableStateFlow(true)
+    val showDetails: StateFlow<Boolean> = _showDetails.asStateFlow()
+
+
+    fun setScannedDriverId(driverId: String) {
+        if (_scannedDriverId.value != driverId) {
+            _scannedDriverId.value = driverId
+            fetchAppointments()
+        }
     }
 
-    // --- 💡 4. EVENT HANDLER (Processes all UI interactions) ---
+    // 🆕 MODIFIED: Function now checks if it should fetch new data or use cached data for filtering
+    fun fetchAppointments(
+        driverId: String? = _scannedDriverId.value,
+        useCachedData: Boolean = false
+    ) {
+        if (driverId.isNullOrBlank()) {
+            _allAppointments.value = emptyList()
+            setErrorMessage("Bitte scannen Sie einen QR-Code, um Fahrertermine zu erhalten.")
+            return
+        }
+
+        if (useCachedData) {
+            // Apply filter instantly without a network call
+            // Data is already cached in _allAppointments, the 'bookings' flow will update automatically.
+            return
+
+        }
+
+        viewModelScope.launch {
+            _isLoading.value = true
+            setErrorMessage(null)
+            try {
+                // 1. Fetch raw data from API and store it
+                val appointments =
+                    RetrofitInstance.api.getAppointmentsByDriverId("FD104CC0-4756-4D24-8BDF-FF06CF716E22")
+                _allAppointments.value = appointments
+
+            } catch (e: IOException) {
+                setErrorMessage("Netzwerkfehler. Bitte überprüfen Sie Ihre Verbindung und stellen Sie sicher, dass die API läuft.")
+            } catch (e: HttpException) {
+                setErrorMessage("API-Fehler: ${e.message()}")
+            } catch (e: Exception) {
+                setErrorMessage("Ein unerwarteter Fehler ist aufgetreten: ${e.message}")
+            } finally {
+                _isLoading.value = false
+            }
+        }
+    }
+
+    // 🆕 NEW: Dedicated function to apply the filter logic
+    private fun applyFilterToBookings(
+        appointments: List<Appointment>,
+        filter: BookingFilterState
+    ): List<Appointment> {
+
+        // Si no hi ha cap filtre actiu, retornem la llista sencera
+        if (filter.bookingNo.isBlank() && filter.status.isNullOrBlank() && filter.vehicle.isBlank() &&
+            filter.handOverDate.isNullOrBlank() && filter.travelPurposeChange == 0
+        ) {
+            return appointments
+        }
+
+        return appointments.filter { appointment ->
+            // 1. Vorgangsnr. (Booking No)
+            val matchesBookingNo = filter.bookingNo.isBlank() ||
+                    appointment.processNumber.orEmpty()
+                        .contains(filter.bookingNo, ignoreCase = true)
+
+
+            // 2. Status (El teu filtre per estat!)
+            val matchesStatus = filter.status.isNullOrBlank() ||
+                    appointment.status.orEmpty().equals(filter.status, ignoreCase = true)
+
+            // 3. Date
+            val matchesDate = filter.handOverDate.isNullOrBlank() ||
+                    appointment.handOverDate.orEmpty()
+                        .contains(filter.handOverDate, ignoreCase = true)
+
+            // 4. Purpose
+            // The filter state uses travelPurposeChange (Int), not purposeId (String)
+            val matchesPurpose = filter.travelPurposeChange == 0 ||
+                    appointment.purposeOfTripId == filter.travelPurposeChange
+
+            // 5. Vehicle
+            val matchesVehicle = filter.vehicle.isBlank() ||
+                    appointment.vehicleRegistration.orEmpty()
+                        .contains(filter.vehicle, ignoreCase = true)
+
+            matchesBookingNo && matchesStatus && matchesDate && matchesPurpose && matchesVehicle
+        }
+    }
+
+
     fun handleEvent(event: BookingEvent) {
         when (event) {
             is BookingEvent.ButtonClicked -> handleButtonClicked(event.config)
@@ -61,77 +254,118 @@ class BookingViewModel : ViewModel() {
         }
     }
 
-    private fun handleButtonClicked(config: ButtonConfig) {
-        // Find the action type from the database config
-        when (config.type.lowercase().trim()) {
-            "details" -> _uiState.update {
-                it.copy(showDetails = !it.showDetails) // Toggle details pane
+    // 🆕 MODIFIED: Update the ALL appointments list, then re-apply filter to update UI
+    fun toggleBookingChecked(bookingId: String) {
+        // 1. Actualitza el valor del Flow mestre, creant una nova llista
+        _allAppointments.value = _allAppointments.value.map { appointment ->
+            if (appointment.id == bookingId) {
+                appointment.copy(isChecked = !appointment.isChecked)
+            } else {
+                appointment
             }
+        }
+        // La línia anterior dispara automàticament el filtre 'combine'.
+    }
+
+    private fun handleButtonClicked(config: ButtonConfig) {
+        when (config.type.lowercase().trim()) {
+            "details" -> _showDetails.value = !_showDetails.value
             "add" -> Log.d("ViewModel", "Action: Navigate to ADD screen.")
-            "edit" -> Log.d("ViewModel", "Action: Navigate to EDIT screen for booking ID: ${uiState.value.selectedBooking?.bookingId}")
-            // ... add other dynamic actions (save, cancel, etc.)
+            "edit" -> Log.d(
+                "ViewModel",
+                "Action: Navigate to EDIT screen for booking ID: ${_selectedBooking.value?.bookingId}"
+            )
+
             else -> Log.w("ViewModel", "Unknown button action type: ${config.type}")
         }
     }
 
-    // ----------------------------------------------------
-    // --- Existing Data Fetch and Logic Functions ---
-    // ----------------------------------------------------
+    private fun setErrorMessage(message: String?) {
+        _errorMessage.value = message
+    }
+
+    private val _isLoading = MutableStateFlow(false)
 
     fun fetchButtonsForClientAndScreen(clientId: String, screenId: String) {
-        if (clientId.isBlank() || screenId.isNullOrBlank()) {
-            _uiState.update { it.copy(buttonConfigs = emptyList()) }
-            setErrorMessage("Bitte scannen Sie einen QR-Code, um Fahrertermine zu erhalten.")
+        // ... (function implementation remains unchanged) ...
+        if (clientId.isBlank() || screenId.isBlank()) {
+            _buttonConfigs.value = emptyList()
+            setErrorMessage("Fehler bei der Button-Konfiguration.")
             return
         }
 
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true, errorMessage = null) }
+            _isLoading.value = true
+            setErrorMessage(null)
             try {
-                // API call
-                val buttonConfigs = RetrofitInstance.api.getButtonsForClientAndScreen(clientId, screenId)
-
-                // 💡 Update CONSOLIDATED UI STATE
-                _uiState.update { it.copy(buttonConfigs = buttonConfigs) }
+                val buttonConfigs =
+                    RetrofitInstance.api.getButtonsForClientAndScreen(clientId, screenId)
+                _buttonConfigs.value = buttonConfigs
                 Log.d("BookingViewModel", "Fetched ${buttonConfigs.size} buttons.")
-
             } catch (e: Exception) {
                 val errorMsg = when (e) {
-                    is IOException -> "Netzwerkfehler. Bitte überprüfen Sie Ihre Verbindung."
-                    is HttpException -> "API-Fehler: HTTP ${e.code()}"
+                    is IOException -> "Netzwerkfehler beim Laden der Buttons."
+                    is HttpException -> "API-Fehler beim Laden der Buttons: HTTP ${e.code()}"
                     else -> "Ein unerwarteter Fehler ist aufgetreten: ${e.message}"
                 }
                 setErrorMessage(errorMsg)
-                Log.e("BookingViewModel", "Error fetching buttons.", e)
             } finally {
-                _uiState.update { it.copy(isLoading = false) }
+                _isLoading.value = false
             }
         }
     }
 
-    // Other functions (fetchAppointments, insertBooking, deleteBooking) should also be updated
-    // to use the _uiState.update { ... } pattern instead of individual flow updates.
 
-    fun selectBooking(booking: Booking) {
-        _uiState.update { it.copy(selectedBooking = booking) }
-    }
-
-    fun toggleBookingChecked(bookingId: String) {
-        _uiState.update { currentState ->
-            val updatedBookings = currentState.bookings.map { booking ->
-                if (booking.bookingId == bookingId) {
-                    booking.copy(isChecked = !(booking.isChecked ?: false))
-                } else {
-                    booking
+    fun fetchPurposeOfTrips() {
+        viewModelScope.launch {
+            _isLoading.value = true
+            setErrorMessage(null)
+            try {
+                val purposeOfTrips = RetrofitInstance.api.getPurposeOfTrips()
+                _purposeOfTrips.value = purposeOfTrips
+                Log.d("BookingViewModel", "Fetched ${purposeOfTrips.size} purpose of trips.")
+            } catch (e: Exception) {
+                val errorMsg = when (e) {
+                    is IOException -> "Netzwerkfehler beim Laden der Buttons."
+                    is HttpException -> "API-Fehler beim Laden der Buttons: HTTP ${e.code()}"
+                    else -> "Ein unerwarteter Fehler ist aufgetreten: ${e.message}"
                 }
+                setErrorMessage(errorMsg)
+            } finally {
+                _isLoading.value = false
             }
-            currentState.copy(bookings = updatedBookings)
         }
     }
 
-    private fun setErrorMessage(message: String?) {
-        _uiState.update { it.copy(errorMessage = message) }
+
+    fun fetchStatusOptions() {
+        viewModelScope.launch {
+            _isLoading.value = true
+            setErrorMessage(null)
+            try {
+                val statusOptions = RetrofitInstance.api.getStatusOptions()
+                _statusOptions.value = statusOptions
+                Log.d("BookingViewModel", "Fetched ${statusOptions.size} status options.")
+            } catch (e: Exception) {
+                val errorMsg = when (e) {
+                    is IOException -> "Netzwerkfehler beim Laden der Buttons."
+                    is HttpException -> "API-Fehler beim Laden der Buttons: HTTP ${e.code()}"
+                    else -> "Ein unerwarteter Fehler ist aufgetreten: ${e.message}"
+                }
+                setErrorMessage(errorMsg)
+            } finally {
+                _isLoading.value = false
+            }
+        }
     }
 
-    // ❌ REMOVE the redundant loadButtonsForScreen function if it exists here.
+
+
+
+    fun selectBooking(bookingId: String) {
+        val selectedAppointment = _allAppointments.value.find { it.id == bookingId }
+        if (selectedAppointment != null) {
+            _selectedBooking.value = convertAppointmentToBooking(selectedAppointment)
+        }
+    }
 }

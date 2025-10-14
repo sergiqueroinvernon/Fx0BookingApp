@@ -1,11 +1,6 @@
 package com.example.appointmentlistapp.data
 
 import androidx.room.Entity
-import com.example.appointmentlistapp.data.model.Appointment
-import retrofit2.Response
-import retrofit2.http.GET
-import retrofit2.http.POST
-import retrofit2.http.Path
 
 @Entity(tableName = "bookings")
 
@@ -15,9 +10,11 @@ data class Booking(
     val status: String,
     val driver: String,
     val bookingDate: String,
+    val description: String,
 
     // Trip details section
     val pickupDate: String,
+    val handOverDate: String,
     val returnDate: String,
     val returnTime: String,
     val vehicle: String,
@@ -36,6 +33,8 @@ data class Booking(
     // Notes section (nullable)
     val note: String,
     var isChecked: Boolean,
-    val pickupTime: String
+    val pickupTime: String,
+    val internNumber: String,
+    val processNumber: String
 )
 

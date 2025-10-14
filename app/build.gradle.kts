@@ -72,6 +72,7 @@ dependencies {
     // Image Loading
     implementation("io.coil-kt:coil-compose:2.7.0")
     implementation(libs.runtime)
+    implementation(libs.androidx.foundation)
 
     // CameraX dependencies (using the latest stable version)
     val camerax_version = "1.5.0"
@@ -116,6 +117,8 @@ dependencies {
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
     // Kotlin Coroutine support for Retrofit
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
+    implementation("com.google.accompanist:accompanist-flowlayout:0.34.0")
+// Use the latest version
 
 
 

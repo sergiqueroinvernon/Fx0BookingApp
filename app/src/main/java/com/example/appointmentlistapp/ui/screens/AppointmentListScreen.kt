@@ -5,8 +5,6 @@ import android.content.pm.PackageManager
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -17,13 +15,10 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
-import com.example.appointmentlistapp.AppointmentItem
 import com.example.appointmentlistapp.ui.camera.CameraPreview
 import com.example.appointmentlistapp.ui.components.AppointmentItem
 import com.example.appointmentlistapp.ui.viewmodel.AppointmentViewModel
@@ -155,10 +150,9 @@ fun AppointmentListScreen(viewModel: AppointmentViewModel) {
                                 key = { appointment -> appointment.id }
                             ) { appointment ->
                                 AppointmentItem(
-                                    appointment = appointment,
-                                    isChecked = appointment.isChecked,
-                                    onCheckedChange = { viewModel.toggleAppointmentChecked(appointment.id) }
-                                )
+                                    appointment,
+                                    isChecked = appointment.isChecked
+                                ) { viewModel.toggleAppointmentChecked(appointment.id) }
                             }
                         }
                     }

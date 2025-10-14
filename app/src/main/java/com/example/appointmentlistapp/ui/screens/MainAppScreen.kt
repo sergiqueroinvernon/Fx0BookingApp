@@ -14,11 +14,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.appointmentlistapp.R
-import com.example.appointmentlistapp.data.BookingRepository
 import com.example.appointmentlistapp.ui.viewmodel.AppointmentViewModel
-import com.example.appointmentlistapp.viewmodels.BookingViewModel
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -81,10 +78,10 @@ fun MainAppScreen(viewModel: AppointmentViewModel) {
             }
         }
     }
+
 }
 
-
-fun formatDate(dateString: String): String {
+fun formatDate(dateString: String?): String? {
     return try {
         val parser = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault())
         val formatter = SimpleDateFormat("dd MMM yyyy, hh:mm a", Locale.getDefault())

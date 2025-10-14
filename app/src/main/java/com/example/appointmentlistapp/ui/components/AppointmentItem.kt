@@ -14,7 +14,11 @@ import com.example.appointmentlistapp.ui.screens.formatDate
 
 
 @Composable
-fun AppointmentItem(appointment: Appointment, isChecked: Boolean, onCheckedChange: (Boolean) -> Unit) {
+fun AppointmentItem(
+    appointment: Appointment,
+    isChecked: Boolean,
+    onCheckedChange: (Boolean) -> Unit
+) {
     val isPending = appointment.status.equals("Pending", ignoreCase = true)
     val isCompleted = appointment.status.equals("Completed", ignoreCase = true)
     Card(
