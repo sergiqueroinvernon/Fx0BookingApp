@@ -32,7 +32,11 @@ class LogBookViewModel : ViewModel() {
                 status = LogbookStatus.CONFIRMED,
                 startTime = LocalDateTime.of(2025, 7, 21, 13, 33),
                 endTime = LocalDateTime.of(2025, 7, 21, 13, 45),
-                vehicle = Vehicle(licensePlate = "D-WG 466E", internNumber = "234234"),
+                vehicle = Vehicle(
+                    registration = "D-WG 466E",
+                    id = TODO(),
+                    poolId = TODO()
+                ),
                 startOdometer = 7974.0,
                 endOdometer = 7984.0,
                 purpose = "Kundenbesuch",
@@ -55,7 +59,11 @@ class LogBookViewModel : ViewModel() {
                 status = LogbookStatus.NOT_CONFIRMED,
                 startTime = LocalDateTime.of(2025, 7, 21, 12, 48),
                 endTime = LocalDateTime.of(2025, 7, 21, 13, 15),
-                vehicle = Vehicle(licensePlate = "D-EM 719E",  internNumber ="DDAFD"),
+                vehicle = Vehicle(
+                    registration = "D-EM 719E",
+                    id = TODO(),
+                    poolId = TODO()
+                ),
                 startOdometer = 7964.0,
                 endOdometer = 7974.0,
                 purpose = "Baustelle",

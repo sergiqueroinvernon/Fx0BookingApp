@@ -105,7 +105,7 @@ private fun DataRow(
         )
         Text(entry.id.toString(), Modifier.weight(1f), fontSize = 14.sp)
         Text(entry.startTime.format(dateFormatter), Modifier.weight(1.5f), fontSize = 14.sp)
-        Text(entry.vehicle.licensePlate, Modifier.weight(1.5f), fontSize = 14.sp)
+        Text(entry.vehicle.registration, Modifier.weight(1.5f), fontSize = 14.sp)
         Text(entry.purpose ?: "-", Modifier.weight(1f), fontSize = 14.sp)
     }
 }
