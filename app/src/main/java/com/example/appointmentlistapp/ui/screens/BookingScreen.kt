@@ -68,6 +68,7 @@ fun BookingFilterMask(
 ) {
     var statusDropdownExpanded by remember { mutableStateOf(false) }
     var travelPurposeDropdownExpanded by remember { mutableStateOf(false) }
+    var vehicleDropdownExpanded by remember { mutableStateOf(false) }
 
     // Use a Surface inside the Dialog for style and elevation
     Surface(
@@ -166,19 +167,38 @@ fun BookingFilterMask(
                             })
                     }
                 }
-            }
 
             // 5. Fahrzeug (Dropdown Placeholder)
-            OutlinedTextField(
-                value = filterState.vehicle.ifEmpty { "Fahrzeug" },
-                onValueChange = {},
-                label = { Text("Fahrzeug") },
-                readOnly = true,
-                trailingIcon = { Icon(Icons.Filled.ArrowDropDown, contentDescription = null, Modifier.clickable {}) },
-                modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp)
-            )
-
-            // Action Buttons (Aktualisieren / Zurücksetzen)
+            ExposedDropdownMenuBox(
+                expanded = vehicleDropdownExpanded,
+                onExpandedChange = { vehicleDropdownExpanded = !vehicleDropdownExpanded },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                OutlinedTextField(
+                    value = filterState.vehicle.ifEmpty { "Fahrzeug" },
+                    onValueChange = {},
+                    label = { Text("Fahrzeug") },
+                    readOnly = true,
+                    trailingIcon = { Icon(Icons.Filled.ArrowDropDown, contentDescription = null) },
+                    modifier = Modifier.menuAnchor().fillMaxWidth()
+                )
+                ExposedDropdownMenu(
+                    expanded = vehicleDropdownExpanded,
+                    onDismissRequest = { vehicleDropdownExpanded = false },
+                    modifier = Modifier.exposedDropdownSize()
+                ) {
+                    vehiclesByDriverId.forEach { vehicle ->
+                        DropdownMenuItem(
+                            text = { Text(vehicle.registration ?: "Unbekanntes Fahrzeug") },
+                            onClick = {
+                                onEvent(BookingFilterEvent.VehicleChange(vehicle.id ?: ""))
+                                vehicleDropdownExpanded = false
+                            })
+                    }
+                }
+            }
+        }
+        // Action Buttons (Aktualisieren / Zurücksetzen)
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
