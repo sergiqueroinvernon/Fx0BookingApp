@@ -217,7 +217,7 @@ fun BookingScreen() {
     val showDetails by bookingViewModel.showDetails.collectAsState()
     val purposeOfTrips by bookingViewModel.purposeOfTrips.collectAsState()
     val statusOptions by bookingViewModel.statusOptions.collectAsState() // New state
-
+    val vehiclesBYDriverId by bookingViewModel.vehiclesBYDriverId.collectAsState()
 
     // 🆕 NEW: State to toggle the visibility of the filter mask Dialog
     val filterState by bookingViewModel.filterState.collectAsState()
