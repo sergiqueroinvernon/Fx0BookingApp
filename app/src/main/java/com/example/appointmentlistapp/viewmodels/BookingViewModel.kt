@@ -190,7 +190,7 @@ class BookingViewModel : ViewModel() {
             try {
                 // 1. Fetch raw data from API and store it
                 val appointments =
-                    RetrofitInstance.api.getAppointmentsByDriverId("FD104CC0-4756-4D24-8BDF-FF06CF716E22")
+                    RetrofitInstance.api.getAppointmentsViewByDriverId("FD104CC0-4756-4D24-8BDF-FF06CF716E22")
                 _allAppointments.value = appointments
 
             } catch (e: IOException) {
