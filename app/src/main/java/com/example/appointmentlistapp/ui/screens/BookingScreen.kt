@@ -191,7 +191,7 @@ fun BookingFilterMask(
                         DropdownMenuItem(
                             text = { Text(vehicle.registration ?: "Unbekanntes Fahrzeug") },
                             onClick = {
-                                onEvent(BookingFilterEvent.VehicleChange(vehicle.id ?: ""))
+                                onEvent(BookingFilterEvent.RegistrationName(vehicle.registration ?: ""))
                                 vehicleDropdownExpanded = false
                             })
                     }
