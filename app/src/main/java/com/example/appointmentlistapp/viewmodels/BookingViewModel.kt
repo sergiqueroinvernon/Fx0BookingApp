@@ -91,7 +91,8 @@ class BookingViewModel : ViewModel() {
             handOverDate = "",
             travelPurposeChange = 0,
             vehicle = "",
-            purposeId = ""
+            purposeId = "",
+            registrationName = ""
         )
     )
     val filterState: StateFlow<BookingFilterState> = _filterState.asStateFlow()
@@ -102,6 +103,7 @@ class BookingViewModel : ViewModel() {
             is BookingFilterEvent.BookingNoChange -> _filterState.update { it.copy(bookingNo = event.bookingNo) }
             is BookingFilterEvent.StatusChange -> _filterState.update { it.copy(status = event.status) }
             is BookingFilterEvent.HandOverDateChange -> _filterState.update { it.copy(handOverDate = event.date) }
+            is BookingFilterEvent.RegistrationName -> _filterState.update { it.copy(registrationName = event.registrationName) }
             is BookingFilterEvent.TravelPurposeChange -> _filterState.update {
                 it.copy(
                     travelPurposeChange = event.purposeId
@@ -122,7 +124,8 @@ class BookingViewModel : ViewModel() {
                     handOverDate = "",
                     travelPurposeChange = 0,
                     vehicle = "",
-                    purposeId = ""
+                    purposeId = "",
+                    registrationName = ""
                 )
                 Log.d("ViewModel", "Filter reset.")
             }
@@ -264,6 +267,9 @@ class BookingViewModel : ViewModel() {
             // The filter state uses travelPurposeChange (Int), not purposeId (String)
             val matchesPurpose = filter.travelPurposeChange == 0 ||
                     appointment.purposeOfTripId == filter.travelPurposeChange
+
+            val matchesLicensePlate = filter.registrationName.isNullOrBlank() ||
+                    appointment.vehicleRegistrationName == filter.registrationName
 
             // 5. Vehicle
             val matchesVehicle = filter.vehicle.isBlank() ||
