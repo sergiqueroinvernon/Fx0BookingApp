@@ -231,6 +231,7 @@ fun BookingScreen() {
     val bookingViewModel = viewModel<BookingViewModel>()
 
     // State flows from ViewModel
+    val appointments by bookingViewModel.appointmentsUI.collectAsState()
     val bookings by bookingViewModel.bookings.collectAsState()
     val selectedBooking by bookingViewModel.selectedBooking.collectAsState()
     val buttonConfigs by bookingViewModel.buttonConfigs.collectAsState()

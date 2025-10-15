@@ -47,11 +47,10 @@ data class Appointment(
    val statusId: String? = null, // C# uses 'string?' here, keeping it String?
    val vehiclePoolId: String? = null, // C# uses 'string?' here, keeping it String?
 
-   // Descriptive Fields (already present but good for clarity)
-   // val driverName: String? = null, // Already covered by 'driver' model/field
-   // val appointmentStatus: String? = null, // Covered by 'status'
-   // val tripPurposeName: String? = null, // Covered by 'purposeOfTrip'
-   // val vehiclePoolName: String? = null, // Covered by 'vehiclePool'
-   // val vehicleRegistrationName: String? = null // Covered by 'vehicleRegistration'
+    val driverName: String? = null, // Already covered by 'driver' model/field
+   val appointmentStatus: String? = null, // Covered by 'status'
+   val tripPurposeName: String? = null, // Covered by 'purposeOfTrip'
+   val vehiclePoolName: String? = null, // Covered by 'vehiclePool'
+   val vehicleRegistrationName: String? = null // Covered by 'vehicleRegistration'
 
    )

@@ -1,6 +1,7 @@
 package com.example.appointmentlistapp.data
 
 import androidx.room.Entity
+import com.example.appointmentlistapp.Driver
 
 @Entity(tableName = "bookings")
 
@@ -35,6 +36,42 @@ data class Booking(
     var isChecked: Boolean,
     val pickupTime: String,
     val internNumber: String,
-    val processNumber: String
+    val processNumber: String,
+
+    val id: String,
+    val driverId: String,
+    val appointmentDateTime: String,
+
+    val vehicleRegistration: String? = null, // Used as 'vehicle' in Booking
+
+    val purposeOfTripId: Int? = null,
+
+
+    // Location and Odometer
+
+    val odometerPickup: String? = null, // Used as 'odometerReadingPickup' in Booking
+    val odometerReturn: String? = null, // Used as 'odometerReadingReturn' in Booking
+
+
+    // Core flags and timestamps
+    var createdAt: String,
+    var updatedAt: String,
+
+
+    // --- ADDED MISSING PROPERTIES ---
+
+    // IDs (Mapping C# GUID/INT to Kotlin)
+    val vehicleId: Int? = null,
+    val statusId: String? = null, // C# uses 'string?' here, keeping it String?
+    val vehiclePoolId: String? = null, // C# uses 'string?' here, keeping it String?
+
+    val driverName: String? = null, // Already covered by 'driver' model/field
+    val appointmentStatus: String? = null, // Covered by 'status'
+    val tripPurposeName: String? = null, // Covered by 'purposeOfTrip'
+    val vehiclePoolName: String? = null, // Covered by 'vehiclePool'
+    val vehicleRegistrationName: String? = null // Covered by 'vehicleRegistration'
+
+
+
 )
 

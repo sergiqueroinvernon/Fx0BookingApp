@@ -35,6 +35,7 @@ private fun convertAppointmentToBooking(appointment: Appointment): Booking {
         bookingDate = appointment.appointmentDateTime ?: "-",
         description = appointment.description ?: "N/A",
 
+
         // --- Trip details section ---
         pickupDate = appointment.bookingDate ?: "-",
         pickupTime = appointment.pickupTime ?: "-",
@@ -42,7 +43,7 @@ private fun convertAppointmentToBooking(appointment: Appointment): Booking {
         returnTime = appointment.returnTime ?: "-",
         vehicle = appointment.vehicleRegistration ?: "-",
         vehiclePool = appointment.vehiclePool ?: "-",
-        purposeOfTrip = (appointment.purposeOfTrip?: "-") as String,
+        purposeOfTrip = (appointment.purposeOfTrip ?: "-") as String,
 
         pickupLocation = appointment.pickupLocation ?: "-",
         returnLocation = appointment.returnLocation ?: "-",
@@ -61,7 +62,24 @@ private fun convertAppointmentToBooking(appointment: Appointment): Booking {
         isChecked = appointment.isChecked,
         handOverDate = appointment.handOverDate ?: "-",
         internNumber = appointment.internNumber ?: "-",
-        processNumber = appointment.processNumber ?: "-"
+        processNumber = appointment.processNumber ?: "-",
+        id = appointment.id,
+        driverId = appointment.driverId,
+        appointmentDateTime = appointment.appointmentDateTime,
+        vehicleRegistration = appointment.vehicleRegistration,
+        purposeOfTripId = appointment.purposeOfTripId,
+        odometerPickup = appointment.odometerPickup,
+        odometerReturn = appointment.odometerReturn,
+        createdAt = appointment.createdAt,
+        updatedAt = appointment.updatedAt,
+        //vehicleId = appointment.vehicleid,
+        //statusId = appointment.statusid,
+        vehiclePoolId = appointment.vehiclePoolId,
+        driverName = appointment.driverName,
+        appointmentStatus = appointment.tripPurposeName,
+        tripPurposeName = appointment.tripPurposeName,
+        vehiclePoolName = appointment.vehiclePoolName,
+        vehicleRegistrationName = appointment.vehicleRegistrationName
     )
 }
 
@@ -134,6 +152,16 @@ class BookingViewModel : ViewModel() {
         _allAppointments.combine(_filterState) { allAppointments, filter ->
             val filteredAppointments = applyFilterToBookings(allAppointments, filter)
             filteredAppointments.map { convertAppointmentToBooking(it) }
+        }.stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList()
+        )
+
+    val appointmentsUI: StateFlow<List<Appointment>> =
+        _allAppointments.combine(_filterState) { allAppointments, filter ->
+            // Eliminem el .map { convertAppointmentToBooking(it) }
+            applyFilterToBookings(allAppointments, filter) // Retorna List<Appointment> directament
         }.stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
