@@ -65,7 +65,7 @@ private fun convertAppointmentToBooking(appointment: Appointment): Booking {
         id = appointment.id,
         driverId = appointment.driverId,
         appointmentDateTime = appointment.appointmentDateTime,
-        vehicleRegistration = appointment.vehicleRegistration,
+        vehicleRegistration = appointment.vehicleRegistrationName,
         purposeOfTripId = appointment.purposeOfTripId,
         odometerPickup = appointment.odometerPickup,
         odometerReturn = appointment.odometerReturn,

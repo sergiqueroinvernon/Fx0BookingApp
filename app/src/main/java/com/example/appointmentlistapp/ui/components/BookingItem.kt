@@ -85,6 +85,7 @@ fun BookingItem(
                 Text(text = "Reisezweck: ${booking.tripPurposeName ?: "N/A"}")
 
                 Text(text = "Interne Nr.: ${booking.internNumber ?: "N/A"}")
+                Text(text = "KFZ-Kennzeichen.: ${booking.vehicleRegistration ?: "N/A"}")
 
                 // Reduced height for tighter packing
                 Text(text = "Date: ${formatDate(booking.bookingDate)}")
