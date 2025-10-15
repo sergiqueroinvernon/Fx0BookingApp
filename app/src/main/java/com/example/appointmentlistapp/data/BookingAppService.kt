@@ -31,6 +31,9 @@ interface BookingAppService {
 
     @GET("api/appointments/driver/{driverId}")
     suspend fun getAppointmentsByDriverId(@Path("driverId") driverId: String): List<Appointment>
+
+    @GET("api/appointments/fullview/driver/{driverId}")
+    suspend fun getAppointmentsViewByDriverId(@Path("driverId") driverId: String): List<Appointment>
     @POST("api/appointments/{id}/checkin")
     suspend fun checkInAppointment(@Path("id") id: String): Response<Void>
     @POST("api/appointments")

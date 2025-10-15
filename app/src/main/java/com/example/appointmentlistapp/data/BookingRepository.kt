@@ -29,6 +29,11 @@ open class BookingRepository(private val bookingAppService: BookingAppService) {
 
         }
 
+    open suspend fun getAppointmentsViewByDriver(driverId: String): List<Appointment> {
+        // This function doesn't use a Flow because the data is a one-time request
+        return bookingAppService.getAppointmentsViewByDriverId(driverId)
+    }
+
     open suspend fun getAppointmentsByDriver(driverId: String): List<Appointment> {
         // This function doesn't use a Flow because the data is a one-time request
         return bookingAppService.getAppointmentsByDriverId(driverId)
