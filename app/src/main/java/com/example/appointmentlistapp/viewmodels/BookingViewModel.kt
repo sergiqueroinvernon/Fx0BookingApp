@@ -276,7 +276,7 @@ class BookingViewModel : ViewModel() {
                     appointment.vehicleRegistration.orEmpty()
                         .contains(filter.vehicle, ignoreCase = true)
 
-            matchesBookingNo && matchesStatus && matchesDate && matchesPurpose && matchesVehicle
+            matchesBookingNo && matchesStatus && matchesDate && matchesPurpose && matchesVehicle && matchesLicensePlate
         }
     }
 
