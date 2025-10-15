@@ -26,7 +26,7 @@ data class Appointment(
    val odometerReturn: String? = null, // Used as 'odometerReadingReturn' in Booking
    val distance: String? = null,
    val handOverDate: String? = null,
-   val internNumber: String? = null,
+   val internalNumber: String? = null,
 
 
     // Administrative/Cancellation

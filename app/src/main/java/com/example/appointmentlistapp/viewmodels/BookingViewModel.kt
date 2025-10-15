@@ -30,7 +30,6 @@ private fun convertAppointmentToBooking(appointment: Appointment): Booking {
     return Booking(
         // Booking section
         bookingId = appointment.id ?: "0",
-        status = appointment.status ?: "Unknown",
         driver = appointment.driver?.name ?: "-",
         bookingDate = appointment.appointmentDateTime ?: "-",
         description = appointment.description ?: "N/A",
@@ -61,7 +60,7 @@ private fun convertAppointmentToBooking(appointment: Appointment): Booking {
         note = appointment.note ?: "-",
         isChecked = appointment.isChecked,
         handOverDate = appointment.handOverDate ?: "-",
-        internNumber = appointment.internNumber ?: "-",
+        internNumber = appointment.internalNumber ?: "-",
         processNumber = appointment.processNumber ?: "-",
         id = appointment.id,
         driverId = appointment.driverId,
@@ -73,10 +72,9 @@ private fun convertAppointmentToBooking(appointment: Appointment): Booking {
         createdAt = appointment.createdAt,
         updatedAt = appointment.updatedAt,
         //vehicleId = appointment.vehicleid,
-        //statusId = appointment.statusid,
+        status = appointment.appointmentStatus,
         vehiclePoolId = appointment.vehiclePoolId,
         driverName = appointment.driverName,
-        appointmentStatus = appointment.tripPurposeName,
         tripPurposeName = appointment.tripPurposeName,
         vehiclePoolName = appointment.vehiclePoolName,
         vehicleRegistrationName = appointment.vehicleRegistrationName

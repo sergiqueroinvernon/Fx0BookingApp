@@ -77,11 +77,13 @@ private fun DataRow(
             onCheckedChange = { _ -> onCheckedChange() },
             modifier = Modifier.weight(0.5f)
         )
-        Text(
-            text = booking.status,
-            modifier = Modifier.weight(1.5f),
-            fontSize = 14.sp
-        )
+        booking.status?.let {
+            Text(
+                text = it,
+                modifier = Modifier.weight(1.5f),
+                fontSize = 14.sp
+            )
+        }
         Text(
             text = booking.bookingId,
             modifier = Modifier.weight(1f),

@@ -76,26 +76,27 @@ fun BookingItem(
                 Text(text = "Vorgangsnrs.: ${booking.processNumber?: "N/A"}")
                 Text(text = "Statuss.: ${booking.status?: "N/A"}")
                 Text(text = "Reserviert von.: ${booking.bookingDate?: "N/A"}")
-                Text(text = "Fahrer: ${booking.driver?: "N/A"}")
+                Text(text = "Fahrer: ${booking.driverName?: "N/A"}")
 
                 Text(text = "Übergabe ${booking.handOverDate?: "N/A"}")
                 Text(text = "Rücknahme: ${booking.returnDate ?: "N/A"}")
 
-                Text(text = "Fahrzeugpool ${booking.vehiclePool ?: "N/A"}")
-                Text(text = "Reisezweck: ${booking.purposeOfTrip ?: "N/A"}")
+                Text(text = "Fahrzeugpool ${booking.vehiclePoolName ?: "N/A"}")
+                Text(text = "Reisezweck: ${booking.tripPurposeName ?: "N/A"}")
 
-                Text(text = "Fahrzeugpool ${booking.driver ?: "N/A"}")
                 Text(text = "Interne Nr.: ${booking.internNumber ?: "N/A"}")
 
                 // Reduced height for tighter packing
                 Text(text = "Date: ${formatDate(booking.bookingDate)}")
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(text = "Status: ")
-                    Text(
-                        text = booking.status,
-                        color = if (isCompleted) Color(0xFF388E3C) else Color(0xFFFBC02D),
-                        fontWeight = FontWeight.Bold
-                    )
+                    booking.status?.let {
+                        Text(
+                            text = it,
+                            color = if (isCompleted) Color(0xFF388E3C) else Color(0xFFFBC02D),
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
                 }
             }
         }

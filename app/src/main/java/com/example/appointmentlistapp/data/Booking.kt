@@ -1,14 +1,13 @@
 package com.example.appointmentlistapp.data
 
 import androidx.room.Entity
-import com.example.appointmentlistapp.Driver
 
 @Entity(tableName = "bookings")
 
 data class Booking(
     // Booking section
     val bookingId: String,
-    val status: String,
+    val status: String?,
     val driver: String,
     val bookingDate: String,
     val description: String,
