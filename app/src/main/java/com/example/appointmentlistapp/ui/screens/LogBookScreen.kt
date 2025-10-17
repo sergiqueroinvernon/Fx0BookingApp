@@ -330,12 +330,7 @@ fun LogBookScreen() {
             Column(modifier = Modifier.weight(2f)) {
 
                 // FILTERKRITERIEN BUTTON to open the Dialog
-                Button(
-                    onClick = { showFilterMask = true },
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-                ) {
-                    Text("Filterkriterien")
-                }
+
 
                 // --- Dynamic Buttons Rowd (FlowRow) ---
                 FlowRow(
