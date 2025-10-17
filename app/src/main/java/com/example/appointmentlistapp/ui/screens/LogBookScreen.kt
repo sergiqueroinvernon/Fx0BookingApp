@@ -227,7 +227,7 @@ fun LookingBookFilterMask(
 
 
 @Composable
-fun BookingScreen() {
+fun LogBookScreen() {
     val bookingViewModel = viewModel<BookingViewModel>()
 
     // State flows from ViewModel
