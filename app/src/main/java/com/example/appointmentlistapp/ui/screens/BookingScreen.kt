@@ -115,7 +115,9 @@ fun BookingFilterMask(
 
                 ExposedDropdownMenu(
                     expanded = statusDropdownExpanded, // State is now managed by the parent box
-                    onDismissRequest = { statusDropdownExpanded = false }, // Keep this to close on outside click
+                    onDismissRequest = {
+                        statusDropdownExpanded = false
+                    }, // Keep this to close on outside click
                     modifier = Modifier.exposedDropdownSize() // Match the width of the anchor
                 ) {
                     statusOptions.forEach { status ->
@@ -135,13 +137,20 @@ fun BookingFilterMask(
                 onValueChange = {},
                 label = { Text("Übergabedatum") },
                 readOnly = true,
-                trailingIcon = { Icon(Icons.Filled.ArrowDropDown, contentDescription = null, Modifier.clickable {}) },
+                trailingIcon = {
+                    Icon(
+                        Icons.Filled.ArrowDropDown,
+                        contentDescription = null,
+                        Modifier.clickable {})
+                },
                 modifier = Modifier.fillMaxWidth()
             )
 
             ExposedDropdownMenuBox(
                 expanded = travelPurposeDropdownExpanded,
-                onExpandedChange = { travelPurposeDropdownExpanded = !travelPurposeDropdownExpanded },
+                onExpandedChange = {
+                    travelPurposeDropdownExpanded = !travelPurposeDropdownExpanded
+                },
                 modifier = Modifier.fillMaxWidth()
             ) {
                 OutlinedTextField(
@@ -191,14 +200,18 @@ fun BookingFilterMask(
                         DropdownMenuItem(
                             text = { Text(vehicle.registration ?: "Unbekanntes Fahrzeug") },
                             onClick = {
-                                onEvent(BookingFilterEvent.RegistrationName(vehicle.registration ?: ""))
+                                onEvent(
+                                    BookingFilterEvent.RegistrationName(
+                                        vehicle.registration ?: ""
+                                    )
+                                )
                                 vehicleDropdownExpanded = false
                             })
                     }
                 }
             }
 
-        // Action Buttons (Aktualisieren / Zurücksetzen)
+            // Action Buttons (Aktualisieren / Zurücksetzen)
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
@@ -222,10 +235,9 @@ fun BookingFilterMask(
             }
         }
     }
+}
 
 // ----------------------------------------------------------------------
-
-
 @Composable
 fun BookingScreen() {
     val bookingViewModel = viewModel<BookingViewModel>()
@@ -380,4 +392,4 @@ fun BookingScreen() {
             }
         } // END Master/Detail Row
     }
-}}
+}

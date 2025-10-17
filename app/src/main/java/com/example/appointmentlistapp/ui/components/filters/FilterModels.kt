@@ -3,7 +3,7 @@ package com.example.appointmentlistapp.ui.components.filters
 
 // Classes que defineixen l'estat i els esdeveniments del filtre
 data class BookingFilterState(
-    val bookingNo: String = "",
+    val entryNr: String = "",
     val status: String = "",
     val handOverDate: String = "",
     val travelPurposeChange: Int = 0,

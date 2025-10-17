@@ -1,5 +1,7 @@
 package com.example.appointmentlistapp.ui.screens
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -34,198 +36,6 @@ import com.example.appointmentlistapp.viewmodels.BookingEvent.BookingCheckedChan
 
 // --- Filter State Placeholders (Should exist in your ViewModel package) ---
 // ---
-
-// --- Helper Composable for Button ---
-@Composable
-private fun ActionButton(
-    config: ButtonConfig,
-    viewModel: BookingViewModel,
-    modifier: Modifier = Modifier) {
-    Button(
-        onClick = { viewModel.handleEvent(BookingEvent.ButtonClicked(config)) },
-        modifier = modifier
-    ) {
-        Icon(
-            painter = painterResource(getIconForType(config.type.toString().trim())),
-            contentDescription = config.text,
-            modifier = Modifier.size(14.dp).padding(end = 4.dp)
-        )
-        Text(config.text)
-    }
-}
-// ---
-
-// --- NEW COMPOSABLE: The Filter Mask (Content for the Dialog) ---
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun LookingBookFilterMask(
-    purposeOfTrips: List<PurposeOfTrip>,
-    statusOptions: List<StatusOption>,
-    vehiclesByDriverId: List<Vehicle>,
-    filterState: BookingFilterState,
-    onEvent: (BookingFilterEvent) -> Unit,
-    onClose: () -> Unit // Function to close the dialog
-) {
-    var statusDropdownExpanded by remember { mutableStateOf(false) }
-    var travelPurposeDropdownExpanded by remember { mutableStateOf(false) }
-    var vehicleDropdownExpanded by remember { mutableStateOf(false) }
-
-    // Use a Surface inside the Dialog for style and elevation
-    Surface(
-        modifier = Modifier
-            .width(400.dp) // Define a width suitable for a standard pop-up
-            .wrapContentHeight(),
-        shape = MaterialTheme.shapes.large,
-        tonalElevation = 6.dp
-    ) {
-        Column(
-            modifier = Modifier.padding(24.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp)
-        ) {
-            Text("Filterkriterien", style = MaterialTheme.typography.headlineSmall)
-            Divider()
-
-            // 1. Vorgangsnr.
-            OutlinedTextField(
-                value = filterState.bookingNo,
-                onValueChange = { onEvent(BookingFilterEvent.BookingNoChange(it)) },
-                label = { Text("Vorgangsnr.") },
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true
-            )
-
-            // 2. Status (Dropdown Placeholder)
-            ExposedDropdownMenuBox(
-                expanded = statusDropdownExpanded,
-                onExpandedChange = { statusDropdownExpanded = !statusDropdownExpanded },
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                OutlinedTextField(
-                    value = if (filterState.status.isNotEmpty()) {
-                        statusOptions.find { it.status == filterState.status }?.status ?: "Status"
-                    } else {
-                        "Status"
-                    },
-                    onValueChange = {},
-                    label = { Text("Status") },
-                    readOnly = true,
-                    trailingIcon = { Icon(Icons.Filled.ArrowDropDown, contentDescription = null) },
-                    modifier = Modifier.menuAnchor().fillMaxWidth() // Use menuAnchor()
-                )
-
-                ExposedDropdownMenu(
-                    expanded = statusDropdownExpanded, // State is now managed by the parent box
-                    onDismissRequest = { statusDropdownExpanded = false }, // Keep this to close on outside click
-                    modifier = Modifier.exposedDropdownSize() // Match the width of the anchor
-                ) {
-                    statusOptions.forEach { status ->
-                        DropdownMenuItem(
-                            text = { Text(status.status) },
-                            onClick = {
-                                onEvent(BookingFilterEvent.StatusChange(status.status))
-                                statusDropdownExpanded = false
-                            })
-                    }
-                }
-            }
-
-            // 3. Übergabedatum (Date Range Placeholder)
-            OutlinedTextField(
-                value = filterState.handOverDate.ifEmpty { "Übergabedatum - -" },
-                onValueChange = {},
-                label = { Text("Übergabedatum") },
-                readOnly = true,
-                trailingIcon = { Icon(Icons.Filled.ArrowDropDown, contentDescription = null, Modifier.clickable {}) },
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            ExposedDropdownMenuBox(
-                expanded = travelPurposeDropdownExpanded,
-                onExpandedChange = { travelPurposeDropdownExpanded = !travelPurposeDropdownExpanded },
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                OutlinedTextField(
-                    value = filterState.purposeId.ifEmpty { "Reisezweck" },
-                    onValueChange = { /* onValueChange must be defined, but can be empty for readOnly */ },
-                    label = { Text("Reisezweck") },
-                    readOnly = true,
-                    trailingIcon = { Icon(Icons.Filled.ArrowDropDown, contentDescription = null) },
-                    modifier = Modifier.menuAnchor().fillMaxWidth()
-                )
-
-                ExposedDropdownMenu(
-                    expanded = travelPurposeDropdownExpanded,
-                    onDismissRequest = { travelPurposeDropdownExpanded = false },
-                    modifier = Modifier.exposedDropdownSize()
-                ) {
-                    purposeOfTrips.forEach { purpose ->
-                        DropdownMenuItem(
-                            text = { Text(purpose.purpose) },
-                            onClick = {
-                                onEvent(BookingFilterEvent.TravelPurposeChange(purposeId = purpose.id))
-                                travelPurposeDropdownExpanded = false
-                            })
-                    }
-                }
-            }
-            // 5. Fahrzeug (Dropdown Placeholder)
-            ExposedDropdownMenuBox(
-                expanded = vehicleDropdownExpanded,
-                onExpandedChange = { vehicleDropdownExpanded = !vehicleDropdownExpanded },
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                OutlinedTextField(
-                    value = filterState.vehicle.ifEmpty { "Fahrzeug" },
-                    onValueChange = {},
-                    label = { Text("Fahrzeug") },
-                    readOnly = true,
-                    trailingIcon = { Icon(Icons.Filled.ArrowDropDown, contentDescription = null) },
-                    modifier = Modifier.menuAnchor().fillMaxWidth()
-                )
-                ExposedDropdownMenu(
-                    expanded = vehicleDropdownExpanded,
-                    onDismissRequest = { vehicleDropdownExpanded = false },
-                    modifier = Modifier.exposedDropdownSize()
-                ) {
-                    vehiclesByDriverId.forEach { vehicle ->
-                        DropdownMenuItem(
-                            text = { Text(vehicle.registration ?: "Unbekanntes Fahrzeug") },
-                            onClick = {
-                                onEvent(BookingFilterEvent.RegistrationName(vehicle.registration ?: ""))
-                                vehicleDropdownExpanded = false
-                            })
-                    }
-                }
-            }
-
-            // Action Buttons (Aktualisieren / Zurücksetzen)
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                // Aktualisieren (Update)
-                Button(
-                    onClick = { onEvent(BookingFilterEvent.ApplyFilter); onClose() },
-                    modifier = Modifier.weight(1f).padding(end = 4.dp),
-                    // Using default primary color
-                ) {
-                    Text("Aktualisieren")
-                }
-
-                // Zurücksetzen (Reset)
-                OutlinedButton(
-                    onClick = { onEvent(BookingFilterEvent.ResetFilter); onClose() },
-                    modifier = Modifier.weight(1f).padding(start = 4.dp),
-                ) {
-                    Text("Zurücksetzen")
-                }
-            }
-        }
-    }
-}
-// ----------------------------------------------------------------------
-
-
 @Composable
 fun LogBookScreen() {
     val bookingViewModel = viewModel<BookingViewModel>()
@@ -309,29 +119,45 @@ fun LogBookScreen() {
                 ) {
                     if (buttonConfigs.isNotEmpty()) {
                         buttonConfigs.forEach { config ->
-                            ActionButton(config, bookingViewModel, modifier = Modifier.width(160.dp))
+                            ActionButton(
+                                config,
+                                bookingViewModel,
+                                modifier = Modifier.width(160.dp)
+                            )
                         }
                     } else if (isLoading) {
                         Text(text = "Loading buttons...", modifier = Modifier.padding(8.dp))
                     } else {
-                        Text(text = "No buttons configured.", modifier = Modifier.padding(8.dp))
+                        Text(
+                            text = "No buttons configured.",
+                            modifier = Modifier.padding(8.dp)
+                        )
                     }
                 }
 
                 Spacer(modifier = Modifier.height(8.dp))
 
                 // --- Utility Toggle Button ---
-                if (selectedBooking != null && buttonConfigs.none { it.type.toString().trim().equals("details", ignoreCase = true) }) {
+                if (selectedBooking != null && buttonConfigs.none {
+                        it.type.toString().trim().equals("details", ignoreCase = true)
+                    }) {
                     Button(
                         onClick = {
-                            bookingViewModel.handleEvent(BookingEvent.ButtonClicked(
-                                config = ButtonConfig(
-                                    id = 0, clientId = "client123", screenId = "BookingScreen",
-                                    buttonName = "DetailsToggle", action = "TOGGLE_DETAILS",
-                                    type = "details", isVisible = 1,
-                                    text = if (showDetails) "Hide Details" else "Show Details", IconData = ""
+                            bookingViewModel.handleEvent(
+                                BookingEvent.ButtonClicked(
+                                    config = ButtonConfig(
+                                        id = 0,
+                                        clientId = "client123",
+                                        screenId = "BookingScreen",
+                                        buttonName = "DetailsToggle",
+                                        action = "TOGGLE_DETAILS",
+                                        type = "details",
+                                        isVisible = 1,
+                                        text = if (showDetails) "Hide Details" else "Show Details",
+                                        IconData = ""
+                                    )
                                 )
-                            ))
+                            )
                         },
                         modifier = Modifier.padding(horizontal = 8.dp)
                     ) {
@@ -356,13 +182,27 @@ fun LogBookScreen() {
                             }
                         }
                     } else {
-                        items(bookings, key = { booking -> booking.bookingId ?: booking.toString() }) { booking ->
+                        items(
+                            bookings,
+                            key = { booking ->
+                                booking.bookingId ?: booking.toString()
+                            }) { booking ->
                             BookingItem(
                                 booking = booking,
-                                onClick = { bookingViewModel.handleEvent(BookingSelected(booking.bookingId)) },
+                                onClick = {
+                                    bookingViewModel.handleEvent(
+                                        BookingSelected(
+                                            booking.bookingId
+                                        )
+                                    )
+                                },
                                 isSelected = booking.bookingId == selectedBooking?.bookingId,
                                 isChecked = booking.isChecked ?: false,
-                                onCheckedChange = { bookingViewModel.handleEvent(BookingCheckedChange(booking.bookingId)) },
+                                onCheckedChange = {
+                                    bookingViewModel.handleEvent(
+                                        BookingCheckedChange(booking.bookingId)
+                                    )
+                                },
                             )
                         }
                     }
@@ -380,4 +220,212 @@ fun LogBookScreen() {
             }
         } // END Master/Detail Row
     }
+}
+// --- Helper Composable for Button ---
+@Composable
+private fun ActionButton(
+    config: ButtonConfig,
+    viewModel: BookingViewModel,
+    modifier: Modifier = Modifier) {
+    Button(
+        onClick = { viewModel.handleEvent(BookingEvent.ButtonClicked(config)) },
+        modifier = modifier
+    ) {
+        Icon(
+            painter = painterResource(getIconForType(config.type.toString().trim())),
+            contentDescription = config.text,
+            modifier = Modifier.size(14.dp).padding(end = 4.dp)
+        )
+        Text(config.text)
+    }
+}
+// ---
+
+// --- NEW COMPOSABLE: The Filter Mask (Content for the Dialog) ---
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun LoockBookFilterMask(
+    purposeOfTrips: List<PurposeOfTrip>,
+    statusOptions: List<StatusOption>,
+    vehiclesByDriverId: List<Vehicle>,
+    filterState: BookingFilterState,
+    onEvent: (BookingFilterEvent) -> Unit,
+    onClose: () -> Unit // Function to close the dialog
+) {
+    var statusDropdownExpanded by remember { mutableStateOf(false) }
+    var travelPurposeDropdownExpanded by remember { mutableStateOf(false) }
+    var vehicleDropdownExpanded by remember { mutableStateOf(false) }
+
+    // Use a Surface inside the Dialog for style and elevation
+    Surface(
+        modifier = Modifier
+            .width(400.dp) // Define a width suitable for a standard pop-up
+            .wrapContentHeight(),
+        shape = MaterialTheme.shapes.large,
+        tonalElevation = 6.dp
+    ) {
+        Column(
+            modifier = Modifier.padding(24.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            Text("Filterkriterien", style = MaterialTheme.typography.headlineSmall)
+            Divider()
+
+            // 1. Vorgangsnr.
+            OutlinedTextField(
+                value = filterState.bookingNo,
+                onValueChange = { onEvent(BookingFilterEvent.BookingNoChange(it)) },
+                label = { Text("Vorgangsnr.") },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true
+            )
+
+            // 2. Status (Dropdown Placeholder)
+            ExposedDropdownMenuBox(
+                expanded = statusDropdownExpanded,
+                onExpandedChange = { statusDropdownExpanded = !statusDropdownExpanded },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                OutlinedTextField(
+                    value = if (filterState.status.isNotEmpty()) {
+                        statusOptions.find { it.status == filterState.status }?.status ?: "Status"
+                    } else {
+                        "Status"
+                    },
+                    onValueChange = {},
+                    label = { Text("Status") },
+                    readOnly = true,
+                    trailingIcon = { Icon(Icons.Filled.ArrowDropDown, contentDescription = null) },
+                    modifier = Modifier.menuAnchor().fillMaxWidth() // Use menuAnchor()
+                )
+
+                ExposedDropdownMenu(
+                    expanded = statusDropdownExpanded, // State is now managed by the parent box
+                    onDismissRequest = {
+                        statusDropdownExpanded = false
+                    }, // Keep this to close on outside click
+                    modifier = Modifier.exposedDropdownSize() // Match the width of the anchor
+                ) {
+                    statusOptions.forEach { status ->
+                        DropdownMenuItem(
+                            text = { Text(status.status) },
+                            onClick = {
+                                onEvent(BookingFilterEvent.StatusChange(status.status))
+                                statusDropdownExpanded = false
+                            })
+                    }
+                }
+            }
+
+            // 3. Übergabedatum (Date Range Placeholder)
+            OutlinedTextField(
+                value = filterState.handOverDate.ifEmpty { "Übergabedatum - -" },
+                onValueChange = {},
+                label = { Text("Übergabedatum") },
+                readOnly = true,
+                trailingIcon = {
+                    Icon(
+                        Icons.Filled.ArrowDropDown,
+                        contentDescription = null,
+                        Modifier.clickable {})
+                },
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            ExposedDropdownMenuBox(
+                expanded = travelPurposeDropdownExpanded,
+                onExpandedChange = {
+                    travelPurposeDropdownExpanded = !travelPurposeDropdownExpanded
+                },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                OutlinedTextField(
+                    value = filterState.purposeId.ifEmpty { "Reisezweck" },
+                    onValueChange = { /* onValueChange must be defined, but can be empty for readOnly */ },
+                    label = { Text("Reisezweck") },
+                    readOnly = true,
+                    trailingIcon = { Icon(Icons.Filled.ArrowDropDown, contentDescription = null) },
+                    modifier = Modifier.menuAnchor().fillMaxWidth()
+                )
+
+                ExposedDropdownMenu(
+                    expanded = travelPurposeDropdownExpanded,
+                    onDismissRequest = { travelPurposeDropdownExpanded = false },
+                    modifier = Modifier.exposedDropdownSize()
+                ) {
+                    purposeOfTrips.forEach { purpose ->
+                        DropdownMenuItem(
+                            text = { Text(purpose.purpose) },
+                            onClick = {
+                                onEvent(BookingFilterEvent.TravelPurposeChange(purposeId = purpose.id))
+                                travelPurposeDropdownExpanded = false
+                            })
+                    }
+                }
+            }
+            // 5. Fahrzeug (Dropdown Placeholder)
+            ExposedDropdownMenuBox(
+                expanded = vehicleDropdownExpanded,
+                onExpandedChange = { vehicleDropdownExpanded = !vehicleDropdownExpanded },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                OutlinedTextField(
+                    value = filterState.vehicle.ifEmpty { "Fahrzeug" },
+                    onValueChange = {},
+                    label = { Text("Fahrzeug") },
+                    readOnly = true,
+                    trailingIcon = { Icon(Icons.Filled.ArrowDropDown, contentDescription = null) },
+                    modifier = Modifier.menuAnchor().fillMaxWidth()
+                )
+                ExposedDropdownMenu(
+                    expanded = vehicleDropdownExpanded,
+                    onDismissRequest = { vehicleDropdownExpanded = false },
+                    modifier = Modifier.exposedDropdownSize()
+                ) {
+                    vehiclesByDriverId.forEach { vehicle ->
+                        DropdownMenuItem(
+                            text = { Text(vehicle.registration ?: "Unbekanntes Fahrzeug") },
+                            onClick = {
+                                onEvent(
+                                    BookingFilterEvent.RegistrationName(
+                                        vehicle.registration ?: ""
+                                    )
+                                )
+                                vehicleDropdownExpanded = false
+                            })
+                    }
+                }
+            }
+
+            // Action Buttons (Aktualisieren / Zurücksetzen)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                // Aktualisieren (Update)
+                Button(
+                    onClick = { onEvent(BookingFilterEvent.ApplyFilter); onClose() },
+                    modifier = Modifier.weight(1f).padding(end = 4.dp),
+                    // Using default primary color
+                ) {
+                    Text("Aktualisieren")
+                }
+
+                // Zurücksetzen (Reset)
+                OutlinedButton(
+                    onClick = { onEvent(BookingFilterEvent.ResetFilter); onClose() },
+                    modifier = Modifier.weight(1f).padding(start = 4.dp),
+                ) {
+                    Text("Zurücksetzen")
+                }
+            }
+        }
+
+
+// ----------------------------------------------------------------------
+
+
+
+    }
+
 }

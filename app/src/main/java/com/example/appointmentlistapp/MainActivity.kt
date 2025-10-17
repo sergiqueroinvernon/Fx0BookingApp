@@ -59,8 +59,9 @@ import androidx.navigation.compose.rememberNavController
 import com.example.appointmentlistapp.data.Booking
 import com.example.appointmentlistapp.data.BookingRepository
 import com.example.appointmentlistapp.ui.screens.BookingScreen
-
+import com.example.appointmentlistapp.ui.screens.LogBookScreen
 import com.example.appointmentlistapp.ui.screens.LogbookScreenCheck
+
 import com.example.appointmentlistapp.ui.screens.LoginScreen
 import com.example.appointmentlistapp.viewmodels.BookingViewModel
 
@@ -399,6 +400,7 @@ fun MainAppScreen(viewModel: AppointmentViewModel) {
         }
     }
 }
+
 
 
 
