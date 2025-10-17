@@ -1,9 +1,13 @@
 package com.example.appointmentlistapp.ui.viewmodel
 
 import android.os.Build
+import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
 import com.example.appointmentlistapp.data.* // Import all data classes
+import com.example.appointmentlistapp.data.components.ButtonConfig
+import com.example.appointmentlistapp.viewmodels.BookingEvent
+import com.example.appointmentlistapp.viewmodels.convertAppointmentToBooking
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -35,6 +39,9 @@ class LogBookViewModel : ViewModel() {
     // Public immutable state that the UI can observe
     val uiState: StateFlow<LogBookUiState> = _uiState.asStateFlow()
 
+    private val _showDetails = MutableStateFlow(true)
+    val showDetails: StateFlow<Boolean> = _showDetails.asStateFlow()
+
     // 2. Initializer block now correctly sets the selected entry using the unified state
     init {
         _uiState.update { currentState ->
@@ -44,6 +51,31 @@ class LogBookViewModel : ViewModel() {
             )
         }
     }
+
+    private fun handleButtonClick(config: ButtonConfig) {
+        when(config.type.lowercase().trim()){
+            "details" -> _showDetails.value = !_showDetails.value
+            else -> Log.w("ViewModel", "Unknown button action type: ${config.type}")
+        }
+    }
+    /*
+    fun selectBooking(bookingId: String) {
+        val selectedAppointment = _allAppointments.value.find { it.id == bookingId }
+        if (selectedAppointment != null) {
+            _selectedBooking.value = convertAppointmentToBooking(selectedAppointment)
+        }
+    }
+
+
+    fun handleEvent(event: LogBookEvent) {
+        when (event) {
+            is LogBookEvent..ButtonClicked -> handleButtonClicked(event.config)
+            is LogBookEvent.BookingSelected -> selectBooking(event.booking)
+            is LogBookEvent.BookingCheckedChange -> toggleBookingChecked(event.bookingId)
+        }
+    }
+    */
+
 
     /**
      * Updates the selected entry in the UI state.
