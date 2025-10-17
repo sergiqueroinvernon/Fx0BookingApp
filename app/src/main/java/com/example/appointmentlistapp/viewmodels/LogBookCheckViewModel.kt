@@ -12,13 +12,13 @@ import java.time.LocalDateTime
 
 @RequiresApi(Build.VERSION_CODES.O)
 class LogBookCheckViewModel : ViewModel() {
-
+/*
     @RequiresApi(Build.VERSION_CODES.O)
     private val _logbookEntries = MutableStateFlow(
         listOf(
-            LogbookEntry(
+            Logbook(
                 id = 1000351477,
-                status = LogbookStatus.CONFIRMED,
+                status = logbookEntries.CONFIRMED,
                 startTime = LocalDateTime.of(2025, 7, 21, 13, 33),
                 endTime = LocalDateTime.of(2025, 7, 21, 13, 45),
                 vehicle = Vehicle(
@@ -75,21 +75,23 @@ class LogBookCheckViewModel : ViewModel() {
             )
         )
     )
-    @RequiresApi(Build.VERSION_CODES.O)
-    val logbookEntries: StateFlow<List<LogbookEntry>> = _logbookEntries.asStateFlow()
 
-    private val _selectedEntry = MutableStateFlow<LogbookEntry?>(null)
-    val selectedEntry: StateFlow<LogbookEntry?> = _selectedEntry.asStateFlow()
+ */
+    @RequiresApi(Build.VERSION_CODES.O)
+    //val logbookEntries: StateFlow<List<Logbook>> = _log.asStateFlow()
+
+    private val _selectedEntry = MutableStateFlow<Logbook?>(null)
+    val selectedEntry: StateFlow<Logbook?> = _selectedEntry.asStateFlow()
 
     private val _checkedEntryIds = MutableStateFlow<Set<Long>>(emptySet())
     val checkedEntryIds: StateFlow<Set<Long>> = _checkedEntryIds.asStateFlow()
 
     init {
         // Set the first entry as selected by default
-        _selectedEntry.value = _logbookEntries.value.firstOrNull()
+      //  _selectedEntry.value = _logbookEntries.value.firstOrNull()
     }
 
-    fun selectEntry(entry: LogbookEntry) {
+    fun selectEntry(entry: Logbook) {
         _selectedEntry.value = entry
     }
 

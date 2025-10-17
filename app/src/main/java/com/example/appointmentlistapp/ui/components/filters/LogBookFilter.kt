@@ -1,4 +1,8 @@
+
+package com.example.appointmentlistapp.ui.components.filters
+
 // Data class to hold the current state of the Logbook filter (aligned with UI fields)
+
 data class LogBookFilterState(
     // Eintragsnr.
     val entryNr: String = "",
@@ -24,7 +28,7 @@ sealed class LogBookFilterEvent {
     data class DateStartChange(val date: String) : LogBookFilterEvent()
 
     // Corresponds to the 'Reisezweck' dropdown (using String for ID consistency)
-    data class PurposeIdChange(val purposeId: String) : LogBookFilterEvent()
+    data class PurposeIdChange(val purposeId: Int) : LogBookFilterEvent()
 
     // Corresponds to the 'Fahrzeug' dropdown
     data class VehicleRegistrationChange(val registrationName: String) : LogBookFilterEvent()

@@ -87,7 +87,7 @@ fun BookingFilterMask(
 
             // 1. Vorgangsnr.
             OutlinedTextField(
-                value = filterState.bookingNo,
+                value = filterState.entryNr,
                 onValueChange = { onEvent(BookingFilterEvent.BookingNoChange(it)) },
                 label = { Text("Vorgangsnr.") },
                 modifier = Modifier.fillMaxWidth(),

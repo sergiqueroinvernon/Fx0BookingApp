@@ -77,24 +77,28 @@ data class TripLeg(
  * @property cancellation Optional details about the entry's cancellation. Null if not cancelled.
  * @property notes General notes or comments for the entry.
  */
-data class LogbookEntry(
-    val id: Long,
-    val status: LogbookStatus,
+data class Logbook(
+    val entryNr: Long, // Changed from 'id' to 'entryNr'
+    val status: String,
     val startTime: LocalDateTime,
     val endTime: LocalDateTime,
     val vehicle: Vehicle,
+    val internalNumber: String?, // Added from the table image ('Interne Nr.')
     val startOdometer: Double,
     val endOdometer: Double,
-    val purpose: String?,
+    val purposeOfTrip: String?,
     val distance: Double,
     val startLocation: String,
+    val endLocation: String,
+    // Note: 'isReactionTimeDriver' was in original but not in table. Keeping for context.
     val isReactionTimeDriver: Boolean,
     val isResponseTimeTrip: Boolean,
     val justification: String?,
     val tripLegs: List<TripLeg>,
     val approval: Approval?,
     val cancellation: Cancellation?,
-    val notes: String?
+    val notes: String?,
+    // Added for UI selection logic (like the Booking model had)
+    val isChecked: Boolean = false
 )
 
-annotation class LogBook

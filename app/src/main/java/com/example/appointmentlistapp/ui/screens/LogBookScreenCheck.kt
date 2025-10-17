@@ -60,8 +60,8 @@ fun LogbookScreenCheck(viewModel: LogBookCheckViewModel = viewModel()) {
     var criteriaFilter by remember { mutableStateOf(false) } // Changed to false to show difference
 
     // State collection from the ViewModel
-    val entries by viewModel.logbookEntries.collectAsState()
-    val selectedEntry by viewModel.selectedEntry.collectAsState()
+   //al entries by viewModel.logbookEntries.collectAsState()
+    //val selectedEntry by viewModel.selectedEntry.collectAsState()
     val checkedEntryIds by viewModel.checkedEntryIds.collectAsState()
 
     Column(modifier = Modifier.fillMaxSize()) {
@@ -179,11 +179,11 @@ fun LogbookScreenCheck(viewModel: LogBookCheckViewModel = viewModel()) {
                 }
 
                 Spacer(modifier = Modifier.height(8.dp))
-
+/*
                 // Master Pane (List)
                 LogbookCheckList(
                     entries = entries,
-                    selectedEntry = selectedEntry,
+                   // selectedEntry = selectedEntry,
                     checkedEntryIds = checkedEntryIds,
                     onEntrySelected = { entry ->
                         viewModel.selectEntry(entry)
@@ -192,12 +192,15 @@ fun LogbookScreenCheck(viewModel: LogBookCheckViewModel = viewModel()) {
                         viewModel.toggleEntryChecked(entryId)
                     },
                     // Fill the remaining space in the column
-                    modifier = Modifier.fillMaxSize()
+                   // modifier = Modifier.fillMaxSize()
                 )
+                */
+
             } // END Master Pane Column
 
             VerticalDivider()
 
+            /*
             // Detail Pane
             if (showDetails) {
                 LogbookCheckDetailsView(
@@ -205,6 +208,8 @@ fun LogbookScreenCheck(viewModel: LogBookCheckViewModel = viewModel()) {
                     modifier = Modifier.weight(1f) // Details Pane is smaller
                 )
             }
+            */
+
         } // END Master/Detail Row
     }
 }

@@ -3,45 +3,118 @@ package com.example.appointmentlistapp.ui.viewmodel
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
-import com.example.appointmentlistapp.data.*
+import com.example.appointmentlistapp.data.* // Import all data classes
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import java.time.LocalDate
 import java.time.LocalDateTime
 
-
-
+// Using the provided Logbook data class properties for clarity
 data class LogBookUiState(
-    val entries: List<LogbookEntry> = emptyList(),
-    val selectedEntry: LogbookEntry? = null,
+    val entries: List<Logbook> = emptyList(),
+    val selectedEntry: Logbook? = null,
     val checkedEntryIds: Set<Long> = emptySet(),
     val isDetailPlainVisible: Boolean = false,
     val isFilterPlaneVisible: Boolean = false,
-    val isInEditMode: Boolean = false
+    val isInEditMode: Boolean = false,
+    val isLoading: Boolean = false,
+    val errorMessage: String? = null
 )
 
 @RequiresApi(Build.VERSION_CODES.O)
 class LogBookViewModel : ViewModel() {
 
+    // 1. Consolidated state management into a single MutableStateFlow
+    private val _uiState = MutableStateFlow(
+        LogBookUiState(
+            entries = createMockLogbookEntries() // Initialize with mock data
+        )
+    )
+    // Public immutable state that the UI can observe
+    val uiState: StateFlow<LogBookUiState> = _uiState.asStateFlow()
+
+    // 2. Initializer block now correctly sets the selected entry using the unified state
+    init {
+        _uiState.update { currentState ->
+            currentState.copy(
+                selectedEntry = currentState.entries.firstOrNull(),
+                isDetailPlainVisible = true // Show details for the first entry by default
+            )
+        }
+    }
+
+    /**
+     * Updates the selected entry in the UI state.
+     */
+    fun selectEntry(entryId: Long) {
+        _uiState.update { currentState ->
+            val newSelectedEntry = currentState.entries.find { it.entryNr == entryId }
+            currentState.copy(
+                selectedEntry = newSelectedEntry,
+                // Ensure detail view is visible when an entry is selected
+                isDetailPlainVisible = newSelectedEntry != null
+            )
+        }
+    }
+
+    /**
+     * Toggles the checked status for a specific entry.
+     */
+    fun toggleEntryChecked(entryId: Long) {
+        _uiState.update { currentState ->
+            val isChecked = currentState.checkedEntryIds.contains(entryId)
+            val newCheckedEntryIds = if (isChecked) {
+                currentState.checkedEntryIds - entryId
+            } else {
+                currentState.checkedEntryIds + entryId
+            }
+
+            currentState.copy(
+                checkedEntryIds = newCheckedEntryIds,
+                // Also update the isChecked flag directly in the Logbook model if desired
+                entries = currentState.entries.map { entry ->
+                    if (entry.entryNr == entryId) {
+                        entry.copy(isChecked = !isChecked)
+                    } else {
+                        entry
+                    }
+                }
+            )
+        }
+    }
+
+    // You can add functions to toggle visibility of panes here:
+    fun toggleDetailPaneVisibility() {
+        _uiState.update { it.copy(isDetailPlainVisible = !it.isDetailPlainVisible) }
+    }
+
+    // You can also add actions like `confirmEntries()` which would utilize `checkedEntryIds`
+
+    // --- MOCK DATA CREATION (Uses the corrected data model) ---
+
     @RequiresApi(Build.VERSION_CODES.O)
-    private val _logbookEntries = MutableStateFlow(
-        listOf(
-            LogbookEntry(
-                id = 1000351477,
-                status = LogbookStatus.CONFIRMED,
+    private fun createMockLogbookEntries(): List<Logbook> {
+        return listOf(
+            Logbook(
+                entryNr = 1000351477, // Corrected property name
+                status = LogbookStatus.CONFIRMED.name, // Use name property
                 startTime = LocalDateTime.of(2025, 7, 21, 13, 33),
                 endTime = LocalDateTime.of(2025, 7, 21, 13, 45),
                 vehicle = Vehicle(
                     registration = "D-WG 466E",
-                    id = TODO(),
-                    poolId = TODO()
+                    id = "V001",
+                    poolId = TODO(),
+                    // poolId property missing in new Logbook definition, removing from Vehicle mock
                 ),
+                internalNumber = "INT477", // Added missing property
                 startOdometer = 7974.0,
                 endOdometer = 7984.0,
-                purpose = "Kundenbesuch",
+                purposeOfTrip = "Kundenbesuch", // Corrected property name
                 distance = 10.0,
                 startLocation = "Firmenzentrale, Düsseldorf",
+                endLocation = "Kundenadresse, Düsseldorf", // Added missing property
                 isReactionTimeDriver = false,
                 isResponseTimeTrip = false,
                 justification = null,
@@ -54,21 +127,23 @@ class LogBookViewModel : ViewModel() {
                 cancellation = null,
                 notes = "Keine besonderen Vorkommnisse."
             ),
-            LogbookEntry(
-                id = 1000351454,
-                status = LogbookStatus.NOT_CONFIRMED,
+            Logbook(
+                entryNr = 1000351454,
+                status = LogbookStatus.NOT_CONFIRMED.name,
                 startTime = LocalDateTime.of(2025, 7, 21, 12, 48),
                 endTime = LocalDateTime.of(2025, 7, 21, 13, 15),
                 vehicle = Vehicle(
                     registration = "D-EM 719E",
-                    id = TODO(),
-                    poolId = TODO()
+                    id = "V002",
+                    poolId = TODO(),
                 ),
+                internalNumber = "INT454",
                 startOdometer = 7964.0,
                 endOdometer = 7974.0,
-                purpose = "Baustelle",
+                purposeOfTrip = "Baustelle",
                 distance = 10.0,
                 startLocation = "Lager, Köln",
+                endLocation = "Baustelle A, Köln",
                 isReactionTimeDriver = true,
                 isResponseTimeTrip = true,
                 justification = "Dringender Materialtransport",
@@ -85,43 +160,5 @@ class LogBookViewModel : ViewModel() {
                 notes = null
             )
         )
-    )
-    @RequiresApi(Build.VERSION_CODES.O)
-    val logbookEntries: StateFlow<List<LogbookEntry>> = _logbookEntries.asStateFlow()
-
-    private val _selectedEntry = MutableStateFlow<LogbookEntry?>(null)
-    val selectedEntry: StateFlow<LogbookEntry?> = _selectedEntry.asStateFlow()
-
-    private val _checkedEntryIds = MutableStateFlow<Set<Long>>(emptySet())
-    val checkedEntryIds: StateFlow<Set<Long>> = _checkedEntryIds.asStateFlow()
-
-    init {
-        // Set the first entry as selected by default
-        _selectedEntry.value = _logbookEntries.value.firstOrNull()
     }
-
-    fun selectEntry(entry: LogbookEntry) {
-        _selectedEntry.value = entry
-    }
-
-    fun toggleEntryChecked(entryId: Long) {
-        val currentChecked = _checkedEntryIds.value.toMutableSet()
-        if (currentChecked.contains(entryId)) {
-            currentChecked.remove(entryId)
-        } else {
-            currentChecked.add(entryId)
-        }
-        _checkedEntryIds.value = currentChecked
-    }
-
-    //Private mutable state
-    private val _uiState = MutableStateFlow(LogBookUiState())
-    //Public immutable state that the UI can observe
-
-    //Entry Selected
-    fun onEntrySelected(entry: LogbookEntry){
-        _uiState
-    }
-
-
 }

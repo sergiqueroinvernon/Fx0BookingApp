@@ -11,7 +11,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.appointmentlistapp.data.Booking
-import com.example.appointmentlistapp.data.LogBook
+import com.example.appointmentlistapp.data.Logbook
 import com.example.appointmentlistapp.ui.screens.formatDate
 
 
@@ -19,7 +19,7 @@ import com.example.appointmentlistapp.ui.screens.formatDate
 
 @Composable
 fun LogBookItem(
-    logBook: LogBook,
+    logBook: Logbook,
     isChecked: Boolean,
     onCheckedChange: (Boolean) -> Unit,
     onClick: () -> Unit,
@@ -69,27 +69,27 @@ fun LogBookItem(
                     .padding(end = 16.dp) // Padding on the right
             ) {
                 Text(
-                    text = logBook.description,
+                    text = "ei test",
                     fontWeight = FontWeight.Bold,
                     fontSize = 18.sp,
                 )
                 Spacer(modifier = Modifier.height(4.dp))
-                Text(text = "Vorgangsnrs.: ${logBook.processNumber?: "N/A"}")
+                Text(text = "Eintragsnr.: ${logBook.entryNr?: "N/A"}")
                 Text(text = "Status.: ${logBook.status?: "N/A"}")
-                Text(text = "Reserviert von.: ${logBook.bookingDate?: "N/A"}")
-                Text(text = "Fahrer: ${logBook.driverName?: "N/A"}")
+                Text(text = "Start.: ${logBook.startTime?: "N/A"}")
+                Text(text = "Fahrzeug: ${logBook.vehicle?: "N/A"}")
 
-                Text(text = "Übergabe ${logBook.handOverDate?: "N/A"}")
-                Text(text = "Rücknahme: ${logBook.returnDate ?: "N/A"}")
+                Text(text = "km-Stand Start ${logBook.startOdometer?: "N/A"}")
+                Text(text = "Ziel: ${logBook.endLocation ?: "N/A"}")
 
-                Text(text = "Fahrzeugpool ${logBook.vehiclePoolName ?: "N/A"}")
-                Text(text = "Reisezweck: ${logBook.tripPurposeName ?: "N/A"}")
+                Text(text = "Reisezweck ${logBook.purposeOfTrip ?: "N/A"}")
+                Text(text = "Interne Nr.: ${logBook.internalNumber ?: "N/A"}")
 
-                Text(text = "Interne Nr.: ${logBook.internNumber ?: "N/A"}")
-                Text(text = "KFZ-Kennzeichen.: ${logBook.vehicleRegistration ?: "N/A"}")
+                Text(text = "km-Stand Ziel: ${logBook.endOdometer ?: "N/A"}")
+                Text(text = "Strecke: ${logBook.distance ?: "N/A"}")
 
                 // Reduced height for tighter packing
-                Text(text = "Date: ${formatDate(logBook.bookingDate)}")
+               // Text(text = "Date: ${formatDate(logBook.)}")
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(text = "Status: ")
                     logBook.status?.let {

@@ -86,7 +86,7 @@ class BookingViewModel : ViewModel() {
     // --- Filter State and Handler ---
     private val _filterState = MutableStateFlow(
         BookingFilterState(
-            bookingNo = "",
+            entryNr = "",
             status = "",
             handOverDate = "",
             travelPurposeChange = 0,
@@ -100,7 +100,7 @@ class BookingViewModel : ViewModel() {
     fun handleFilterEvent(event: BookingFilterEvent) {
         when (event) {
             // Aquests 'update' disparen automàticament el filtre 'combine'
-            is BookingFilterEvent.BookingNoChange -> _filterState.update { it.copy(bookingNo = event.bookingNo) }
+            is BookingFilterEvent.BookingNoChange -> _filterState.update { it.copy(entryNr = event.bookingNo) }
             is BookingFilterEvent.StatusChange -> _filterState.update { it.copy(status = event.status) }
             is BookingFilterEvent.HandOverDateChange -> _filterState.update { it.copy(handOverDate = event.date) }
             is BookingFilterEvent.RegistrationName -> _filterState.update { it.copy(registrationName = event.registrationName) }
@@ -119,7 +119,7 @@ class BookingViewModel : ViewModel() {
 
             BookingFilterEvent.ResetFilter -> {
                 _filterState.value = BookingFilterState(
-                    bookingNo = "",
+                    entryNr = "",
                     status = "",
                     handOverDate = "",
                     travelPurposeChange = 0,
@@ -241,7 +241,7 @@ class BookingViewModel : ViewModel() {
     ): List<Appointment> {
 
         // Si no hi ha cap filtre actiu, retornem la llista sencera
-        if (filter.bookingNo.isBlank() && filter.status.isNullOrBlank() && filter.vehicle.isBlank() &&
+        if (filter.entryNr.isBlank() && filter.status.isNullOrBlank() && filter.vehicle.isBlank() &&
             filter.handOverDate.isNullOrBlank() && filter.travelPurposeChange == 0
         ) {
             return appointments
@@ -249,9 +249,9 @@ class BookingViewModel : ViewModel() {
 
         return appointments.filter { appointment ->
             // 1. Vorgangsnr. (Booking No)
-            val matchesBookingNo = filter.bookingNo.isBlank() ||
+            val matchesBookingNo = filter.entryNr.isBlank() ||
                     appointment.processNumber.orEmpty()
-                        .contains(filter.bookingNo, ignoreCase = true)
+                        .contains(filter.entryNr, ignoreCase = true)
 
 
             // 2. Status (El teu filtre per estat!)
