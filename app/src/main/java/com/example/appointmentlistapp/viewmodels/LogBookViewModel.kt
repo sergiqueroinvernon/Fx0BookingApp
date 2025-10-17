@@ -26,6 +26,12 @@ data class LogBookUiState(
     val errorMessage: String? = null
 )
 
+sealed class LogBookEvent {
+    data class ButtonClicked(val config: ButtonConfig) : LogBookEvent()
+    data class LogbookSelected(val logBook: String) : LogBookEvent()
+    data class LogbookCheckedChange(val logbookId: String) : LogBookEvent()
+}
+
 @RequiresApi(Build.VERSION_CODES.O)
 class LogBookViewModel : ViewModel() {
 
@@ -55,7 +61,7 @@ class LogBookViewModel : ViewModel() {
         }
     }
 
-    private fun handleButtonClick(config: ButtonConfig) {
+    private fun handleButtonClicked(config: ButtonConfig) {
         when(config.type.lowercase().trim()){
             "details" -> _showDetails.value = !_showDetails.value
             else -> Log.w("ViewModel", "Unknown button action type: ${config.type}")
@@ -78,6 +84,16 @@ class LogBookViewModel : ViewModel() {
         }
     }
     */
+
+    fun handleEvent(event: LogBookEvent) {
+        when (event) {
+            is LogBookEvent.ButtonClicked -> handleButtonClicked(event.config)
+           //is LogBookEvent.LogbookSelected -> selectedLogBook(event.logBook)
+           // is LogBookEvent.LogbookCheckedChange -> toggleBookingChecked(event.logbookId)
+            is LogBookEvent.LogbookCheckedChange -> TODO()
+            is LogBookEvent.LogbookSelected -> TODO()
+        }
+    }
 
 
     /**

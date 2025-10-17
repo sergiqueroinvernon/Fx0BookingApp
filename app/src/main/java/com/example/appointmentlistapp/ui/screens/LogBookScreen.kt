@@ -1,6 +1,7 @@
 package com.example.appointmentlistapp.ui.screens
 
 import android.os.Build
+import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -265,7 +266,9 @@ fun LogBookScreen() {
     val buttonConfigs by bookingViewModel.buttonConfigs.collectAsState()
     val isLoading by bookingViewModel.isLoading.collectAsState()
     val errorMessage by bookingViewModel.errorMessage.collectAsState()
-    val showDetails by bookingViewModel.showDetails.collectAsState()
+
+    val showDetails by logBookViewModel.showDetails.collectAsState()
+
     val purposeOfTrips by bookingViewModel.purposeOfTrips.collectAsState()
     val statusOptions by bookingViewModel.statusOptions.collectAsState() // New state
     val vehiclesBYDriverId by bookingViewModel.vehiclesBYDriverId.collectAsState()
@@ -281,6 +284,7 @@ fun LogBookScreen() {
     }
 
     var showFilterMask by remember { mutableStateOf(false) }
+
 
 
     LaunchedEffect(Unit) {
@@ -421,4 +425,8 @@ fun LogBookScreen() {
 
         } // END Master/Detail Row
     }
+
+
+
+
 }
