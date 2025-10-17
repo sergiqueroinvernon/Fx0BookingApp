@@ -74,7 +74,7 @@ fun BookingItem(
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(text = "Vorgangsnrs.: ${booking.processNumber?: "N/A"}")
-                Text(text = "Statuss.: ${booking.status?: "N/A"}")
+                Text(text = "Status.: ${booking.status?: "N/A"}")
                 Text(text = "Reserviert von.: ${booking.bookingDate?: "N/A"}")
                 Text(text = "Fahrer: ${booking.driverName?: "N/A"}")
 

@@ -275,8 +275,8 @@ fun BookingScreen() {
 
         // --- HEADER SECTION (Title and Error) ---
         Text(
-            text = "BookingScreen Content",
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+            text = "Bearbeitung meiner Buchungen von Poolfahrzeugen",
+            modifier = Modifier.padding(horizontal = 20.dp, vertical = 16.dp)
         )
 
         errorMessage?.let { msg ->
