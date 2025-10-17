@@ -413,7 +413,7 @@ fun LogBookScreen() {
             // Detail Pane
             if (showDetails) {
                 LogbookDetailView( // Should ideally be LogbookDetailView
-                    logBook = selectedBooking as Logbook?,
+                    logbook = selectedBooking as Logbook?,
                     modifier = Modifier.weight(1f)
                 )
             }
