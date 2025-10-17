@@ -1,5 +1,7 @@
 package com.example.appointmentlistapp.ui.screens
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -30,6 +32,7 @@ import com.example.appointmentlistapp.ui.components.BookingItem
 import com.example.appointmentlistapp.ui.components.LogbookDetailView
 import com.example.appointmentlistapp.ui.components.filters.LogBookFilterEvent
 import com.example.appointmentlistapp.ui.components.filters.LogBookFilterState
+import com.example.appointmentlistapp.ui.viewmodel.LogBookViewModel
 import com.google.accompanist.flowlayout.FlowRow
 import com.example.appointmentlistapp.viewmodels.BookingEvent.BookingSelected
 import com.example.appointmentlistapp.viewmodels.BookingEvent.BookingCheckedChange
@@ -249,14 +252,16 @@ fun LogBookFilterMask( // Renamed and fixed signature
 // ----------------------------------------------------------------------
 
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun LogBookScreen() {
     val bookingViewModel = viewModel<BookingViewModel>()
+    val logBookViewModel = viewModel<LogBookViewModel>()
 
     // State flows from ViewModel
     val bookings by bookingViewModel.bookings.collectAsState()
     val selectedBooking by bookingViewModel.selectedBooking.collectAsState()
-    val selectedLogBook by logBookViewModel.selectedBooking.collectAsState()
+    val selectedLogBook by logBookViewModel.selectedLogBook.collectAsState()
     val buttonConfigs by bookingViewModel.buttonConfigs.collectAsState()
     val isLoading by bookingViewModel.isLoading.collectAsState()
     val errorMessage by bookingViewModel.errorMessage.collectAsState()
