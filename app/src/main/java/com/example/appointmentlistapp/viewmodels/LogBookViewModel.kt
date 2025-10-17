@@ -7,7 +7,6 @@ import androidx.lifecycle.ViewModel
 import com.example.appointmentlistapp.data.* // Import all data classes
 import com.example.appointmentlistapp.data.components.ButtonConfig
 import com.example.appointmentlistapp.viewmodels.BookingEvent
-import com.example.appointmentlistapp.viewmodels.convertAppointmentToBooking
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow

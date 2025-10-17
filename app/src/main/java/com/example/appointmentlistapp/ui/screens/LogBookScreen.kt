@@ -17,6 +17,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.ui.window.Dialog // Import for the pop-up window
 
 import com.example.appointmentlistapp.data.Booking
+import com.example.appointmentlistapp.data.Logbook
 import com.example.appointmentlistapp.data.PurposeOfTrip
 import com.example.appointmentlistapp.data.Vehicle
 import com.example.appointmentlistapp.data.StatusOption
@@ -26,6 +27,7 @@ import com.example.appointmentlistapp.util.getIconForType
 import com.example.appointmentlistapp.viewmodels.BookingEvent
 import com.example.appointmentlistapp.viewmodels.BookingViewModel
 import com.example.appointmentlistapp.ui.components.BookingItem
+import com.example.appointmentlistapp.ui.components.LogbookDetailView
 import com.example.appointmentlistapp.ui.components.filters.LogBookFilterEvent
 import com.example.appointmentlistapp.ui.components.filters.LogBookFilterState
 import com.google.accompanist.flowlayout.FlowRow
@@ -37,10 +39,18 @@ import com.example.appointmentlistapp.viewmodels.BookingEvent.BookingCheckedChan
 private fun ActionButton(
     config: ButtonConfig,
     viewModel: BookingViewModel,
-    modifier: Modifier = Modifier) {
+    onFilterClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
     Button(
-        onClick = { viewModel.handleEvent(BookingEvent.ButtonClicked(config)) },
-        modifier = modifier
+        onClick = {
+            if (config.type.toString().trim().equals("filter", ignoreCase = true)) {
+                onFilterClick()
+            } else {
+                viewModel.handleEvent(BookingEvent.ButtonClicked(config))
+            }
+        },
+        modifier = modifier,
     ) {
         Icon(
             painter = painterResource(getIconForType(config.type.toString().trim())),
@@ -79,7 +89,7 @@ fun LogBookFilterMask( // Renamed and fixed signature
             modifier = Modifier.padding(24.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            Text("Filterkriterien", style = MaterialTheme.typography.headlineSmall)
+            Text("Filterkriteriena", style = MaterialTheme.typography.headlineSmall)
             Divider()
 
             // 1. Eintragsnr. (Using LogBook-specific properties and events)
@@ -338,6 +348,7 @@ fun LogBookScreen() {
                             ActionButton(
                                 config,
                                 bookingViewModel,
+                                onFilterClick = { showFilterMask = true },
                                 modifier = Modifier.width(160.dp)
                             )
                         }
@@ -397,14 +408,16 @@ fun LogBookScreen() {
             } // END Master Pane Column
 
             VerticalDivider()
-
+/*
             // Detail Pane
             if (showDetails) {
-                BookingDetails( // Should ideally be LogbookDetailView
-                    booking = selectedBooking as Booking?,
+                LogbookDetailView( // Should ideally be LogbookDetailView
+                    logBook = selectedBooking as Logbook?,
                     modifier = Modifier.weight(1f)
                 )
             }
+            */
+
         } // END Master/Detail Row
     }
 }
