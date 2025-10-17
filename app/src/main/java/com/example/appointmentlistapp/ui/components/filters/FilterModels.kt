@@ -12,6 +12,7 @@ data class BookingFilterState(
     val registrationName: String
 )
 
+//Different reactions from the users
 sealed class BookingFilterEvent {
     data class BookingNoChange(val bookingNo: String) : BookingFilterEvent()
     data class StatusChange(val status: String) : BookingFilterEvent()

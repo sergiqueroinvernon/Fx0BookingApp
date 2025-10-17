@@ -256,6 +256,7 @@ fun LogBookScreen() {
     // State flows from ViewModel
     val bookings by bookingViewModel.bookings.collectAsState()
     val selectedBooking by bookingViewModel.selectedBooking.collectAsState()
+   // val selectedLogBook by logBookViewModel.selectedBooking.collectAsState()
     val buttonConfigs by bookingViewModel.buttonConfigs.collectAsState()
     val isLoading by bookingViewModel.isLoading.collectAsState()
     val errorMessage by bookingViewModel.errorMessage.collectAsState()
@@ -403,15 +404,15 @@ fun LogBookScreen() {
             } // END Master Pane Column
 
             VerticalDivider()
-/*
+
             // Detail Pane
             if (showDetails) {
-                LogbookDetailView( // Should ideally be LogbookDetailView
-                    logBook = selectedBooking as Logbook?,
-                    modifier = Modifier.weight(1f)
-                )
+              //  LogbookDetailView( // Should ideally be LogbookDetailView
+                //   logBook = selectedBooking as Logbook?,
+                  //  modifier = Modifier.weight(1f)
+               // )
             }
-            */
+
 
         } // END Master/Detail Row
     }

@@ -29,6 +29,10 @@ data class LogBookUiState(
 @RequiresApi(Build.VERSION_CODES.O)
 class LogBookViewModel : ViewModel() {
 
+
+    private val _selectedLogBook = MutableStateFlow<Logbook?>(null)
+    val selectedLogBook: StateFlow<Logbook?> = _selectedLogBook.asStateFlow()
+
     // 1. Consolidated state management into a single MutableStateFlow
     private val _uiState = MutableStateFlow(
         LogBookUiState(

@@ -122,7 +122,8 @@ fun BookingFilterMask(
                 ) {
                     statusOptions.forEach { status ->
                         DropdownMenuItem(
-                            text = { Text(status.status) },
+                            text = { Text( status.status
+                            ) },
                             onClick = {
                                 onEvent(BookingFilterEvent.StatusChange(status.status))
                                 statusDropdownExpanded = false
