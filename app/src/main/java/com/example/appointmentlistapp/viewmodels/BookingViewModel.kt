@@ -275,11 +275,10 @@ class BookingViewModel : ViewModel() {
                     appointment.vehicleRegistrationName == filter.registrationName
 
             // 5. Vehicle
-            val matchesVehicle = filter.vehicle.isBlank() ||
-                    appointment.vehicleRegistration.orEmpty()
-                        .contains(filter.registrationName, ignoreCase = false)
+            val matchesVehicle = filter.registrationName.isNullOrBlank() ||
+                    appointment.vehicleRegistrationName == filter.registrationName
 
-            matchesBookingNo && matchesStatus && matchesDate && matchesPurpose && matchesVehicle && matchesLicensePlate
+            matchesBookingNo && matchesStatus && matchesDate && matchesPurpose && matchesVehicle
         }
     }
 
