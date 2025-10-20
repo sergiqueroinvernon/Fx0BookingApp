@@ -15,17 +15,17 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.appointmentlistapp.data.LogbookEntry
+import com.example.appointmentlistapp.data.Logbook
 import com.example.appointmentlistapp.data.LogbookStatus
 import java.time.format.DateTimeFormatter
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun LogbookList(
-    entries: List<LogbookEntry>,
-    selectedEntry: LogbookEntry?,
+    entries: List<Logbook>,
+    selectedEntry: Logbook?,
     checkedEntryIds: Set<Long>,
-    onEntrySelected: (LogbookEntry) -> Unit,
+    onEntrySelected: (Logbook) -> Unit,
     onEntryCheckedChange: (Long) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -36,15 +36,15 @@ fun LogbookList(
             HeaderRow()
             Divider()
         }
-        items(entries, key = { it.id }) { entry ->
-            val isSelected = entry.id == selectedEntry?.id
-            val isChecked = checkedEntryIds.contains(entry.id)
+        items(entries, key = { it.entryNr }) { entry ->
+            val isSelected = entry.entryNr == selectedEntry?.entryNr
+            val isChecked = checkedEntryIds.contains(entry.entryNr)
             DataRow(
                 entry = entry,
                 isSelected = isSelected,
                 isChecked = isChecked,
                 onRowClick = { onEntrySelected(entry) },
-                onCheckedChange = { onEntryCheckedChange(entry.id) }
+                onCheckedChange = { onEntryCheckedChange(entry.entryNr) }
             )
             Divider()
         }
@@ -71,7 +71,7 @@ private fun HeaderRow() {
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 private fun DataRow(
-    entry: LogbookEntry,
+    entry: Logbook,
     isSelected: Boolean,
     isChecked: Boolean,
     onRowClick: () -> Unit,
@@ -94,19 +94,15 @@ private fun DataRow(
             modifier = Modifier.weight(0.5f)
         )
         Text(
-            text = when (entry.status) {
-                LogbookStatus.CONFIRMED -> "Bestätigt"
-                LogbookStatus.NOT_CONFIRMED -> "Nicht bestätigt"
-            },
+            text = "${entry.status}",
             modifier = Modifier.weight(1.5f),
             fontSize = 14.sp,
-            color = if (entry.status == LogbookStatus.CONFIRMED) Color(0xFF006400) else Color.Gray,
             fontWeight = FontWeight.Bold
         )
-        Text(entry.id.toString(), Modifier.weight(1f), fontSize = 14.sp)
+        Text(entry.entryNr.toString(), Modifier.weight(1f), fontSize = 14.sp)
         Text(entry.startTime.format(dateFormatter), Modifier.weight(1.5f), fontSize = 14.sp)
         Text(entry.vehicle.registration, Modifier.weight(1.5f), fontSize = 14.sp)
-        Text(entry.purpose ?: "-", Modifier.weight(1f), fontSize = 14.sp)
+        Text(entry.purposeOfTrip ?: "-", Modifier.weight(1f), fontSize = 14.sp)
     }
 }
 

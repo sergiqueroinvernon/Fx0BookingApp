@@ -73,7 +73,7 @@ fun MainAppScreen(viewModel: AppointmentViewModel) {
             when (selectedTabIndex) {
                 0 -> AppointmentListScreen(viewModel = viewModel)
                 1 -> BookingScreen()
-                2 -> LogbookScreen()
+                2 -> LogBookScreen()
                 3 -> Text("Fahrtenbuchprüfung", modifier = Modifier.align(Alignment.Center))
             }
         }

@@ -14,13 +14,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.appointmentlistapp.data.LogbookEntry
+import com.example.appointmentlistapp.data.Logbook
 import com.example.appointmentlistapp.data.LogbookStatus
 import java.time.format.DateTimeFormatter
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun LogbookCheckDetailsView(logbook: LogbookEntry?, modifier: Modifier = Modifier) {
+fun LogbookCheckDetailsView(logbook: Logbook?, modifier: Modifier = Modifier) {
     Box(
         modifier = modifier.padding(16.dp),
         contentAlignment = Alignment.Center
@@ -36,13 +36,16 @@ fun LogbookCheckDetailsView(logbook: LogbookEntry?, modifier: Modifier = Modifie
                 // Section: Eintrag
                 item {
                     SectionHeader("Eintrag")
+                    /*
                     DetailRow(
-                        label1 = "Eintragsnr.", value1 = logbook.id.toString(),
+                        label1 = "Eintragsnr.", value1 = logbook..toString(),
                         label2 = "Status", value2 = when (logbook.status) {
                             LogbookStatus.CONFIRMED -> "Bestätigt"
                             LogbookStatus.NOT_CONFIRMED -> "Nicht bestätigt"
                         }
                     )
+                    */
+
                 }
 
                 // Section: Angaben zur Fahrt
@@ -60,7 +63,7 @@ fun LogbookCheckDetailsView(logbook: LogbookEntry?, modifier: Modifier = Modifie
                         label1 = "Fahrzeug", value1 = logbook.vehicle.registration,
                         //label2 = "Interne Nr.", value2 = logbook.vehicle.internNumber
                     )
-                    DetailRow(label1 = "Reisezweck", value1 = logbook.purpose)
+                    //DetailRow(label1 = "Reisezweck", value1 = logbook.purpose)
                     DetailRow(label1 = "Startort", value1 = logbook.startLocation)
                     DetailRow(
                         label1 = "km-Stand Start", value1 = "${logbook.startOdometer} km",

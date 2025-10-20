@@ -70,6 +70,9 @@ data class Booking(
     val vehiclePoolName: String? = null, // Covered by 'vehiclePool'
     val vehicleRegistrationName: String? = null // Covered by 'vehicleRegistration'
 
+    //LogBook
+
+
 
 
 )

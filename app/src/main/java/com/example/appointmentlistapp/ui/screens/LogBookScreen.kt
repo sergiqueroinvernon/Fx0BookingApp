@@ -17,6 +17,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.ui.window.Dialog // Import for the pop-up window
 
 import com.example.appointmentlistapp.data.Booking
+import com.example.appointmentlistapp.data.Logbook
 import com.example.appointmentlistapp.data.PurposeOfTrip
 import com.example.appointmentlistapp.data.Vehicle
 import com.example.appointmentlistapp.data.StatusOption
@@ -26,24 +27,30 @@ import com.example.appointmentlistapp.util.getIconForType
 import com.example.appointmentlistapp.viewmodels.BookingEvent
 import com.example.appointmentlistapp.viewmodels.BookingViewModel
 import com.example.appointmentlistapp.ui.components.BookingItem
-import com.example.appointmentlistapp.ui.components.filters.BookingFilterEvent
-import com.example.appointmentlistapp.ui.components.filters.BookingFilterState
+import com.example.appointmentlistapp.ui.components.LogbookDetailView
+import com.example.appointmentlistapp.ui.components.filters.LogBookFilterEvent
+import com.example.appointmentlistapp.ui.components.filters.LogBookFilterState
 import com.google.accompanist.flowlayout.FlowRow
 import com.example.appointmentlistapp.viewmodels.BookingEvent.BookingSelected
 import com.example.appointmentlistapp.viewmodels.BookingEvent.BookingCheckedChange
-
-// --- Filter State Placeholders (Should exist in your ViewModel package) ---
-// ---
 
 // --- Helper Composable for Button ---
 @Composable
 private fun ActionButton(
     config: ButtonConfig,
     viewModel: BookingViewModel,
-    modifier: Modifier = Modifier) {
+    onFilterClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
     Button(
-        onClick = { viewModel.handleEvent(BookingEvent.ButtonClicked(config)) },
-        modifier = modifier
+        onClick = {
+            if (config.type.toString().trim().equals("filter", ignoreCase = true)) {
+                onFilterClick()
+            } else {
+                viewModel.handleEvent(BookingEvent.ButtonClicked(config))
+            }
+        },
+        modifier = modifier,
     ) {
         Icon(
             painter = painterResource(getIconForType(config.type.toString().trim())),
@@ -55,15 +62,15 @@ private fun ActionButton(
 }
 // ---
 
-// --- NEW COMPOSABLE: The Filter Mask (Content for the Dialog) ---
+// --- CORRECTED LOGBOOK FILTER MASK (Consolidated LoockBookFilterMask & LogBookFilterScreen) ---
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LookingBookFilterMask(
+fun LogBookFilterMask( // Renamed and fixed signature
     purposeOfTrips: List<PurposeOfTrip>,
     statusOptions: List<StatusOption>,
     vehiclesByDriverId: List<Vehicle>,
-    filterState: BookingFilterState,
-    onEvent: (BookingFilterEvent) -> Unit,
+    filterState: LogBookFilterState, // Using LogBookState
+    onEvent: (LogBookFilterEvent) -> Unit, // ADDED MISSING onEvent parameter and used LogBookEvent
     onClose: () -> Unit // Function to close the dialog
 ) {
     var statusDropdownExpanded by remember { mutableStateOf(false) }
@@ -82,14 +89,14 @@ fun LookingBookFilterMask(
             modifier = Modifier.padding(24.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            Text("Filterkriterien", style = MaterialTheme.typography.headlineSmall)
+            Text("Filterkriteriena", style = MaterialTheme.typography.headlineSmall)
             Divider()
 
-            // 1. Vorgangsnr.
+            // 1. Eintragsnr. (Using LogBook-specific properties and events)
             OutlinedTextField(
-                value = filterState.bookingNo,
-                onValueChange = { onEvent(BookingFilterEvent.BookingNoChange(it)) },
-                label = { Text("Vorgangsnr.") },
+                value = filterState.entryNr,
+                onValueChange = { onEvent(LogBookFilterEvent.EntryNrChange(it)) },
+                label = { Text("Eintragsnr.") },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true
             )
@@ -115,33 +122,44 @@ fun LookingBookFilterMask(
 
                 ExposedDropdownMenu(
                     expanded = statusDropdownExpanded, // State is now managed by the parent box
-                    onDismissRequest = { statusDropdownExpanded = false }, // Keep this to close on outside click
+                    onDismissRequest = {
+                        statusDropdownExpanded = false
+                    }, // Keep this to close on outside click
                     modifier = Modifier.exposedDropdownSize() // Match the width of the anchor
                 ) {
                     statusOptions.forEach { status ->
                         DropdownMenuItem(
                             text = { Text(status.status) },
                             onClick = {
-                                onEvent(BookingFilterEvent.StatusChange(status.status))
+                                onEvent(LogBookFilterEvent.StatusChange(status.status)) // Using LogBook event
                                 statusDropdownExpanded = false
                             })
                     }
                 }
             }
 
-            // 3. Übergabedatum (Date Range Placeholder)
+            // 3. Datum Start (Using LogBook-specific properties and events)
             OutlinedTextField(
-                value = filterState.handOverDate.ifEmpty { "Übergabedatum - -" },
-                onValueChange = {},
-                label = { Text("Übergabedatum") },
-                readOnly = true,
-                trailingIcon = { Icon(Icons.Filled.ArrowDropDown, contentDescription = null, Modifier.clickable {}) },
+                value = filterState.dateStart.ifEmpty { "Datum Start - -" }, // Corrected property
+                onValueChange = { onEvent(LogBookFilterEvent.DateStartChange(it)) }, // Using LogBook event
+                label = { Text("Datum Start") },
+                readOnly = true, // Assuming date picking is external
+                trailingIcon = {
+                    Icon(
+                        Icons.Filled.ArrowDropDown,
+                        contentDescription = null,
+                        Modifier.clickable {}
+                    )
+                },
                 modifier = Modifier.fillMaxWidth()
             )
 
+            // 4. Reisezweck (Using LogBook-specific properties and events)
             ExposedDropdownMenuBox(
                 expanded = travelPurposeDropdownExpanded,
-                onExpandedChange = { travelPurposeDropdownExpanded = !travelPurposeDropdownExpanded },
+                onExpandedChange = {
+                    travelPurposeDropdownExpanded = !travelPurposeDropdownExpanded
+                },
                 modifier = Modifier.fillMaxWidth()
             ) {
                 OutlinedTextField(
@@ -162,20 +180,20 @@ fun LookingBookFilterMask(
                         DropdownMenuItem(
                             text = { Text(purpose.purpose) },
                             onClick = {
-                                onEvent(BookingFilterEvent.TravelPurposeChange(purposeId = purpose.id))
+                                onEvent(LogBookFilterEvent.PurposeIdChange(purpose.id)) // Using LogBook event
                                 travelPurposeDropdownExpanded = false
                             })
                     }
                 }
             }
-            // 5. Fahrzeug (Dropdown Placeholder)
+            // 5. Fahrzeug (Using LogBook-specific properties and events)
             ExposedDropdownMenuBox(
                 expanded = vehicleDropdownExpanded,
                 onExpandedChange = { vehicleDropdownExpanded = !vehicleDropdownExpanded },
                 modifier = Modifier.fillMaxWidth()
             ) {
                 OutlinedTextField(
-                    value = filterState.vehicle.ifEmpty { "Fahrzeug" },
+                    value = filterState.vehicleRegistration.ifEmpty { "Fahrzeug" }, // Corrected property
                     onValueChange = {},
                     label = { Text("Fahrzeug") },
                     readOnly = true,
@@ -191,7 +209,11 @@ fun LookingBookFilterMask(
                         DropdownMenuItem(
                             text = { Text(vehicle.registration ?: "Unbekanntes Fahrzeug") },
                             onClick = {
-                                onEvent(BookingFilterEvent.RegistrationName(vehicle.registration ?: ""))
+                                onEvent(
+                                    LogBookFilterEvent.VehicleRegistrationChange( // Using LogBook event
+                                        vehicle.registration ?: ""
+                                    )
+                                )
                                 vehicleDropdownExpanded = false
                             })
                     }
@@ -205,16 +227,15 @@ fun LookingBookFilterMask(
             ) {
                 // Aktualisieren (Update)
                 Button(
-                    onClick = { onEvent(BookingFilterEvent.ApplyFilter); onClose() },
+                    onClick = { onEvent(LogBookFilterEvent.ApplyFilter); onClose() }, // Using LogBook event
                     modifier = Modifier.weight(1f).padding(end = 4.dp),
-                    // Using default primary color
                 ) {
                     Text("Aktualisieren")
                 }
 
                 // Zurücksetzen (Reset)
                 OutlinedButton(
-                    onClick = { onEvent(BookingFilterEvent.ResetFilter); onClose() },
+                    onClick = { onEvent(LogBookFilterEvent.ResetFilter); onClose() }, // Using LogBook event
                     modifier = Modifier.weight(1f).padding(start = 4.dp),
                 ) {
                     Text("Zurücksetzen")
@@ -223,17 +244,19 @@ fun LookingBookFilterMask(
         }
     }
 }
+
+
 // ----------------------------------------------------------------------
 
 
 @Composable
-fun BookingScreen() {
+fun LogBookScreen() {
     val bookingViewModel = viewModel<BookingViewModel>()
 
     // State flows from ViewModel
-    val appointments by bookingViewModel.appointmentsUI.collectAsState()
     val bookings by bookingViewModel.bookings.collectAsState()
     val selectedBooking by bookingViewModel.selectedBooking.collectAsState()
+   // val selectedLogBook by logBookViewModel.selectedBooking.collectAsState()
     val buttonConfigs by bookingViewModel.buttonConfigs.collectAsState()
     val isLoading by bookingViewModel.isLoading.collectAsState()
     val errorMessage by bookingViewModel.errorMessage.collectAsState()
@@ -242,15 +265,23 @@ fun BookingScreen() {
     val statusOptions by bookingViewModel.statusOptions.collectAsState() // New state
     val vehiclesBYDriverId by bookingViewModel.vehiclesBYDriverId.collectAsState()
 
-    // 🆕 NEW: State to toggle the visibility of the filter mask Dialog
-    val filterState by bookingViewModel.filterState.collectAsState()
+    // Assuming the ViewModel can provide a LogBookFilterState for this screen, or mapping it
+    // For now, we will use a derived state based on the existing BookingFilterState
+    val currentFilterState = bookingViewModel.filterState.collectAsState().value
+
+    // Placeholder handler for LogBookFilterEvents (since we are currently using BookingViewModel)
+    val handleLogBookFilterEvent: (LogBookFilterEvent) -> Unit = { event ->
+        // In a real application, you would map this LogBook event to the specific ViewModel logic
+        println("LogBook Filter Event Handled: $event")
+    }
 
     var showFilterMask by remember { mutableStateOf(false) }
 
 
     LaunchedEffect(Unit) {
-        bookingViewModel.fetchButtonsForClientAndScreen("client123", "BookingScreen")
-        bookingViewModel.fetchAppointments("DRIVER_TEST_ID")
+        // These calls should ideally be adapted for Logbook data
+        bookingViewModel.fetchButtonsForClientAndScreen("client123", "LogBookScreen")
+        bookingViewModel.fetchAppointments("DRIVER_TEST_ID") // Placeholder data fetch
         bookingViewModel.fetchPurposeOfTrips()
         bookingViewModel.fetchStatusOptions()
         bookingViewModel.fetchVehiclesByDriver("F7F5C431-E776-48B4-B9BC-9ABA528E6F23")
@@ -261,12 +292,18 @@ fun BookingScreen() {
         // --- FILTER DIALOG (Pop-up Window) ---
         if (showFilterMask) {
             Dialog(onDismissRequest = { showFilterMask = false }) {
-                BookingFilterMask(
+                LogBookFilterMask( // Using the correct LogBookFilterMask
                     purposeOfTrips = purposeOfTrips,
-                    statusOptions = statusOptions, // Pass the dynamic list
+                    statusOptions = statusOptions,
                     vehiclesByDriverId = vehiclesBYDriverId,
-                    filterState = filterState,
-                    onEvent = bookingViewModel::handleFilterEvent,
+                    filterState = LogBookFilterState( // Creating a mock LogBookState from current state
+                        entryNr = currentFilterState.entryNr,
+                        status = currentFilterState.status,
+                        dateStart = currentFilterState.handOverDate, // Mapping property
+                        purposeId = currentFilterState.purposeId,
+                        vehicleRegistration = currentFilterState.vehicle
+                    ),
+                    onEvent = handleLogBookFilterEvent,
                     onClose = { showFilterMask = false }
                 )
             }
@@ -275,7 +312,7 @@ fun BookingScreen() {
 
         // --- HEADER SECTION (Title and Error) ---
         Text(
-            text = "Bearbeitung meiner Buchungen von Poolfahrzeugen",
+            text = "Bearbeitung meiner Fahrtenbuch-Einträge", // Corrected title
             modifier = Modifier.padding(horizontal = 20.dp, vertical = 16.dp)
         )
 
@@ -293,13 +330,8 @@ fun BookingScreen() {
             // Master Pane Column (Filter Button + Buttons + List)
             Column(modifier = Modifier.weight(2f)) {
 
-                // 🆕 NEW: FILTERKRITERIEN BUTTON to open the Dialog
-                Button(
-                    onClick = { showFilterMask = true },
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-                ) {
-                    Text("Filterkriterien")
-                }
+                // FILTERKRITERIEN BUTTON to open the Dialog
+
 
                 // --- Dynamic Buttons Rowd (FlowRow) ---
                 FlowRow(
@@ -309,36 +341,24 @@ fun BookingScreen() {
                 ) {
                     if (buttonConfigs.isNotEmpty()) {
                         buttonConfigs.forEach { config ->
-                            ActionButton(config, bookingViewModel, modifier = Modifier.width(160.dp))
+                            ActionButton(
+                                config,
+                                bookingViewModel,
+                                onFilterClick = { showFilterMask = true },
+                                modifier = Modifier.width(160.dp)
+                            )
                         }
                     } else if (isLoading) {
-                        Text(text = "Loading buttons...", modifier = Modifier.padding(8.dp))
+                        CircularProgressIndicator(modifier = Modifier.padding(8.dp).size(24.dp))
                     } else {
-                        Text(text = "No buttons configured.", modifier = Modifier.padding(8.dp))
+                        Text(
+                            text = "No buttons configured.",
+                            modifier = Modifier.padding(8.dp)
+                        )
                     }
                 }
 
                 Spacer(modifier = Modifier.height(8.dp))
-
-                // --- Utility Toggle Button ---
-                if (selectedBooking != null && buttonConfigs.none { it.type.toString().trim().equals("details", ignoreCase = true) }) {
-                    Button(
-                        onClick = {
-                            bookingViewModel.handleEvent(BookingEvent.ButtonClicked(
-                                config = ButtonConfig(
-                                    id = 0, clientId = "client123", screenId = "BookingScreen",
-                                    buttonName = "DetailsToggle", action = "TOGGLE_DETAILS",
-                                    type = "details", isVisible = 1,
-                                    text = if (showDetails) "Hide Details" else "Show Details", IconData = ""
-                                )
-                            ))
-                        },
-                        modifier = Modifier.padding(horizontal = 8.dp)
-                    ) {
-                        Text(if (showDetails) "Hide Details Pane" else "Show Details Pane")
-                    }
-                    Spacer(modifier = Modifier.height(8.dp))
-                }
 
                 // --- Master Pane List (LazyColumn) ---
                 LazyColumn(
@@ -352,17 +372,31 @@ fun BookingScreen() {
                                 modifier = Modifier.fillParentMaxSize(),
                                 contentAlignment = Alignment.Center
                             ) {
-                                Text("Keine Termine gefunden.")
+                                Text("Keine Einträge gefunden.")
                             }
                         }
                     } else {
-                        items(bookings, key = { booking -> booking.bookingId ?: booking.toString() }) { booking ->
+                        items(
+                            bookings,
+                            key = { booking ->
+                                booking.bookingId ?: booking.toString()
+                            }) { booking ->
                             BookingItem(
                                 booking = booking,
-                                onClick = { bookingViewModel.handleEvent(BookingSelected(booking.bookingId)) },
+                                onClick = {
+                                    bookingViewModel.handleEvent(
+                                        BookingSelected(
+                                            booking.bookingId
+                                        )
+                                    )
+                                },
                                 isSelected = booking.bookingId == selectedBooking?.bookingId,
                                 isChecked = booking.isChecked ?: false,
-                                onCheckedChange = { bookingViewModel.handleEvent(BookingCheckedChange(booking.bookingId)) },
+                                onCheckedChange = {
+                                    bookingViewModel.handleEvent(
+                                        BookingCheckedChange(booking.bookingId)
+                                    )
+                                },
                             )
                         }
                     }
@@ -373,11 +407,13 @@ fun BookingScreen() {
 
             // Detail Pane
             if (showDetails) {
-                BookingDetails(
-                    booking = selectedBooking as Booking?,
-                    modifier = Modifier.weight(1f)
-                )
+              //  LogbookDetailView( // Should ideally be LogbookDetailView
+                //   logBook = selectedBooking as Logbook?,
+                  //  modifier = Modifier.weight(1f)
+               // )
             }
+
+
         } // END Master/Detail Row
     }
 }

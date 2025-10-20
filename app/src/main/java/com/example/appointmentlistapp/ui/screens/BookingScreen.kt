@@ -87,7 +87,7 @@ fun BookingFilterMask(
 
             // 1. Vorgangsnr.
             OutlinedTextField(
-                value = filterState.bookingNo,
+                value = filterState.entryNr,
                 onValueChange = { onEvent(BookingFilterEvent.BookingNoChange(it)) },
                 label = { Text("Vorgangsnr.") },
                 modifier = Modifier.fillMaxWidth(),
@@ -115,12 +115,15 @@ fun BookingFilterMask(
 
                 ExposedDropdownMenu(
                     expanded = statusDropdownExpanded, // State is now managed by the parent box
-                    onDismissRequest = { statusDropdownExpanded = false }, // Keep this to close on outside click
+                    onDismissRequest = {
+                        statusDropdownExpanded = false
+                    }, // Keep this to close on outside click
                     modifier = Modifier.exposedDropdownSize() // Match the width of the anchor
                 ) {
                     statusOptions.forEach { status ->
                         DropdownMenuItem(
-                            text = { Text(status.status) },
+                            text = { Text( status.status
+                            ) },
                             onClick = {
                                 onEvent(BookingFilterEvent.StatusChange(status.status))
                                 statusDropdownExpanded = false
@@ -135,17 +138,24 @@ fun BookingFilterMask(
                 onValueChange = {},
                 label = { Text("Übergabedatum") },
                 readOnly = true,
-                trailingIcon = { Icon(Icons.Filled.ArrowDropDown, contentDescription = null, Modifier.clickable {}) },
+                trailingIcon = {
+                    Icon(
+                        Icons.Filled.ArrowDropDown,
+                        contentDescription = null,
+                        Modifier.clickable {})
+                },
                 modifier = Modifier.fillMaxWidth()
             )
 
             ExposedDropdownMenuBox(
                 expanded = travelPurposeDropdownExpanded,
-                onExpandedChange = { travelPurposeDropdownExpanded = !travelPurposeDropdownExpanded },
+                onExpandedChange = {
+                    travelPurposeDropdownExpanded = !travelPurposeDropdownExpanded
+                },
                 modifier = Modifier.fillMaxWidth()
             ) {
                 OutlinedTextField(
-                    value = filterState.purposeId.ifEmpty { "Reisezweck" },
+                    value = filterState.travelPurposeChange.ifEmpty { "Reisezweck" },
                     onValueChange = { /* onValueChange must be defined, but can be empty for readOnly */ },
                     label = { Text("Reisezweck") },
                     readOnly = true,
@@ -162,7 +172,7 @@ fun BookingFilterMask(
                         DropdownMenuItem(
                             text = { Text(purpose.purpose) },
                             onClick = {
-                                onEvent(BookingFilterEvent.TravelPurposeChange(purposeId = purpose.id))
+                                onEvent(BookingFilterEvent.TravelPurposeChange(purpose = purpose.purpose))
                                 travelPurposeDropdownExpanded = false
                             })
                     }
@@ -175,7 +185,7 @@ fun BookingFilterMask(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 OutlinedTextField(
-                    value = filterState.vehicle.ifEmpty { "Fahrzeug" },
+                    value = filterState.registrationName.ifEmpty { "Fahrzeug" },
                     onValueChange = {},
                     label = { Text("Fahrzeug") },
                     readOnly = true,
@@ -191,14 +201,18 @@ fun BookingFilterMask(
                         DropdownMenuItem(
                             text = { Text(vehicle.registration ?: "Unbekanntes Fahrzeug") },
                             onClick = {
-                                onEvent(BookingFilterEvent.RegistrationName(vehicle.registration ?: ""))
+                                onEvent(
+                                    BookingFilterEvent.RegistrationName(
+                                        vehicle.registration ?: ""
+                                    )
+                                )
                                 vehicleDropdownExpanded = false
                             })
                     }
                 }
             }
 
-        // Action Buttons (Aktualisieren / Zurücksetzen)
+            // Action Buttons (Aktualisieren / Zurücksetzen)
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
@@ -222,10 +236,9 @@ fun BookingFilterMask(
             }
         }
     }
+}
 
 // ----------------------------------------------------------------------
-
-
 @Composable
 fun BookingScreen() {
     val bookingViewModel = viewModel<BookingViewModel>()
@@ -253,7 +266,7 @@ fun BookingScreen() {
         bookingViewModel.fetchAppointments("DRIVER_TEST_ID")
         bookingViewModel.fetchPurposeOfTrips()
         bookingViewModel.fetchStatusOptions()
-        bookingViewModel.fetchVehiclesByDriver("F7F5C431-E776-48B4-B9BC-9ABA528E6F23")
+        bookingViewModel.fetchVehiclesByDriver("FD104CC0-4756-4D24-8BDF-FF06CF716E22")
     }
 
     Column(modifier = Modifier.fillMaxSize()) {
@@ -380,4 +393,4 @@ fun BookingScreen() {
             }
         } // END Master/Detail Row
     }
-}}
+}
