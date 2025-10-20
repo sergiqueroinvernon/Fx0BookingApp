@@ -155,7 +155,7 @@ fun BookingFilterMask(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 OutlinedTextField(
-                    value = filterState.purposeId.ifEmpty { "Reisezweck" },
+                    value = filterState.purpose.ifEmpty { "Reisezweck" },
                     onValueChange = { /* onValueChange must be defined, but can be empty for readOnly */ },
                     label = { Text("Reisezweck") },
                     readOnly = true,
@@ -172,7 +172,7 @@ fun BookingFilterMask(
                         DropdownMenuItem(
                             text = { Text(purpose.purpose) },
                             onClick = {
-                                onEvent(BookingFilterEvent.TravelPurposeChange(purposeId = purpose.id))
+                                onEvent(BookingFilterEvent.TravelPurposeChange(purpose = purpose.purpose))
                                 travelPurposeDropdownExpanded = false
                             })
                     }

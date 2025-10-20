@@ -89,10 +89,11 @@ class BookingViewModel : ViewModel() {
             entryNr = "",
             status = "",
             handOverDate = "",
-            travelPurposeChange = 0,
+            travelPurposeChange = "",
             vehicle = "",
             purposeId = "",
-            registrationName = ""
+            registrationName = "",
+            purpose = ""
         )
     )
     val filterState: StateFlow<BookingFilterState> = _filterState.asStateFlow()
@@ -106,7 +107,7 @@ class BookingViewModel : ViewModel() {
             is BookingFilterEvent.RegistrationName -> _filterState.update { it.copy(registrationName = event.registrationName) }
             is BookingFilterEvent.TravelPurposeChange -> _filterState.update {
                 it.copy(
-                    travelPurposeChange = event.purposeId
+                    travelPurposeChange = event.purpose
                 )
             }
 
@@ -122,10 +123,11 @@ class BookingViewModel : ViewModel() {
                     entryNr = "",
                     status = "",
                     handOverDate = "",
-                    travelPurposeChange = 0,
+                    travelPurposeChange = "",
                     vehicle = "",
                     purposeId = "",
-                    registrationName = ""
+                    registrationName = "",
+                    purpose = ""
                 )
                 Log.d("ViewModel", "Filter reset.")
             }
@@ -242,7 +244,7 @@ class BookingViewModel : ViewModel() {
 
         // Si no hi ha cap filtre actiu, retornem la llista sencera
         if (filter.entryNr.isBlank() && filter.status.isNullOrBlank() && filter.vehicle.isBlank() &&
-            filter.handOverDate.isNullOrBlank() && filter.travelPurposeChange == 0
+            filter.handOverDate.isNullOrBlank() && filter.travelPurposeChange == ""
         ) {
             return appointments
         }
@@ -266,8 +268,8 @@ class BookingViewModel : ViewModel() {
 
             // 4. Purpose
             // The filter state uses travelPurposeChange (Int), not purposeId (String)
-            val matchesPurpose = filter.travelPurposeChange == 0 ||
-                    appointment.purposeOfTripId == filter.travelPurposeChange
+            val matchesPurpose = filter.travelPurposeChange == "" ||
+                    appointment.purposeOfTrip == filter.travelPurposeChange
 
             val matchesLicensePlate = filter.registrationName.isNullOrBlank() ||
                     appointment.vehicleRegistrationName == filter.registrationName
@@ -426,3 +428,5 @@ class BookingViewModel : ViewModel() {
         }
     }
 }
+
+
