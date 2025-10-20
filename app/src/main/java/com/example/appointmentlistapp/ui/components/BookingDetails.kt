@@ -21,7 +21,7 @@ fun BookingDetails(booking: Booking?, modifier: Modifier = Modifier) {
         contentAlignment = Alignment.Center
     ) {
         if (booking != null) {
-            LazyColumn(
+            LazyColumn(  
                 modifier = Modifier.fillMaxSize(),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {

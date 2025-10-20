@@ -122,7 +122,8 @@ fun BookingFilterMask(
                 ) {
                     statusOptions.forEach { status ->
                         DropdownMenuItem(
-                            text = { Text(status.status) },
+                            text = { Text( status.status
+                            ) },
                             onClick = {
                                 onEvent(BookingFilterEvent.StatusChange(status.status))
                                 statusDropdownExpanded = false
@@ -154,7 +155,7 @@ fun BookingFilterMask(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 OutlinedTextField(
-                    value = filterState.purposeId.ifEmpty { "Reisezweck" },
+                    value = filterState.travelPurposeChange.ifEmpty { "Reisezweck" },
                     onValueChange = { /* onValueChange must be defined, but can be empty for readOnly */ },
                     label = { Text("Reisezweck") },
                     readOnly = true,
@@ -171,7 +172,7 @@ fun BookingFilterMask(
                         DropdownMenuItem(
                             text = { Text(purpose.purpose) },
                             onClick = {
-                                onEvent(BookingFilterEvent.TravelPurposeChange(purposeId = purpose.id))
+                                onEvent(BookingFilterEvent.TravelPurposeChange(purpose = purpose.purpose))
                                 travelPurposeDropdownExpanded = false
                             })
                     }
@@ -184,7 +185,7 @@ fun BookingFilterMask(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 OutlinedTextField(
-                    value = filterState.vehicle.ifEmpty { "Fahrzeug" },
+                    value = filterState.registrationName.ifEmpty { "Fahrzeug" },
                     onValueChange = {},
                     label = { Text("Fahrzeug") },
                     readOnly = true,
@@ -265,7 +266,7 @@ fun BookingScreen() {
         bookingViewModel.fetchAppointments("DRIVER_TEST_ID")
         bookingViewModel.fetchPurposeOfTrips()
         bookingViewModel.fetchStatusOptions()
-        bookingViewModel.fetchVehiclesByDriver("F7F5C431-E776-48B4-B9BC-9ABA528E6F23")
+        bookingViewModel.fetchVehiclesByDriver("FD104CC0-4756-4D24-8BDF-FF06CF716E22")
     }
 
     Column(modifier = Modifier.fillMaxSize()) {

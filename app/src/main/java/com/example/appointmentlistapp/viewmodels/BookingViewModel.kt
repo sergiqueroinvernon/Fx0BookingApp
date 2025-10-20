@@ -89,10 +89,11 @@ class BookingViewModel : ViewModel() {
             entryNr = "",
             status = "",
             handOverDate = "",
-            travelPurposeChange = 0,
+            travelPurposeChange = "",
             vehicle = "",
             purposeId = "",
-            registrationName = ""
+            registrationName = "",
+            purpose = ""
         )
     )
     val filterState: StateFlow<BookingFilterState> = _filterState.asStateFlow()
@@ -106,7 +107,7 @@ class BookingViewModel : ViewModel() {
             is BookingFilterEvent.RegistrationName -> _filterState.update { it.copy(registrationName = event.registrationName) }
             is BookingFilterEvent.TravelPurposeChange -> _filterState.update {
                 it.copy(
-                    travelPurposeChange = event.purposeId
+                    travelPurposeChange = event.purpose
                 )
             }
 
@@ -122,10 +123,11 @@ class BookingViewModel : ViewModel() {
                     entryNr = "",
                     status = "",
                     handOverDate = "",
-                    travelPurposeChange = 0,
+                    travelPurposeChange = "",
                     vehicle = "",
                     purposeId = "",
-                    registrationName = ""
+                    registrationName = "",
+                    purpose = ""
                 )
                 Log.d("ViewModel", "Filter reset.")
             }
@@ -242,7 +244,7 @@ class BookingViewModel : ViewModel() {
 
         // Si no hi ha cap filtre actiu, retornem la llista sencera
         if (filter.entryNr.isBlank() && filter.status.isNullOrBlank() && filter.vehicle.isBlank() &&
-            filter.handOverDate.isNullOrBlank() && filter.travelPurposeChange == 0
+            filter.handOverDate.isNullOrBlank() && filter.travelPurposeChange == ""
         ) {
             return appointments
         }
@@ -255,28 +257,30 @@ class BookingViewModel : ViewModel() {
 
 
             // 2. Status (El teu filtre per estat!)
-            val matchesStatus = filter.status.isNullOrBlank() ||
-                    appointment.status.orEmpty().equals(filter.status, ignoreCase = true)
+            val matchesStatus = filter.status.isBlank() ||
+                    appointment.appointmentStatus.orEmpty()
+                        .contains(filter.status, ignoreCase = true)
 
             // 3. Date
             val matchesDate = filter.handOverDate.isNullOrBlank() ||
                     appointment.handOverDate.orEmpty()
                         .contains(filter.handOverDate, ignoreCase = true)
 
-            // 4. Purpose
-            // The filter state uses travelPurposeChange (Int), not purposeId (String)
-            val matchesPurpose = filter.travelPurposeChange == 0 ||
-                    appointment.purposeOfTripId == filter.travelPurposeChange
 
-            val matchesLicensePlate = filter.registrationName.isNullOrBlank() ||
+            val matchesVehicle = filter.registrationName == "" ||
                     appointment.vehicleRegistrationName == filter.registrationName
 
-            // 5. Vehicle
-            val matchesVehicle = filter.vehicle.isBlank() ||
-                    appointment.vehicleRegistration.orEmpty()
-                        .contains(filter.vehicle, ignoreCase = true)
 
-            matchesBookingNo && matchesStatus && matchesDate && matchesPurpose && matchesVehicle && matchesLicensePlate
+            // 4. Purpose
+            // The filter state uses travelval matchesVehicle = filter.registrationName == "" ||
+            //                    appointment.vehicleRegistrationName == filter.registrationNameval matchesVehicle = filter.registrationName == "" ||
+            //                    appointment.vehicleRegistrationName == filter.registrationNamePurposeChange (Int), not purposeId (String)
+            val matchesPurpose = filter.travelPurposeChange == "" ||
+                    appointment.tripPurposeName == filter.travelPurposeChange
+
+            //TO-DO SERGI -> only filters first by purpose to match the vehicle KFZ, investigate
+            // Combine all conditions. An appointment must match all active filters.
+            matchesBookingNo && matchesStatus && matchesDate &&  (matchesPurpose && matchesVehicle )
         }
     }
 
@@ -425,3 +429,5 @@ class BookingViewModel : ViewModel() {
         }
     }
 }
+
+
