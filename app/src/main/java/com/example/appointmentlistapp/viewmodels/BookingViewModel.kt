@@ -269,7 +269,7 @@ class BookingViewModel : ViewModel() {
             // 4. Purpose
             // The filter state uses travelPurposeChange (Int), not purposeId (String)
             val matchesPurpose = filter.travelPurposeChange == "" ||
-                    appointment.purposeOfTrip == filter.travelPurposeChange
+                    appointment.tripPurposeName == filter.travelPurposeChange
 
             val matchesLicensePlate = filter.registrationName.isNullOrBlank() ||
                     appointment.vehicleRegistrationName == filter.registrationName

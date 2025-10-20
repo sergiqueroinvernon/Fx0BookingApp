@@ -155,7 +155,7 @@ fun BookingFilterMask(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 OutlinedTextField(
-                    value = filterState.purpose.ifEmpty { "Reisezweck" },
+                    value = filterState.travelPurposeChange.ifEmpty { "Reisezweck" },
                     onValueChange = { /* onValueChange must be defined, but can be empty for readOnly */ },
                     label = { Text("Reisezweck") },
                     readOnly = true,
