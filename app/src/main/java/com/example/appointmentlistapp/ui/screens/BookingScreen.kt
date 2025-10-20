@@ -185,7 +185,7 @@ fun BookingFilterMask(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 OutlinedTextField(
-                    value = filterState.vehicle.ifEmpty { "Fahrzeug" },
+                    value = filterState.registrationName.ifEmpty { "Fahrzeug" },
                     onValueChange = {},
                     label = { Text("Fahrzeug") },
                     readOnly = true,
