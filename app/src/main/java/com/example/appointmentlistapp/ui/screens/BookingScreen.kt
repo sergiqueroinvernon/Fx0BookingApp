@@ -40,10 +40,19 @@ import com.example.appointmentlistapp.viewmodels.BookingEvent.BookingCheckedChan
 private fun ActionButton(
     config: ButtonConfig,
     viewModel: BookingViewModel,
-    modifier: Modifier = Modifier) {
+    modifier: Modifier = Modifier,
+    onFilterClick: () -> Unit
+
+    ) {
     Button(
-        onClick = { viewModel.handleEvent(BookingEvent.ButtonClicked(config)) },
-        modifier = modifier
+        onClick = {
+            if (config.type.toString().trim().equals("filter", ignoreCase = true)) {
+                onFilterClick()
+            } else {
+                viewModel.handleEvent(BookingEvent.ButtonClicked(config))
+            }
+        },
+        modifier = modifier,
     ) {
         Icon(
             painter = painterResource(getIconForType(config.type.toString().trim())),
@@ -306,14 +315,6 @@ fun BookingScreen() {
             // Master Pane Column (Filter Button + Buttons + List)
             Column(modifier = Modifier.weight(2f)) {
 
-                // 🆕 NEW: FILTERKRITERIEN BUTTON to open the Dialog
-                Button(
-                    onClick = { showFilterMask = true },
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-                ) {
-                    Text("Filterkriterien")
-                }
-
                 // --- Dynamic Buttons Rowd (FlowRow) ---
                 FlowRow(
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp),
@@ -322,7 +323,12 @@ fun BookingScreen() {
                 ) {
                     if (buttonConfigs.isNotEmpty()) {
                         buttonConfigs.forEach { config ->
-                            ActionButton(config, bookingViewModel, modifier = Modifier.width(160.dp))
+                            ActionButton(
+                                config = config,
+                                viewModel = bookingViewModel,
+                                modifier = Modifier.width(160.dp),
+                                onFilterClick = { showFilterMask = true }
+                            )
                         }
                     } else if (isLoading) {
                         Text(text = "Loading buttons...", modifier = Modifier.padding(8.dp))
