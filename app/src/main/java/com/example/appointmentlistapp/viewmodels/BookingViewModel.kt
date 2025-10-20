@@ -277,7 +277,7 @@ class BookingViewModel : ViewModel() {
             // 5. Vehicle
             val matchesVehicle = filter.vehicle.isBlank() ||
                     appointment.vehicleRegistration.orEmpty()
-                        .contains(filter.vehicle, ignoreCase = true)
+                        .contains(filter.registrationName, ignoreCase = false)
 
             matchesBookingNo && matchesStatus && matchesDate && matchesPurpose && matchesVehicle && matchesLicensePlate
         }

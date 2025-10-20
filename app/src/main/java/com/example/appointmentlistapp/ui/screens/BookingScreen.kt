@@ -266,7 +266,7 @@ fun BookingScreen() {
         bookingViewModel.fetchAppointments("DRIVER_TEST_ID")
         bookingViewModel.fetchPurposeOfTrips()
         bookingViewModel.fetchStatusOptions()
-        bookingViewModel.fetchVehiclesByDriver("F7F5C431-E776-48B4-B9BC-9ABA528E6F23")
+        bookingViewModel.fetchVehiclesByDriver("FD104CC0-4756-4D24-8BDF-FF06CF716E22")
     }
 
     Column(modifier = Modifier.fillMaxSize()) {
