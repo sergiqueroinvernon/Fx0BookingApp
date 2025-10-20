@@ -266,19 +266,21 @@ class BookingViewModel : ViewModel() {
                     appointment.handOverDate.orEmpty()
                         .contains(filter.handOverDate, ignoreCase = true)
 
+
+            val matchesVehicle = filter.registrationName == "" ||
+                    appointment.vehicleRegistrationName == filter.registrationName
+
+
             // 4. Purpose
-            // The filter state uses travelPurposeChange (Int), not purposeId (String)
+            // The filter state uses travelval matchesVehicle = filter.registrationName == "" ||
+            //                    appointment.vehicleRegistrationName == filter.registrationNameval matchesVehicle = filter.registrationName == "" ||
+            //                    appointment.vehicleRegistrationName == filter.registrationNamePurposeChange (Int), not purposeId (String)
             val matchesPurpose = filter.travelPurposeChange == "" ||
                     appointment.tripPurposeName == filter.travelPurposeChange
 
-            val matchesLicensePlate = filter.registrationName.isNullOrBlank() ||
-                    appointment.vehicleRegistrationName == filter.registrationName
-
-            // 5. Vehicle
-            val matchesVehicle = filter.registrationName.isNullOrBlank() ||
-                    appointment.vehicleRegistrationName == filter.registrationName
-
-            matchesBookingNo && matchesStatus && matchesDate && matchesPurpose && matchesVehicle
+            //TO-DO SERGI -> only filters first by purpose to match the vehicle KFZ, investigate
+            // Combine all conditions. An appointment must match all active filters.
+            matchesBookingNo && matchesStatus && matchesDate &&  (matchesPurpose && matchesVehicle )
         }
     }
 

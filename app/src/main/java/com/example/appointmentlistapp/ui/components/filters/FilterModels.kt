@@ -9,7 +9,7 @@ data class BookingFilterState(
     val travelPurposeChange: String = "",
     val vehicle: String = "",
     val purposeId: String,
-    val registrationName: String,
+    var registrationName: String,
     val purpose: String
 )
 
