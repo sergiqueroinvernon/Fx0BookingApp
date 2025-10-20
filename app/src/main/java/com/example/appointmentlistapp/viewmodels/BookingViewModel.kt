@@ -255,8 +255,9 @@ class BookingViewModel : ViewModel() {
 
 
             // 2. Status (El teu filtre per estat!)
-            val matchesStatus = filter.status.isNullOrBlank() ||
-                    appointment.status.orEmpty().equals(filter.status, ignoreCase = true)
+            val matchesStatus = filter.status.isBlank() ||
+                    appointment.appointmentStatus.orEmpty()
+                        .contains(filter.status, ignoreCase = true)
 
             // 3. Date
             val matchesDate = filter.handOverDate.isNullOrBlank() ||
