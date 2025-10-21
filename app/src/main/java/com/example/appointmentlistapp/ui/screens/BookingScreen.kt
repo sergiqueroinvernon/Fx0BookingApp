@@ -1,8 +1,9 @@
-package com.example.appointmentlistapp.ui.screens
+package com.example.appointmentlistapp
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
@@ -70,6 +71,8 @@ private fun ActionButton(
 fun BookingFilterMask(
     purposeOfTrips: List<PurposeOfTrip>,
     statusOptions: List<StatusOption>,
+    datePickerStateStart: DatePickerState,
+    datePickerStateEnd: DatePickerState,
     vehiclesByDriverId: List<Vehicle>,
     filterState: BookingFilterState,
     onEvent: (BookingFilterEvent) -> Unit,
@@ -189,6 +192,51 @@ fun BookingFilterMask(
                 )
             }
 
+            // 4. DatePickerDialog for "Von" (Start Date)
+            if (showDatePickerStart) {
+                DatePickerDialog(
+                    onDismissRequest = { showDatePickerStart = false },
+                    confirmButton = {
+                        TextButton(onClick = {
+                            showDatePickerStart = false
+                            datePickerStateStart.selectedDateMillis?.let {
+                                onEvent(BookingFilterEvent.HandOverDataStartChange(it))
+                            }
+                        }) { Text("OK") }
+                    },
+                    dismissButton = {
+                        TextButton(onClick = { showDatePickerStart = false }) {
+                            Text("Abbrechen")
+                        }
+                    }
+                ) {
+                    DatePicker(state = datePickerStateStart)
+                }
+            }
+
+            // 5. DatePickerDialog for "Bis" (End Date)
+            if (showDatePickerEnd) {
+                DatePickerDialog(
+                    onDismissRequest = { showDatePickerEnd = false },
+                    confirmButton = {
+                        TextButton(onClick = {
+                            showDatePickerEnd = false
+                            // Using datePickerStateEnd here
+                            datePickerStateEnd.selectedDateMillis?.let {
+                                onEvent(BookingFilterEvent.HandOverDataEndChange(it))
+                            }
+                        }) { Text("OK") }
+                    },
+                    dismissButton = {
+                        TextButton(onClick = { showDatePickerEnd = false }) {
+                            Text("Abbrechen")
+                        }
+                    }
+                ) {
+                    DatePicker(state = datePickerStateEnd)
+                }
+            }
+
             ExposedDropdownMenuBox(
                 expanded = travelPurposeDropdownExpanded,
                 onExpandedChange = {
@@ -220,6 +268,7 @@ fun BookingFilterMask(
                     }
                 }
             }
+
             // 5. Fahrzeug (Dropdown Placeholder)
             ExposedDropdownMenuBox(
                 expanded = vehicleDropdownExpanded,
@@ -276,9 +325,10 @@ fun BookingFilterMask(
                     Text("Zurücksetzen")
                 }
             }
-        }
-    }
+        } // END Column
+    } // END Surface
 }
+
 
 // ----------------------------------------------------------------------
 @OptIn(ExperimentalMaterial3Api::class)
@@ -329,6 +379,8 @@ fun BookingScreen() {
                 BookingFilterMask(
                     purposeOfTrips = purposeOfTrips,
                     statusOptions = statusOptions, // Pass the dynamic list
+                    datePickerStateStart = datePickerStateStart,
+                    datePickerStateEnd = datePickerStateEnd,
                     vehiclesByDriverId = vehiclesBYDriverId,
                     filterState = filterState,
                     onEvent = bookingViewModel::handleFilterEvent,
