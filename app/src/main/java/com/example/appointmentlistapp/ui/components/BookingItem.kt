@@ -73,12 +73,12 @@ fun BookingItem(
                     fontSize = 18.sp,
                 )
                 Spacer(modifier = Modifier.height(4.dp))
-                Text(text = "Vorgangsnrs.: ${booking.processNumber?: "N/A"}")
+                Text(text = "Vorgangsnr.: ${booking.processNumber?: "N/A"}")
                 Text(text = "Status.: ${booking.status?: "N/A"}")
                 Text(text = "Reserviert von.: ${booking.bookingDate?: "N/A"}")
                 Text(text = "Fahrer: ${booking.driverName?: "N/A"}")
 
-                Text(text = "Übergabe ${booking.handOverDate?: "N/A"}")
+                Text(text = "Übergabe ${booking.handOverDate}")
                 Text(text = "Rücknahme: ${booking.returnDate ?: "N/A"}")
 
                 Text(text = "Fahrzeugpool ${booking.vehiclePoolName ?: "N/A"}")
