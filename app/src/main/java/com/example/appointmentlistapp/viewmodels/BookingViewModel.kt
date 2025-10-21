@@ -16,6 +16,9 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import retrofit2.HttpException
 import java.io.IOException
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Locale
 
 // --- UI Event/Intent Sealed Class (Unchanged) ---
 sealed class BookingEvent {
@@ -84,6 +87,41 @@ private fun convertAppointmentToBooking(appointment: Appointment): Booking {
 class BookingViewModel : ViewModel() {
 
     // --- Filter State and Handler ---
+
+    // --- Helper Functions for Date Filtering ---
+
+    private fun getStartOfDay(millis: Long): Long {
+        return Calendar.getInstance().apply {
+            timeInMillis = millis
+            set(Calendar.HOUR_OF_DAY, 0)
+            set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+        }.timeInMillis
+    }
+
+    private fun getEndOfDay(millis: Long): Long {
+        return Calendar.getInstance().apply {
+            timeInMillis = millis
+            set(Calendar.HOUR_OF_DAY, 23)
+            set(Calendar.MINUTE, 59)
+            set(Calendar.SECOND, 59)
+            set(Calendar.MILLISECOND, 999)
+        }.timeInMillis
+    }
+
+    // Parses the date string from your API (assuming "dd.MM.yyyy")
+    private fun parseDateString(dateStr: String?): Long? {
+        if (dateStr.isNullOrBlank()) return null
+        return try {
+            // IMPORTANT: This format MUST match the string in your API data
+            val formatter = SimpleDateFormat("dd.MM.yyyy", Locale.GERMAN)
+            formatter.parse(dateStr)?.time
+        } catch (e: Exception) {
+            Log.e("BookingViewModel", "Failed to parse date string: $dateStr", e)
+            null
+        }
+    }
     private val _filterState = MutableStateFlow(
         BookingFilterState(
             entryNr = "",
@@ -96,31 +134,63 @@ class BookingViewModel : ViewModel() {
             purpose = ""
         )
     )
-    val filterState: StateFlow<BookingFilterState> = _filterState.asStateFlow()
 
+    private val _tempFilterState = MutableStateFlow(
+        BookingFilterState(
+            // V Cleaned up v
+            entryNr = "",
+            status = "",
+            handOverDateStart = null, // <-- NEW
+            handOverDataEnd = null,   // <-- NEW
+            travelPurposeChange = "",
+            registrationName = "",
+
+            // --- REMOVED old/unused properties ---
+             handOverDate = "",
+             vehicle = "",
+             purposeId = "",
+             purpose = ""
+        )
+    )
+    val filterState: StateFlow<BookingFilterState> = _tempFilterState.asStateFlow()
+    private val _activeFilterState = MutableStateFlow(BookingFilterState(
+        entryNr = "",
+        status = "",
+        handOverDate = "",
+        travelPurposeChange = "",
+        vehicle = "",
+        purposeId = "",
+        registrationName = "",
+        purpose = "",
+        handOverDateStart = null,
+        handOverDataEnd = null
+    ))
     fun handleFilterEvent(event: BookingFilterEvent) {
         when (event) {
-            // Aquests 'update' disparen automàticament el filtre 'combine'
-            is BookingFilterEvent.BookingNoChange -> _filterState.update { it.copy(entryNr = event.bookingNo) }
-            is BookingFilterEvent.StatusChange -> _filterState.update { it.copy(status = event.status) }
-            is BookingFilterEvent.HandOverDateChange -> _filterState.update { it.copy(handOverDate = event.date) }
-            is BookingFilterEvent.RegistrationName -> _filterState.update { it.copy(registrationName = event.registrationName) }
-            is BookingFilterEvent.TravelPurposeChange -> _filterState.update {
-                it.copy(
-                    travelPurposeChange = event.purpose
-                )
-            }
-            is BookingFilterEvent.HandOverDataStartChange -> _filterState.update { it.copy(handOverDateStart = event.dateMillis)}
-            is BookingFilterEvent.HandOverDataEndChange -> _filterState.update { it.copy(handOverDataEnd = event.dateMillis)}
-            is BookingFilterEvent.VehicleChange -> _filterState.update { it.copy(vehicle = event.registration.toString()) }
+
+            // These all update the _tempFilterState
+            is BookingFilterEvent.BookingNoChange -> _tempFilterState.update { it.copy(entryNr = event.bookingNo) }
+            is BookingFilterEvent.StatusChange -> _tempFilterState.update { it.copy(status = event.status) }
+            is BookingFilterEvent.RegistrationName -> _tempFilterState.update { it.copy(registrationName = event.registrationName) }
+            is BookingFilterEvent.TravelPurposeChange -> _tempFilterState.update { it.copy(travelPurposeChange = event.purpose) }
+            is BookingFilterEvent.HandOverDataStartChange -> _tempFilterState.update { it.copy(handOverDateStart = event.dateMillis)}
+            is BookingFilterEvent.HandOverDataEndChange -> _tempFilterState.update { it.copy(handOverDataEnd = event.dateMillis)}
+
+            // IGNORE: These are old and can be removed if 'handOverDate' and 'vehicle' are no longer in BookingFilterState
+            is BookingFilterEvent.HandOverDateChange -> { /* _tempFilterState.update { it.copy(handOverDate = event.date) } */ }
+            is BookingFilterEvent.VehicleChange -> { /* _tempFilterState.update { it.copy(vehicle = event.registration.toString()) } */ }
+
 
             BookingFilterEvent.ApplyFilter -> {
-                // CORREGIT: No cal cridar fetchAppointments. El filtre ja és aplicat.
-                Log.d("ViewModel", "Filter applied (State updated).")
+                // THIS IS THE FIX: Copy the temp state to the active state.
+                // This will trigger the .combine() on the 'bookings' flow.
+                _activeFilterState.value = _tempFilterState.value
+                Log.d("ViewModel", "Filter *APPLIED*.")
             }
 
             BookingFilterEvent.ResetFilter -> {
-                _filterState.value = BookingFilterState(
+                // Reset BOTH states
+                _tempFilterState.value = BookingFilterState(
                     entryNr = "",
                     status = "",
                     handOverDate = "",
@@ -128,13 +198,26 @@ class BookingViewModel : ViewModel() {
                     vehicle = "",
                     purposeId = "",
                     registrationName = "",
-                    purpose = ""
+                    purpose = "",
+                    handOverDateStart = null,
+                    handOverDataEnd = null
+                )
+                _activeFilterState.value = BookingFilterState(
+                    entryNr = "",
+                    status = "",
+                    handOverDate = "",
+                    travelPurposeChange = "",
+                    vehicle = "",
+                    purposeId = "",
+                    registrationName = "",
+                    purpose = "",
+                    handOverDateStart = null,
+                    handOverDataEnd = null
                 )
                 Log.d("ViewModel", "Filter reset.")
             }
         }
     }
-
     // --- Data State ---
 
     private val _purposeOfTrips = MutableStateFlow<List<PurposeOfTrip>>(emptyList())
@@ -153,7 +236,7 @@ class BookingViewModel : ViewModel() {
 
     // Public StateFlow for the UI: maps the filtered API models to the UI model (Booking)
     val bookings: StateFlow<List<Booking>> =
-        _allAppointments.combine(_filterState) { allAppointments, filter ->
+        _allAppointments.combine(_activeFilterState) { allAppointments, filter ->
             val filteredAppointments = applyFilterToBookings(allAppointments, filter)
             filteredAppointments.map { convertAppointmentToBooking(it) }
         }.stateIn(
@@ -163,7 +246,7 @@ class BookingViewModel : ViewModel() {
         )
 
     val appointmentsUI: StateFlow<List<Appointment>> =
-        _allAppointments.combine(_filterState) { allAppointments, filter ->
+        _allAppointments.combine(_activeFilterState) { allAppointments, filter ->
             // Eliminem el .map { convertAppointmentToBooking(it) }
             applyFilterToBookings(allAppointments, filter) // Retorna List<Appointment> directament
         }.stateIn(
@@ -238,50 +321,61 @@ class BookingViewModel : ViewModel() {
     }
 
     // 🆕 NEW: Dedicated function to apply the filter logic
+    // 🆕 REPLACED: Dedicated function to apply the filter logic
     private fun applyFilterToBookings(
         appointments: List<Appointment>,
         filter: BookingFilterState
     ): List<Appointment> {
 
-        // Si no hi ha cap filtre actiu, retornem la llista sencera
-        if (filter.entryNr.isBlank() && filter.status.isNullOrBlank() && filter.vehicle.isBlank() &&
-            filter.handOverDate.isNullOrBlank() && filter.travelPurposeChange == ""
-        ) {
+        // 1. Updated "isDefault" check
+        val isFilterEmpty = filter.entryNr.isBlank() &&
+                filter.status.isBlank() &&
+                filter.registrationName.isBlank() &&
+                filter.travelPurposeChange.isBlank() &&
+                filter.handOverDateStart == null && // <-- ADDED
+                filter.handOverDataEnd == null        // <-- ADDED
+
+        if (isFilterEmpty) {
             return appointments
         }
 
         return appointments.filter { appointment ->
-            // 1. Vorgangsnr. (Booking No)
+
+            // 1. Vorgangsnr.
             val matchesBookingNo = filter.entryNr.isBlank() ||
                     appointment.processNumber.orEmpty()
                         .contains(filter.entryNr, ignoreCase = true)
 
-
-            // 2. Status (El teu filtre per estat!)
+            // 2. Status
             val matchesStatus = filter.status.isBlank() ||
                     appointment.appointmentStatus.orEmpty()
                         .contains(filter.status, ignoreCase = true)
 
-            // 3. Date
-            val matchesDate = filter.handOverDate.isNullOrBlank() ||
-                    appointment.handOverDate.orEmpty()
-                        .contains(filter.handOverDate, ignoreCase = true)
-
-
-            val matchesVehicle = filter.registrationName == "" ||
+            // 3. Vehicle
+            val matchesVehicle = filter.registrationName.isBlank() ||
                     appointment.vehicleRegistrationName == filter.registrationName
 
-
             // 4. Purpose
-            // The filter state uses travelval matchesVehicle = filter.registrationName == "" ||
-            //                    appointment.vehicleRegistrationName == filter.registrationNameval matchesVehicle = filter.registrationName == "" ||
-            //                    appointment.vehicleRegistrationName == filter.registrationNamePurposeChange (Int), not purposeId (String)
-            val matchesPurpose = filter.travelPurposeChange == "" ||
+            val matchesPurpose = filter.travelPurposeChange.isBlank() ||
                     appointment.tripPurposeName == filter.travelPurposeChange
 
-            //TO-DO SERGI -> only filters first by purpose to match the vehicle KFZ, investigate
-            // Combine all conditions. An appointment must match all active filters.
-            matchesBookingNo && matchesStatus && matchesDate &&  (matchesPurpose && matchesVehicle )
+            // 5. --- NEW DATE RANGE LOGIC ---
+
+            // Parse the appointment's date string
+            val appointmentHandoverTime = parseDateString(appointment.handOverDate)
+
+            // Check Start Date
+            val matchesStartDate = filter.handOverDateStart == null ||
+                    (appointmentHandoverTime != null && appointmentHandoverTime >= getStartOfDay(filter.handOverDateStart))
+
+            // Check End Date
+            val matchesEndDate = filter.handOverDataEnd == null ||
+                    (appointmentHandoverTime != null && appointmentHandoverTime <= getEndOfDay(filter.handOverDataEnd))
+
+
+            // Combine all conditions
+            matchesBookingNo && matchesStatus && matchesVehicle && matchesPurpose &&
+                    matchesStartDate && matchesEndDate // <-- ADDED
         }
     }
 

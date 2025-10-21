@@ -181,9 +181,9 @@ fun BookingFilterMask(
                     ),
                     modifier = Modifier
                         .weight(1f)
-                        .clickable {showDatePickerStart = true}
+                        .clickable { showDatePickerStart = true }
 
-                        // 👈 Opens the 'Von' Date Picker Dialog
+                    // 👈 Opens the 'Von' Date Picker Dialog
                 )
 
                 // 📝 Field for "Bis" (End Date)
