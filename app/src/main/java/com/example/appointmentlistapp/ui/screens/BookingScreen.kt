@@ -79,6 +79,17 @@ fun BookingFilterMask(
     var travelPurposeDropdownExpanded by remember { mutableStateOf(false) }
     var vehicleDropdownExpanded by remember { mutableStateOf(false) }
 
+
+    var showDatePickerStart by remember { mutableStateOf(false) }
+
+    var showDatePickerEnd by remember { mutableStateOf(false) }
+
+
+
+
+    var dateFormatter = remember {java.text.SimpleDateFormat("dd.Mm.yyyy", java.util.Locale.GERMAN)}
+
+
     // Use a Surface inside the Dialog for style and elevation
     Surface(
         modifier = Modifier
@@ -131,8 +142,11 @@ fun BookingFilterMask(
                 ) {
                     statusOptions.forEach { status ->
                         DropdownMenuItem(
-                            text = { Text( status.status
-                            ) },
+                            text = {
+                                Text(
+                                    status.status
+                                )
+                            },
                             onClick = {
                                 onEvent(BookingFilterEvent.StatusChange(status.status))
                                 statusDropdownExpanded = false
@@ -142,19 +156,38 @@ fun BookingFilterMask(
             }
 
             // 3. Übergabedatum (Date Range Placeholder)
-            OutlinedTextField(
-                value = filterState.handOverDate.ifEmpty { "Übergabedatum - -" },
-                onValueChange = {},
-                label = { Text("Übergabedatum") },
-                readOnly = true,
-                trailingIcon = {
-                    Icon(
-                        Icons.Filled.ArrowDropDown,
-                        contentDescription = null,
-                        Modifier.clickable {})
-                },
-                modifier = Modifier.fillMaxWidth()
-            )
+            Text("Übergabe", style = MaterialTheme.typography.bodyLarge)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // 📝 Field for "Von" (Start Date)
+                OutlinedTextField(
+                    // Display the current start date from the filter state, or empty string
+                    value = filterState.handOverDateStart?.let { dateFormatter.format(it) } ?: "",
+                    onValueChange = { }, // Read-only
+                    label = { Text("Von") },
+                    readOnly = true,
+                    modifier = Modifier
+                        .weight(1f)
+                        // 👈 Opens the 'Von' Date Picker Dialog
+                        .clickable { showDatePickerStart = true }
+                )
+
+                // 📝 Field for "Bis" (End Date)
+                OutlinedTextField(
+                    // Display the current end date from the filter state, or empty string
+                    value = filterState.handOverDataEnd?.let { dateFormatter.format(it) } ?: "",
+                    onValueChange = { }, // Read-only
+                    label = { Text("Bis") },
+                    readOnly = true,
+                    modifier = Modifier
+                        .weight(1f)
+                        // 👈 Opens the 'Bis' Date Picker Dialog
+                        .clickable { showDatePickerEnd = true }
+                )
+            }
 
             ExposedDropdownMenuBox(
                 expanded = travelPurposeDropdownExpanded,
@@ -278,15 +311,6 @@ fun BookingScreen() {
     val datePickerStateEnd = rememberDatePickerState(
         initialSelectedDateMillis = filterState.handOverDataEnd,
     )
-
-    var showDatePickerStart by remember { mutableStateOf(false) }
-
-    var showDatePickerEnd by remember { mutableStateOf(false) }
-
-
-
-
-    var dataFormatter = remember {java.text.SimpleDateFormat("dd.Mm.yyyy", java.util.Locale.GERMAN)}
 
 
     LaunchedEffect(Unit) {
