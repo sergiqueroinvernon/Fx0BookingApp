@@ -268,6 +268,10 @@ fun BookingScreen() {
     val filterState by bookingViewModel.filterState.collectAsState()
 
     var showFilterMask by remember { mutableStateOf(false) }
+    var showDatePickerStart by remember { mutableStateOf(false)}
+    var showDatePickerEnd by remember { mutableStateOf(false)}
+
+    var dataFormatter = remember {java.text.SimpleDateFormat("dd.Mm.yyyy", java.util.Locale.GERMAN)}
 
 
     LaunchedEffect(Unit) {
