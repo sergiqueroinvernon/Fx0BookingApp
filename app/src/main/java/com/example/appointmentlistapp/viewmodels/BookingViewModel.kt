@@ -110,6 +110,8 @@ class BookingViewModel : ViewModel() {
                     travelPurposeChange = event.purpose
                 )
             }
+            is BookingFilterEvent.HandOverDataStartChange -> _filterState.update { it.copy(handOverDateStart = event.dateMillis)}
+            is BookingFilterEvent.HandOverDataEndChange -> _filterState.update { it.copy(handOverDataEnd = event.dateMillis)}
 
             is BookingFilterEvent.VehicleChange -> _filterState.update { it.copy(vehicle = event.registration.toString()) }
 
