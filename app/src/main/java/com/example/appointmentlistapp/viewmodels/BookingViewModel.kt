@@ -17,6 +17,8 @@ import kotlinx.coroutines.launch
 import retrofit2.HttpException
 import java.io.IOException
 import java.text.SimpleDateFormat
+import java.time.LocalDateTime
+import java.time.ZoneId
 import java.util.Calendar
 import java.util.Locale
 
@@ -114,14 +116,18 @@ class BookingViewModel : ViewModel() {
     private fun parseDateString(dateStr: String?): Long? {
         if (dateStr.isNullOrBlank()) return null
         return try {
-            // IMPORTANT: This format MUST match the string in your API data
-            val formatter = SimpleDateFormat("dd.MM.yyyy", Locale.GERMAN)
-            formatter.parse(dateStr)?.time
+            // Define the format that matches the API string
+            val formatter = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.GERMAN)
+
+            // Parse the string, but ignore the fractional seconds by splitting the string
+            formatter.parse(dateStr.substringBefore("."))?.time
+
         } catch (e: Exception) {
             Log.e("BookingViewModel", "Failed to parse date string: $dateStr", e)
             null
         }
     }
+
     private val _filterState = MutableStateFlow(
         BookingFilterState(
             entryNr = "",
@@ -374,8 +380,7 @@ class BookingViewModel : ViewModel() {
 
 
             // Combine all conditions
-            matchesBookingNo && matchesStatus && matchesVehicle && matchesPurpose &&
-                    matchesStartDate && matchesEndDate // <-- ADDED
+            matchesBookingNo && matchesStatus && matchesVehicle && matchesPurpose && matchesStartDate && matchesEndDate // <-- ADDED
         }
     }
 

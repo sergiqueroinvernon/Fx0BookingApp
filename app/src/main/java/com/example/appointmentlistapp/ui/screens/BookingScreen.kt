@@ -90,7 +90,7 @@ fun BookingFilterMask(
 
 
 
-    var dateFormatter = remember {java.text.SimpleDateFormat("dd.Mm.yyyy", java.util.Locale.GERMAN)}
+    var dateFormatter = remember {java.text.SimpleDateFormat("dd.MM.yyyy", java.util.Locale.GERMAN)}
 
 
     // Use a Surface inside the Dialog for style and elevation
