@@ -10,7 +10,9 @@ data class BookingFilterState(
     val vehicle: String = "",
     val purposeId: String,
     var registrationName: String,
-    val purpose: String
+    val purpose: String,
+    val handOverDateStart: Long? = null,
+    val handOverDataEnd: Long? = null
 )
 
 //Different reactions from the users
@@ -21,6 +23,10 @@ sealed class BookingFilterEvent {
     data class TravelPurposeChange(val purpose: String) : BookingFilterEvent()
     data class VehicleChange(val registration: Any) : BookingFilterEvent()
     data class RegistrationName(val registrationName: String) : BookingFilterEvent()
+
+    data class HandOverDataStartChange(val dateMillis: Long?) : BookingFilterEvent()
+
+    data class HandOverDataEndChange(val dateMillis: Long?) : BookingFilterEvent()
 
     object ApplyFilter : BookingFilterEvent()
     object ResetFilter : BookingFilterEvent()
