@@ -248,6 +248,7 @@ fun BookingFilterMask(
 }
 
 // ----------------------------------------------------------------------
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BookingScreen() {
     val bookingViewModel = viewModel<BookingViewModel>()
@@ -268,8 +269,22 @@ fun BookingScreen() {
     val filterState by bookingViewModel.filterState.collectAsState()
 
     var showFilterMask by remember { mutableStateOf(false) }
-    var showDatePickerStart by remember { mutableStateOf(false)}
-    var showDatePickerEnd by remember { mutableStateOf(false)}
+
+
+    val datePickerStateStart = rememberDatePickerState(
+        initialSelectedDateMillis = filterState.handOverDateStart,
+    )
+
+    val datePickerStateEnd = rememberDatePickerState(
+        initialSelectedDateMillis = filterState.handOverDataEnd,
+    )
+
+    var showDatePickerStart by remember { mutableStateOf(false) }
+
+    var showDatePickerEnd by remember { mutableStateOf(false) }
+
+
+
 
     var dataFormatter = remember {java.text.SimpleDateFormat("dd.Mm.yyyy", java.util.Locale.GERMAN)}
 
