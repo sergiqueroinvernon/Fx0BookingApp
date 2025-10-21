@@ -172,10 +172,17 @@ fun BookingFilterMask(
                     onValueChange = { }, // Read-only
                     label = { Text("Von") },
                     readOnly = true,
+                    enabled = false,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        disabledTextColor = MaterialTheme.colorScheme.onSurface,
+                        disabledContainerColor = Color.Transparent,
+                        disabledBorderColor = MaterialTheme.colorScheme.outline,
+                        disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant
+                    ),
                     modifier = Modifier
                         .weight(1f)
+                        .clickable {showDatePickerStart = true}
                         // 👈 Opens the 'Von' Date Picker Dialog
-                        .clickable { showDatePickerStart = true }
                 )
 
                 // 📝 Field for "Bis" (End Date)
@@ -185,10 +192,17 @@ fun BookingFilterMask(
                     onValueChange = { }, // Read-only
                     label = { Text("Bis") },
                     readOnly = true,
+                    enabled = false,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        disabledTextColor = MaterialTheme.colorScheme.onSurface,
+                        disabledContainerColor = Color.Transparent,
+                        disabledBorderColor = MaterialTheme.colorScheme.outline,
+                        disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant
+                    ),
                     modifier = Modifier
                         .weight(1f)
+                        .clickable {showDatePickerEnd = true}
                         // 👈 Opens the 'Bis' Date Picker Dialog
-                        .clickable { showDatePickerEnd = true }
                 )
             }
 
@@ -210,7 +224,10 @@ fun BookingFilterMask(
                         }
                     }
                 ) {
-                    DatePicker(state = datePickerStateStart)
+                    DatePicker(
+                        state = datePickerStateStart,
+                        headline = { Text("Startdatum auswählen", modifier = Modifier.padding(16.dp)) }
+                    )
                 }
             }
 
@@ -233,7 +250,10 @@ fun BookingFilterMask(
                         }
                     }
                 ) {
-                    DatePicker(state = datePickerStateEnd)
+                    DatePicker(
+                        state = datePickerStateEnd,
+                        headline = { Text("Enddatum auswählen", modifier = Modifier.padding(16.dp)) }
+                    )
                 }
             }
 
@@ -353,15 +373,21 @@ fun BookingScreen() {
 
     var showFilterMask by remember { mutableStateOf(false) }
 
-
+    // Hoist the DatePickerState to BookingScreen to preserve state across recompositions
     val datePickerStateStart = rememberDatePickerState(
         initialSelectedDateMillis = filterState.handOverDateStart,
     )
-
     val datePickerStateEnd = rememberDatePickerState(
         initialSelectedDateMillis = filterState.handOverDataEnd,
     )
 
+    // When the filter state is reset, we need to update the date pickers' displayed dates
+    LaunchedEffect(filterState.handOverDateStart) {
+        datePickerStateStart.selectedDateMillis = filterState.handOverDateStart
+    }
+    LaunchedEffect(filterState.handOverDataEnd) {
+        datePickerStateEnd.selectedDateMillis = filterState.handOverDataEnd
+    }
 
     LaunchedEffect(Unit) {
         bookingViewModel.fetchButtonsForClientAndScreen("client123", "BookingScreen")
