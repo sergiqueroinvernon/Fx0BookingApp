@@ -6,7 +6,9 @@ import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
 import com.example.appointmentlistapp.data.* // Import all data classes
 import com.example.appointmentlistapp.data.components.ButtonConfig
+import com.example.appointmentlistapp.ui.components.filters.BookingFilterEvent
 import com.example.appointmentlistapp.ui.components.filters.BookingFilterState
+import com.example.appointmentlistapp.ui.components.filters.LogBookFilterEvent
 import com.example.appointmentlistapp.ui.components.filters.LogBookFilterState
 import com.example.appointmentlistapp.viewmodels.BookingEvent
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -97,7 +99,15 @@ class LogBookViewModel : ViewModel() {
     )
 
     val filterState: StateFlow<LogBookFilterState> = _tempFilterState.asStateFlow()
-    private val _activeFilterState = MutableStateFlow<LogBookFilterState?>(null)
+    private val _activeFilterState = MutableStateFlow<LogBookFilterState?>(LogBookFilterState(
+        entryNr = "",
+        status = "",
+        dateStart = "",
+        purpose = "",
+        vehicleRegistration = ""
+    ))
+
+
 
     private val _selectedLogBook = MutableStateFlow<Logbook?>(null)
     val selectedLogBook: StateFlow<Logbook?> = _selectedLogBook.asStateFlow()
@@ -123,6 +133,67 @@ class LogBookViewModel : ViewModel() {
             )
         }
     }
+
+    fun handleFilterEvent(event: LogBookFilterEvent) {
+        when (event) {
+
+            // These all update the _tempFilterState
+            is LogBookFilterEvent.EntryNrChange-> _tempFilterState.update { it.copy(entryNr = event.entryNo) }
+            is LogBookFilterEvent.StatusChange -> _tempFilterState.update { it.copy(status = event.status) }
+            is LogBookFilterEvent.DateStartChange -> _tempFilterState.update { it.copy(dateStart = event.date) }
+            is LogBookFilterEvent.PurposeIdChange -> _tempFilterState.update { it.copy(purpose = event.purposeId.toString()) }
+            is LogBookFilterEvent.VehicleRegistrationChange -> _tempFilterState.update { it.copy(vehicleRegistration = event.registrationName) }
+
+            LogBookFilterEvent.ApplyFilter -> {
+                _activeFilterState.value = _tempFilterState.value
+            }
+
+            LogBookFilterEvent.ResetFilter -> {
+                _tempFilterState.value = LogBookFilterState(
+                    entryNr = "",
+                    status = "",
+                    dateStart = "",
+                    purpose = "",
+                    vehicleRegistration = ""
+                )
+                _activeFilterState.value = LogBookFilterState(
+                    entryNr = "",
+                    status = "",
+                    dateStart = "",
+                    purpose = "",
+                    vehicleRegistration = ""
+                )
+                Log.d("ViewModel", "Filter reset")
+            }
+
+
+
+            BookingFilterEvent.ApplyFilter -> {
+                // THIS IS THE FIX: Copy the temp state to the active state.
+                // This will trigger the .combine() on the 'bookings' flow.
+                _activeFilterState.value = _tempFilterState.value
+                Log.d("ViewModel", "Filter *APPLIED*.")
+            }
+
+            BookingFilterEvent.ResetFilter -> {
+                // Reset BOTH states
+                _tempFilterState.value = LogBookFilterState(
+                    entryNr = "",
+                    status = "",
+                    dateStart = "",
+                    purpose = "",
+                )
+                _activeFilterState.value = LogBookFilterState(
+                    entryNr = "",
+                    status = "",
+                    purpose = "",
+                    dateStart = "",
+                )
+                Log.d("ViewModel", "Filter reset.")
+            }
+        }
+    }
+
 
     private fun handleButtonClicked(config: ButtonConfig) {
         when(config.type.lowercase().trim()){

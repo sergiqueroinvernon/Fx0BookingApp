@@ -40,4 +40,6 @@ sealed class LogBookFilterEvent {
 
     // Corresponds to the 'Zurücksetzen' button
     object ResetFilter : LogBookFilterEvent()
+
+
 }
