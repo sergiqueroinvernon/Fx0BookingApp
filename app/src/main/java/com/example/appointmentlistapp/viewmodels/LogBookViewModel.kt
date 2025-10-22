@@ -82,8 +82,8 @@ class LogBookViewModel : ViewModel() {
             entryNr = "",
             status = "",
             dateStart = "",
-            vehicleRegistration = "",
-            purpose = ""
+            purpose = "",
+            vehicleRegistration = ""
         )
     )
 
