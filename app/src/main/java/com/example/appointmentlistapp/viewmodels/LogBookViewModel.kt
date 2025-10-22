@@ -81,11 +81,8 @@ class LogBookViewModel : ViewModel() {
         LogBookFilterState(
             entryNr = "",
             status = "",
-            handOverDate = "",
-            travelPurposeChange = "",
-            vehicle = "",
-            purposeId = "",
-            registrationName = "",
+            dateStart = "",
+            vehicleRegistration = "",
             purpose = ""
         )
     )
