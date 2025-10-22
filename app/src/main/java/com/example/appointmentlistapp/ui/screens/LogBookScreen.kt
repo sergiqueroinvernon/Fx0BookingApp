@@ -163,7 +163,7 @@ fun LogBookFilterMask( // Renamed and fixed signature
                 modifier = Modifier.fillMaxWidth()
             ) {
                 OutlinedTextField(
-                    value = filterState.purposeId.ifEmpty { "Reisezweck" },
+                    value = filterState.purpose.ifEmpty { "Reisezweck" },
                     onValueChange = { /* onValueChange must be defined, but can be empty for readOnly */ },
                     label = { Text("Reisezweck") },
                     readOnly = true,
@@ -299,7 +299,7 @@ fun LogBookScreen() {
                         entryNr = currentFilterState.entryNr,
                         status = currentFilterState.status,
                         dateStart = currentFilterState.handOverDate, // Mapping property
-                        purposeId = currentFilterState.purposeId,
+                        purpose = currentFilterState.purpose,
                         vehicleRegistration = currentFilterState.vehicle
                     ),
                     onEvent = handleLogBookFilterEvent,
