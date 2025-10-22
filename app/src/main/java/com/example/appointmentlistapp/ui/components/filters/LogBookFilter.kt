@@ -11,9 +11,11 @@ data class LogBookFilterState(
     // Datum Start (renamed from handOverDate for clarity, assuming it's a single date or date range start)
     val dateStart: String = "",
     // Reisezweck (using ID/Code for internal logic)
-    val purposeId: String = "",
+    val vehicleRegistration: String = "",
+
+    val purpose: String = "",
     // Fahrzeug (using the registration name for the display and filtering)
-    val vehicleRegistration: String = ""
+
 )
 
 // Sealed class defining all possible actions that modify the filter state or trigger an action

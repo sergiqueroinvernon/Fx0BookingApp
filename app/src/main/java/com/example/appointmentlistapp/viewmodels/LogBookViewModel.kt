@@ -6,13 +6,18 @@ import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
 import com.example.appointmentlistapp.data.* // Import all data classes
 import com.example.appointmentlistapp.data.components.ButtonConfig
+import com.example.appointmentlistapp.ui.components.filters.BookingFilterState
+import com.example.appointmentlistapp.ui.components.filters.LogBookFilterState
 import com.example.appointmentlistapp.viewmodels.BookingEvent
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import java.text.SimpleDateFormat
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.util.Calendar
+import java.util.Locale
 
 // Using the provided Logbook data class properties for clarity
 data class LogBookUiState(
@@ -34,6 +39,56 @@ sealed class LogBookEvent {
 
 @RequiresApi(Build.VERSION_CODES.O)
 class LogBookViewModel : ViewModel() {
+
+    //Data
+    private fun getStartOfDay(millis: Long): Long {
+        return Calendar.getInstance().apply {
+            timeInMillis = millis
+            set(Calendar.HOUR_OF_DAY, 0)
+            set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+        }.timeInMillis
+    }
+
+    private fun getEndOfDay(millis: Long): Long {
+        return Calendar.getInstance().apply {
+            timeInMillis = millis
+            set(Calendar.HOUR_OF_DAY, 23)
+            set(Calendar.MINUTE, 59)
+            set(Calendar.SECOND, 59)
+            set(Calendar.MILLISECOND, 999)
+        }.timeInMillis
+    }
+
+    // Parses the date string from your API (assuming "dd.MM.yyyy")
+    private fun parseDateString(dateStr: String?): Long? {
+        if (dateStr.isNullOrBlank()) return null
+        return try {
+            // Define the format that matches the API string
+            val formatter = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.GERMAN)
+
+            // Parse the string, but ignore the fractional seconds by splitting the string
+            formatter.parse(dateStr.substringBefore("."))?.time
+
+        } catch (e: Exception) {
+            Log.e("BookingViewModel", "Failed to parse date string: $dateStr", e)
+            null
+        }
+    }
+
+    private val _filterState = MutableStateFlow(
+        LogBookFilterState(
+            entryNr = "",
+            status = "",
+            handOverDate = "",
+            travelPurposeChange = "",
+            vehicle = "",
+            purposeId = "",
+            registrationName = "",
+            purpose = ""
+        )
+    )
 
 
     private val _selectedLogBook = MutableStateFlow<Logbook?>(null)
