@@ -121,8 +121,7 @@ class LogBookViewModel : ViewModel() {
     // Public immutable state that the UI can observe
     val uiState: StateFlow<LogBookUiState> = _uiState.asStateFlow()
 
-    private val _showDetails = MutableStateFlow(true)
-    val showDetails: StateFlow<Boolean> = _showDetails.asStateFlow()
+
 
     // 2. Initializer block now correctly sets the selected entry using the unified state
     init {
@@ -193,6 +192,26 @@ class LogBookViewModel : ViewModel() {
             }
         }
     }
+
+    private val _purposeOfTrips = MutableStateFlow<List<PurposeOfTrip>>(emptyList())
+    val purposeOfTrips: StateFlow<List<PurposeOfTrip>> = _purposeOfTrips.asStateFlow();
+
+    private val _statusOptions = MutableStateFlow<List<StatusOption>>(emptyList())
+    val statusOptions: StateFlow<List<StatusOption>> = _statusOptions.asStateFlow();
+
+    private val _vehiclesBYDriverId = MutableStateFlow<List<Vehicle>>(emptyList())
+    val vehiclesBYDriverId: StateFlow<List<Vehicle>> = _vehiclesBYDriverId.asStateFlow();
+
+    private val _buttonConfigs = MutableStateFlow<List<ButtonConfig>>(emptyList())
+    val buttonConfigs: StateFlow<List<ButtonConfig>> = _buttonConfigs.asStateFlow()
+
+    private val _showDetails = MutableStateFlow(true)
+    val showDetails: StateFlow<Boolean> = _showDetails.asStateFlow()
+
+
+
+
+
 
 
     private fun handleButtonClicked(config: ButtonConfig) {
