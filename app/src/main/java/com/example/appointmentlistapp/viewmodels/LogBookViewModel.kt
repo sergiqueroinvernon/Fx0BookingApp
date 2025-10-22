@@ -87,6 +87,17 @@ class LogBookViewModel : ViewModel() {
         )
     )
 
+    private val _tempFilterState = MutableStateFlow(
+        LogBookFilterState(
+            entryNr = "",
+            status = "",
+            dateStart = "",
+            purpose = "",
+    )
+    )
+
+    val filterState: StateFlow<LogBookFilterState> = _tempFilterState.asStateFlow()
+    private val _activeFilterState = MutableStateFlow<LogBookFilterState?>(null)
 
     private val _selectedLogBook = MutableStateFlow<Logbook?>(null)
     val selectedLogBook: StateFlow<Logbook?> = _selectedLogBook.asStateFlow()
