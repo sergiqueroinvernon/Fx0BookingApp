@@ -6,6 +6,7 @@ import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
 import com.example.appointmentlistapp.data.* // Import all data classes
 import com.example.appointmentlistapp.data.components.ButtonConfig
+import com.example.appointmentlistapp.data.model.Appointment
 import com.example.appointmentlistapp.ui.components.filters.BookingFilterEvent
 import com.example.appointmentlistapp.ui.components.filters.BookingFilterState
 import com.example.appointmentlistapp.ui.components.filters.LogBookFilterEvent
@@ -74,7 +75,7 @@ class LogBookViewModel : ViewModel() {
             formatter.parse(dateStr.substringBefore("."))?.time
 
         } catch (e: Exception) {
-            Log.e("BookingViewModel", "Failed to parse date string: $dateStr", e)
+            Log.e("LookingViewModel", "Failed to parse date string: $dateStr", e)
             null
         }
     }
@@ -98,6 +99,10 @@ class LogBookViewModel : ViewModel() {
     )
     )
 
+    private val _scannedDriverId = MutableStateFlow<String?>(null)
+    val scannedDriverId: StateFlow<String?> = _scannedDriverId.asStateFlow()
+
+
     val filterState: StateFlow<LogBookFilterState> = _tempFilterState.asStateFlow()
     private val _activeFilterState = MutableStateFlow<LogBookFilterState?>(LogBookFilterState(
         entryNr = "",
@@ -106,32 +111,6 @@ class LogBookViewModel : ViewModel() {
         purpose = "",
         vehicleRegistration = ""
     ))
-
-
-
-    private val _selectedLogBook = MutableStateFlow<Logbook?>(null)
-    val selectedLogBook: StateFlow<Logbook?> = _selectedLogBook.asStateFlow()
-
-    // 1. Consolidated state management into a single MutableStateFlow
-    private val _uiState = MutableStateFlow(
-        LogBookUiState(
-            entries = createMockLogbookEntries() // Initialize with mock data
-        )
-    )
-    // Public immutable state that the UI can observe
-    val uiState: StateFlow<LogBookUiState> = _uiState.asStateFlow()
-
-
-
-    // 2. Initializer block now correctly sets the selected entry using the unified state
-    init {
-        _uiState.update { currentState ->
-            currentState.copy(
-                selectedEntry = currentState.entries.firstOrNull(),
-                isDetailPlainVisible = true // Show details for the first entry by default
-            )
-        }
-    }
 
     fun handleFilterEvent(event: LogBookFilterEvent) {
         when (event) {
@@ -165,16 +144,14 @@ class LogBookViewModel : ViewModel() {
                 Log.d("ViewModel", "Filter reset")
             }
 
-
-
-            BookingFilterEvent.ApplyFilter -> {
+            LogBookFilterEvent.ApplyFilter -> {
                 // THIS IS THE FIX: Copy the temp state to the active state.
                 // This will trigger the .combine() on the 'bookings' flow.
                 _activeFilterState.value = _tempFilterState.value
                 Log.d("ViewModel", "Filter *APPLIED*.")
             }
 
-            BookingFilterEvent.ResetFilter -> {
+            LogBookFilterEvent.ResetFilter -> {
                 // Reset BOTH states
                 _tempFilterState.value = LogBookFilterState(
                     entryNr = "",
@@ -202,49 +179,91 @@ class LogBookViewModel : ViewModel() {
     private val _vehiclesBYDriverId = MutableStateFlow<List<Vehicle>>(emptyList())
     val vehiclesBYDriverId: StateFlow<List<Vehicle>> = _vehiclesBYDriverId.asStateFlow();
 
+    private val _allAppointments = MutableStateFlow<List<Appointment>>(emptyList())
+    val allAppointments: StateFlow<List<Appointment>> = _allAppointments.asStateFlow()
+
     private val _buttonConfigs = MutableStateFlow<List<ButtonConfig>>(emptyList())
     val buttonConfigs: StateFlow<List<ButtonConfig>> = _buttonConfigs.asStateFlow()
 
     private val _showDetails = MutableStateFlow(true)
     val showDetails: StateFlow<Boolean> = _showDetails.asStateFlow()
 
+    fun fetchLogBookEntries(
+        driverId: String? = _scannedDriverId.value,
+        useCachedData: Boolean = false
+    ) {
+
+    }
+
+
+
+    private val _selectedLogBook = MutableStateFlow<Logbook?>(null)
+    val selectedLogBook: StateFlow<Logbook?> = _selectedLogBook.asStateFlow()
+
+    // 1. Consolidated state management into a single MutableStateFlow
+    private val _uiState = MutableStateFlow(
+        LogBookUiState(
+            entries = createMockLogbookEntries() // Initialize with mock data
+        )
+    )
+    // Public immutable state that the UI can observe
+    val uiState: StateFlow<LogBookUiState> = _uiState.asStateFlow()
+
+
+
+    // 2. Initializer block now correctly sets the selected entry using the unified state
+    init {
+        _uiState.update { currentState ->
+            currentState.copy(
+                selectedEntry = currentState.entries.firstOrNull(),
+                isDetailPlainVisible = true // Show details for the first entry by default
+            )
+        }
+    }
 
 
 
 
+
+
+    fun toggleLogBookChecked(logbookId: String) {
+        // 1. Actualitza el valor del Flow mestre, creant una nova llista
+        _allAppointments.value = _allAppointments.value.map { appointment ->
+            if (appointment.id == logbookId) {
+                appointment.copy(isChecked = !appointment.isChecked)
+            } else {
+                appointment            }
+        }
+
+        // La línia anterior dispara automàticament el filtre 'combine'.
+    }
 
 
     private fun handleButtonClicked(config: ButtonConfig) {
         when(config.type.lowercase().trim()){
             "details" -> _showDetails.value = !_showDetails.value
+            "add" -> Log.d("ViewModel", "Action: Navigate to ADD screen.")
+            "edit" -> Log.d(
+                "ViewModel",
+                "Action: Navigate to EDIT screen for booking ID: ${_selectedLogBook.value?.entryNr}"
+            )
             else -> Log.w("ViewModel", "Unknown button action type: ${config.type}")
         }
     }
-    /*
-    fun selectBooking(bookingId: String) {
-        val selectedAppointment = _allAppointments.value.find { it.id == bookingId }
+
+    fun selectLogBook(logBookId: String) {
+        val selectedAppointment = _allAppointments.value.find { it.id == logBookId }
         if (selectedAppointment != null) {
-            _selectedBooking.value = convertAppointmentToBooking(selectedAppointment)
+            _selectedLogBook.value
         }
     }
 
-
-    fun handleEvent(event: LogBookEvent) {
-        when (event) {
-            is LogBookEvent..ButtonClicked -> handleButtonClicked(event.config)
-            is LogBookEvent.BookingSelected -> selectBooking(event.booking)
-            is LogBookEvent.BookingCheckedChange -> toggleBookingChecked(event.bookingId)
-        }
-    }
-    */
 
     fun handleEvent(event: LogBookEvent) {
         when (event) {
             is LogBookEvent.ButtonClicked -> handleButtonClicked(event.config)
-           //is LogBookEvent.LogbookSelected -> selectedLogBook(event.logBook)
-           // is LogBookEvent.LogbookCheckedChange -> toggleBookingChecked(event.logbookId)
-            is LogBookEvent.LogbookCheckedChange -> TODO()
-            is LogBookEvent.LogbookSelected -> TODO()
+            is LogBookEvent.LogbookCheckedChange -> selectLogBook(event.logbookId)
+            is LogBookEvent.LogbookSelected -> toggleLogBookChecked(event.logBook)
         }
     }
 
@@ -366,3 +385,4 @@ class LogBookViewModel : ViewModel() {
         )
     }
 }
+
