@@ -267,11 +267,8 @@ fun LogBookScreen() {
     val errorMessage by logBookViewModel.errorMessage.collectAsState()
 
     // State flows from ViewModel
-   // val lobBooks by logBookViewModel.bookings.collectAsState();
-
-    /*val bookings by bookingViewModel.bookings.collectAsState()
-    val selectedBooking by bookingViewModel.selectedBooking.collectAsState()
-    val showDetails by bookingViewModel.showDetails.collectAsState()
+    val selectedLogBook by logBookViewModel.selectedLogBook.collectAsState()
+    val showDetails by logBookViewModel.showDetails.collectAsState()
 
     // Assuming the ViewModel can provide a LogBookFilterState for this screen, or mapping it
     // For now, we will use a derived state based on the existing BookingFilterState
@@ -279,8 +276,6 @@ fun LogBookScreen() {
     // Placeholder handler for LogBookFilterEvents (since we are currently using BookingViewModel)
 
 
-
-*/
     LaunchedEffect(Unit) {
         // These calls should ideally be adapted for Logbook data
         logBookViewModel.fetchButtonsForClientAndScreen("client123", "LogBookScreen")

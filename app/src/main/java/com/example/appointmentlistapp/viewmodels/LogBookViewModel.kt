@@ -45,6 +45,10 @@ sealed class LogBookEvent {
     data class LogbookCheckedChange(val logbookId: Long) : LogBookEvent()
 }
 
+
+private val _selectedLogBook = MutableStateFlow<Logbook?>(null)
+val selectedLogBook: StateFlow<Logbook?> = _selectedLogBook.asStateFlow()
+
 @RequiresApi(Build.VERSION_CODES.O)
 class LogBookViewModel : ViewModel() {
 
@@ -274,10 +278,6 @@ class LogBookViewModel : ViewModel() {
     }
 
 
-
-
-
-
     fun toggleLogBookChecked(logbookId: Logbook) {
         // 1. Actualitza el valor del Flow mestre, creant una nova llista
         _logBooks.value = _logBooks.value.map { logBook ->
@@ -287,10 +287,7 @@ class LogBookViewModel : ViewModel() {
                 logBook
             }
         }
-
-        // La línia anterior dispara automàticament el filtre 'combine'.
     }
-
 
     private fun handleButtonClicked(config: ButtonConfig) {
         when(config.type.lowercase().trim()){
@@ -409,9 +406,6 @@ class LogBookViewModel : ViewModel() {
         }
     }
 
-
-
-
     fun handleEvent(event: LogBookEvent) {
         when (event) {
             is LogBookEvent.ButtonClicked -> handleButtonClicked(event.config)
@@ -421,9 +415,6 @@ class LogBookViewModel : ViewModel() {
     }
 
 
-    /**
-     * Updates the selected entry in the UI state.
-     */
     fun selectEntry(entryId: Long) {
         _uiState.update { currentState ->
             val newSelectedEntry = currentState.entries.find { it.entryNr == entryId }
