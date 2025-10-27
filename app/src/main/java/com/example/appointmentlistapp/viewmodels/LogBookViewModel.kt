@@ -205,6 +205,8 @@ class LogBookViewModel : ViewModel() {
     ) {
 
     }
+    val isLoading = MutableStateFlow(false)
+
 
     private val _errorMessage = MutableStateFlow<String?>(null)
     val errorMessage: StateFlow<String?> = _errorMessage.asStateFlow()

@@ -1,9 +1,10 @@
 package com.example.appointmentlistapp.ui.screens
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.*
@@ -16,38 +17,33 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.ui.window.Dialog // Import for the pop-up window
 
-import com.example.appointmentlistapp.data.Booking
-import com.example.appointmentlistapp.data.Logbook
 import com.example.appointmentlistapp.data.PurposeOfTrip
 import com.example.appointmentlistapp.data.Vehicle
 import com.example.appointmentlistapp.data.StatusOption
 import com.example.appointmentlistapp.data.components.ButtonConfig
-import com.example.appointmentlistapp.ui.components.BookingDetails
 import com.example.appointmentlistapp.util.getIconForType
-import com.example.appointmentlistapp.viewmodels.BookingEvent
-import com.example.appointmentlistapp.viewmodels.BookingViewModel
-import com.example.appointmentlistapp.ui.components.BookingItem
-import com.example.appointmentlistapp.ui.components.LogbookDetailView
+import com.example.appointmentlistapp.ui.components.LogBookItem
 import com.example.appointmentlistapp.ui.components.filters.LogBookFilterEvent
 import com.example.appointmentlistapp.ui.components.filters.LogBookFilterState
+import com.example.appointmentlistapp.ui.viewmodel.LogBookEvent
+import com.example.appointmentlistapp.ui.viewmodel.LogBookViewModel
 import com.google.accompanist.flowlayout.FlowRow
-import com.example.appointmentlistapp.viewmodels.BookingEvent.BookingSelected
-import com.example.appointmentlistapp.viewmodels.BookingEvent.BookingCheckedChange
 
 // --- Helper Composable for Button ---
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 private fun ActionButton(
     config: ButtonConfig,
-    viewModel: BookingViewModel,
-    onFilterClick: () -> Unit,
-    modifier: Modifier = Modifier
+    viewModel: LogBookViewModel,
+    modifier: Modifier = Modifier,
+    onFilterClick: () -> Unit
 ) {
     Button(
         onClick = {
             if (config.type.toString().trim().equals("filter", ignoreCase = true)) {
                 onFilterClick()
             } else {
-                viewModel.handleEvent(BookingEvent.ButtonClicked(config))
+                viewModel.handleEvent(LogBookEvent.ButtonClicked(config))
             }
         },
         modifier = modifier,
@@ -249,42 +245,49 @@ fun LogBookFilterMask( // Renamed and fixed signature
 // ----------------------------------------------------------------------
 
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun LogBookScreen() {
-    val bookingViewModel = viewModel<BookingViewModel>()
+    val logBookViewModel = viewModel<LogBookViewModel>()
 
-    // State flows from ViewModel
-    val bookings by bookingViewModel.bookings.collectAsState()
-    val selectedBooking by bookingViewModel.selectedBooking.collectAsState()
-    val buttonConfigs by bookingViewModel.buttonConfigs.collectAsState()
-    val isLoading by bookingViewModel.isLoading.collectAsState()
-    val errorMessage by bookingViewModel.errorMessage.collectAsState()
-    val showDetails by bookingViewModel.showDetails.collectAsState()
-    val purposeOfTrips by bookingViewModel.purposeOfTrips.collectAsState()
-    val statusOptions by bookingViewModel.statusOptions.collectAsState() // New state
-    val vehiclesBYDriverId by bookingViewModel.vehiclesBYDriverId.collectAsState()
+    var showFilterMask by remember { mutableStateOf(false) }
+    val purposeOfTrips by logBookViewModel.purposeOfTrips.collectAsState()
+    val buttonConfigs by logBookViewModel.buttonConfigs.collectAsState()
+    val logBooks by logBookViewModel.logBooks.collectAsState();
+    val statusOptions by logBookViewModel.statusOptions.collectAsState() // New state
+    val vehiclesBYDriverId by logBookViewModel.vehiclesBYDriverId.collectAsState()
 
-    // Assuming the ViewModel can provide a LogBookFilterState for this screen, or mapping it
-    // For now, we will use a derived state based on the existing BookingFilterState
-    val currentFilterState = bookingViewModel.filterState.collectAsState().value
-
-    // Placeholder handler for LogBookFilterEvents (since we are currently using BookingViewModel)
     val handleLogBookFilterEvent: (LogBookFilterEvent) -> Unit = { event ->
         // In a real application, you would map this LogBook event to the specific ViewModel logic
         println("LogBook Filter Event Handled: $event")
     }
+    val currentFilterState = logBookViewModel.filterState.collectAsState().value
+    val isLoading by logBookViewModel.isLoading.collectAsState()
+    val errorMessage by logBookViewModel.errorMessage.collectAsState()
 
-    var showFilterMask by remember { mutableStateOf(false) }
+    // State flows from ViewModel
+   // val lobBooks by logBookViewModel.bookings.collectAsState();
+
+    /*val bookings by bookingViewModel.bookings.collectAsState()
+    val selectedBooking by bookingViewModel.selectedBooking.collectAsState()
+    val showDetails by bookingViewModel.showDetails.collectAsState()
+
+    // Assuming the ViewModel can provide a LogBookFilterState for this screen, or mapping it
+    // For now, we will use a derived state based on the existing BookingFilterState
+
+    // Placeholder handler for LogBookFilterEvents (since we are currently using BookingViewModel)
 
 
+
+*/
     LaunchedEffect(Unit) {
         // These calls should ideally be adapted for Logbook data
-        bookingViewModel.fetchButtonsForClientAndScreen("client123", "LogBookScreen")
-        bookingViewModel.fetchAppointments("DRIVER_TEST_ID") // Placeholder data fetch
-        bookingViewModel.fetchPurposeOfTrips()
-        bookingViewModel.fetchStatusOptions()
-        bookingViewModel.fetchVehiclesByDriver("F7F5C431-E776-48B4-B9BC-9ABA528E6F23")
+        logBookViewModel.fetchButtonsForClientAndScreen("client123", "LogBookScreen")
+        logBookViewModel.fetchPurposeOfTrips()
+        logBookViewModel.fetchStatusOptions()
+        logBookViewModel.fetchVehiclesByDriver("F7F5C431-E776-48B4-B9BC-9ABA528E6F23")
     }
+
 
     Column(modifier = Modifier.fillMaxSize()) {
 
@@ -298,15 +301,20 @@ fun LogBookScreen() {
                     filterState = LogBookFilterState( // Creating a mock LogBookState from current state
                         entryNr = currentFilterState.entryNr,
                         status = currentFilterState.status,
-                        dateStart = currentFilterState.handOverDate, // Mapping property
+                        dateStart = currentFilterState.dateStart, // Mapping property
+                        vehicleRegistration = currentFilterState.vehicleRegistration,
                         purpose = currentFilterState.purpose,
-                        vehicleRegistration = currentFilterState.vehicle
-                    ),
+
+
+                        ),
                     onEvent = handleLogBookFilterEvent,
                     onClose = { showFilterMask = false }
                 )
             }
         }
+        // -------------------------------------
+
+
         // -------------------------------------
 
         // --- HEADER SECTION (Title and Error) ---
@@ -341,8 +349,8 @@ fun LogBookScreen() {
                     if (buttonConfigs.isNotEmpty()) {
                         buttonConfigs.forEach { config ->
                             ActionButton(
-                                config,
-                                bookingViewModel,
+                                config = config,
+                                viewModel = logBookViewModel,
                                 onFilterClick = { showFilterMask = true },
                                 modifier = Modifier.width(160.dp)
                             )
@@ -365,7 +373,7 @@ fun LogBookScreen() {
                     contentPadding = PaddingValues(horizontal = 16.dp, vertical = 10.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    if (bookings.isEmpty() && !isLoading) {
+                    if (logBooks.isEmpty() && !isLoading) {
                         item {
                             Box(
                                 modifier = Modifier.fillParentMaxSize(),
@@ -376,24 +384,25 @@ fun LogBookScreen() {
                         }
                     } else {
                         items(
-                            bookings,
-                            key = { booking ->
-                                booking.bookingId ?: booking.toString()
+                            logBooks,
+                            key = { logBook ->
+                                logBook.bookingId ?: logBook.toString()
                             }) { booking ->
-                            BookingItem(
-                                booking = booking,
+                            LogBookItem(
+                                logBook = booking,
                                 onClick = {
-                                    bookingViewModel.handleEvent(
-                                        BookingSelected(
+                                    logBookViewModel.handleEvent(
+                                        LogBookEvent.LogbookSelected(
                                             booking.bookingId
                                         )
                                     )
                                 },
-                                isSelected = booking.bookingId == selectedBooking?.bookingId,
+                                isSelected = false, // Placeholder, needs selectedLogBook state
                                 isChecked = booking.isChecked ?: false,
                                 onCheckedChange = {
-                                    bookingViewModel.handleEvent(
-                                        BookingCheckedChange(booking.bookingId)
+                                    logBookViewModel.handleEvent(
+                                        // This should be a LogBookEvent, creating a placeholder
+                                        LogBookEvent.LogBookCheckedChange(booking.bookingId)
                                     )
                                 },
                             )
