@@ -5,6 +5,7 @@ import androidx.annotation.RequiresApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.*
@@ -386,23 +387,22 @@ fun LogBookScreen() {
                         items(
                             logBooks,
                             key = { logBook ->
-                                logBook.bookingId ?: logBook.toString()
-                            }) { booking ->
+                                logBook ?: logBook.toString()
+                            }) { logBook ->
                             LogBookItem(
-                                logBook = booking,
+                                logBook = logBook,
                                 onClick = {
                                     logBookViewModel.handleEvent(
                                         LogBookEvent.LogbookSelected(
-                                            booking.bookingId
+                                            logBook
                                         )
                                     )
                                 },
                                 isSelected = false, // Placeholder, needs selectedLogBook state
-                                isChecked = booking.isChecked ?: false,
+                                isChecked = logBook.isChecked ?: false,
                                 onCheckedChange = {
                                     logBookViewModel.handleEvent(
-                                        // This should be a LogBookEvent, creating a placeholder
-                                        LogBookEvent.LogBookCheckedChange(booking.bookingId)
+                                        LogBookEvent.LogbookCheckedChange(logBook.entryNr)
                                     )
                                 },
                             )
@@ -425,3 +425,4 @@ fun LogBookScreen() {
         } // END Master/Detail Row
     }
 }
+

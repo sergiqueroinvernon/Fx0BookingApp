@@ -1,5 +1,4 @@
 package com.example.appointmentlistapp.ui.viewmodel
-import androidx.lifecycle.viewmodel.compose.viewModel
 
 import android.os.Build
 import android.util.Log
@@ -10,14 +9,14 @@ import com.example.appointmentlistapp.data.* // Import all data classes
 import com.example.appointmentlistapp.data.components.ButtonConfig
 import com.example.appointmentlistapp.data.model.Appointment
 import com.example.appointmentlistapp.data.remote.RetrofitInstance
-import com.example.appointmentlistapp.ui.components.filters.BookingFilterEvent
-import com.example.appointmentlistapp.ui.components.filters.BookingFilterState
 import com.example.appointmentlistapp.ui.components.filters.LogBookFilterEvent
 import com.example.appointmentlistapp.ui.components.filters.LogBookFilterState
-import com.example.appointmentlistapp.viewmodels.BookingEvent
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import retrofit2.HttpException
@@ -42,8 +41,8 @@ data class LogBookUiState(
 
 sealed class LogBookEvent {
     data class ButtonClicked(val config: ButtonConfig) : LogBookEvent()
-    data class LogbookSelected(val logBook: String) : LogBookEvent()
-    data class LogbookCheckedChange(val logbookId: String) : LogBookEvent()
+    data class LogbookSelected(val logBook: Logbook) : LogBookEvent()
+    data class LogbookCheckedChange(val logbookId: Long) : LogBookEvent()
 }
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -72,14 +71,14 @@ class LogBookViewModel : ViewModel() {
     }
 
     // Parses the date string from your API (assuming "dd.MM.yyyy")
-    private fun parseDateString(dateStr: String?): Long? {
-        if (dateStr.isNullOrBlank()) return null
+    private fun parseDateString(dateStr: LocalDateTime?): Long? {
+        if (dateStr == null) return null
         return try {
             // Define the format that matches the API string
             val formatter = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.GERMAN)
 
             // Parse the string, but ignore the fractional seconds by splitting the string
-            formatter.parse(dateStr.substringBefore("."))?.time
+            formatter.parse(dateStr.toString().substringBefore("."))?.time
 
         } catch (e: Exception) {
             Log.e("LookingViewModel", "Failed to parse date string: $dateStr", e)
@@ -111,7 +110,7 @@ class LogBookViewModel : ViewModel() {
 
 
     val filterState: StateFlow<LogBookFilterState> = _tempFilterState.asStateFlow()
-    private val _activeFilterState = MutableStateFlow<LogBookFilterState?>(LogBookFilterState(
+    private val _activeFilterState = MutableStateFlow(LogBookFilterState(
         entryNr = "",
         status = "",
         dateStart = "",
@@ -150,32 +149,64 @@ class LogBookViewModel : ViewModel() {
                 )
                 Log.d("ViewModel", "Filter reset")
             }
-
-            LogBookFilterEvent.ApplyFilter -> {
-                // THIS IS THE FIX: Copy the temp state to the active state.
-                // This will trigger the .combine() on the 'bookings' flow.
-                _activeFilterState.value = _tempFilterState.value
-                Log.d("ViewModel", "Filter *APPLIED*.")
-            }
-
-            LogBookFilterEvent.ResetFilter -> {
-                // Reset BOTH states
-                _tempFilterState.value = LogBookFilterState(
-                    entryNr = "",
-                    status = "",
-                    dateStart = "",
-                    purpose = "",
-                )
-                _activeFilterState.value = LogBookFilterState(
-                    entryNr = "",
-                    status = "",
-                    purpose = "",
-                    dateStart = "",
-                )
-                Log.d("ViewModel", "Filter reset.")
-            }
         }
     }
+
+
+    private fun applyFilterToLogBooks(
+        logBooks: List<Logbook>,
+        filter: LogBookFilterState
+    ): List<Logbook> {
+
+        // 1. Updated "isDefault" check
+        val isFilterEmpty = 
+                filter.entryNr.isBlank() &&
+                filter.status.isBlank() &&
+                filter.dateStart.isBlank() &&
+                filter.vehicleRegistration.isBlank() &&
+                filter.purpose.isBlank()
+
+
+        if (isFilterEmpty) {
+            return logBooks
+        }
+
+        return logBooks.filter { logBook ->
+
+            // 1. Vorgangsnr.
+            // The entryNr in Logbook is a Long, but the filter is a String.
+            // We need to convert the Logbook entryNr to a String for the comparison.
+            val matchesEntryNr = filter.entryNr.isBlank() || logBook.entryNr.toString()
+                .contains(filter.entryNr, ignoreCase = true)
+
+            // 2. Status
+            val matchesStatus = filter.status.isBlank() ||
+                    logBook.status.orEmpty()
+                        .contains(filter.status, ignoreCase = true)
+
+            // 3. Vehicle Registration
+            val matchesVehicle = filter.vehicleRegistration.isBlank() ||
+                    logBook.vehicle?.registration.orEmpty()
+                        .contains(filter.vehicleRegistration, ignoreCase = true)
+
+            // 4. Purpose - Assuming purpose filter holds the purpose ID as a string
+            val matchesPurpose = filter.purpose.isBlank() ||
+                    logBook.purposeOfTrip.toString() == filter.purpose
+
+            // 5. Date
+            val appointmentStartTime = parseDateString(logBook.startTime)
+            val matchesStartDate = filter.dateStart.isBlank() || (
+                    appointmentStartTime != null &&
+                            filter.dateStart.toLongOrNull()?.let { filterMillis ->
+                                appointmentStartTime >= getStartOfDay(filterMillis) && appointmentStartTime <= getEndOfDay(filterMillis)
+                            } ?: true)
+
+            // Combine all conditions
+            matchesEntryNr && matchesStatus && matchesVehicle && matchesPurpose && matchesStartDate
+        }
+    }
+
+
 
     private val _purposeOfTrips = MutableStateFlow<List<PurposeOfTrip>>(emptyList())
     val purposeOfTrips: StateFlow<List<PurposeOfTrip>> = _purposeOfTrips.asStateFlow();
@@ -184,9 +215,16 @@ class LogBookViewModel : ViewModel() {
     val statusOptions: StateFlow<List<StatusOption>> = _statusOptions.asStateFlow();
 
     private val _logBooks = MutableStateFlow<List<Logbook>>(emptyList())
-    val logBooks: StateFlow<List<Logbook>> = _logBooks.asStateFlow();
 
-
+    val logBooks: StateFlow<List<Logbook>> =
+        combine(_logBooks, _activeFilterState) { books, filter ->
+            applyFilterToLogBooks(books, filter)
+        }.stateIn(
+            // Using combine and stateIn to create a derived state
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList()
+        )
     private val _vehiclesBYDriverId = MutableStateFlow<List<Vehicle>>(emptyList())
     val vehiclesBYDriverId: StateFlow<List<Vehicle>> = _vehiclesBYDriverId.asStateFlow();
 
@@ -240,13 +278,14 @@ class LogBookViewModel : ViewModel() {
 
 
 
-    fun toggleLogBookChecked(logbookId: String) {
+    fun toggleLogBookChecked(logbookId: Logbook) {
         // 1. Actualitza el valor del Flow mestre, creant una nova llista
-        _allAppointments.value = _allAppointments.value.map { appointment ->
-            if (appointment.id == logbookId) {
-                appointment.copy(isChecked = !appointment.isChecked)
+        _logBooks.value = _logBooks.value.map { logBook ->
+            if (logBook.entryNr == logbookId.entryNr) {
+                logBook.copy(isChecked = !logBook.isChecked)
             } else {
-                appointment            }
+                logBook
+            }
         }
 
         // La línia anterior dispara automàticament el filtre 'combine'.
@@ -265,11 +304,9 @@ class LogBookViewModel : ViewModel() {
         }
     }
 
-    fun selectLogBook(logBookId: String) {
-        val selectedAppointment = _allAppointments.value.find { it.id == logBookId }
-        if (selectedAppointment != null) {
-            _selectedLogBook.value
-        }
+    fun selectLogBook(logBookId: Long) {
+        val selectedLogbook = _logBooks.value.find { it.entryNr == logBookId }
+        _selectedLogBook.value = selectedLogbook
     }
 
     fun fetchButtonsForClientAndScreen(clientId: String, screenId: String) {
@@ -287,7 +324,7 @@ class LogBookViewModel : ViewModel() {
                 val buttonConfigs =
                     RetrofitInstance.api.getButtonsForClientAndScreen(clientId, screenId)
                 _buttonConfigs.value = buttonConfigs
-                Log.d("BookingViewModel", "Fetched ${buttonConfigs.size} buttons.")
+                Log.d("LogBookViewModel", "Fetched ${buttonConfigs.size} buttons.")
             } catch (e: Exception) {
                 val errorMsg = when (e) {
                     is IOException -> "Netzwerkfehler beim Laden der Buttons."
@@ -315,7 +352,7 @@ class LogBookViewModel : ViewModel() {
             try {
                 val purposeOfTrips = RetrofitInstance.api.getPurposeOfTrips()
                 _purposeOfTrips.value = purposeOfTrips
-                Log.d("BookingViewModel", "Fetched ${purposeOfTrips.size} purpose of trips.")
+                Log.d("LogBookViewModel", "Fetched ${purposeOfTrips.size} purpose of trips.")
             } catch (e: Exception) {
                 val errorMsg = when (e) {
                     is IOException -> "Netzwerkfehler beim Laden der Buttons."
@@ -337,7 +374,7 @@ class LogBookViewModel : ViewModel() {
             try {
                 val statusOptions = RetrofitInstance.api.getStatusOptions()
                 _statusOptions.value = statusOptions
-                Log.d("BookingViewModel", "Fetched ${statusOptions.size} status options.")
+                Log.d("LogBookViewModel", "Fetched ${statusOptions.size} status options.")
             } catch (e: Exception) {
                 val errorMsg = when (e) {
                     is IOException -> "Netzwerkfehler beim Laden der Buttons."
