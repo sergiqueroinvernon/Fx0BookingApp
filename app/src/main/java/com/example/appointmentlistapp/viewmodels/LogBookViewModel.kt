@@ -183,6 +183,10 @@ class LogBookViewModel : ViewModel() {
     private val _statusOptions = MutableStateFlow<List<StatusOption>>(emptyList())
     val statusOptions: StateFlow<List<StatusOption>> = _statusOptions.asStateFlow();
 
+    private val _logBooks = MutableStateFlow<List<Logbook>>(emptyList())
+    val logBooks: StateFlow<List<Logbook>> = _logBooks.asStateFlow();
+
+
     private val _vehiclesBYDriverId = MutableStateFlow<List<Vehicle>>(emptyList())
     val vehiclesBYDriverId: StateFlow<List<Vehicle>> = _vehiclesBYDriverId.asStateFlow();
 
