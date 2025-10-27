@@ -1,12 +1,15 @@
 package com.example.appointmentlistapp.ui.viewmodel
+import androidx.lifecycle.viewmodel.compose.viewModel
 
 import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.appointmentlistapp.data.* // Import all data classes
 import com.example.appointmentlistapp.data.components.ButtonConfig
 import com.example.appointmentlistapp.data.model.Appointment
+import com.example.appointmentlistapp.data.remote.RetrofitInstance
 import com.example.appointmentlistapp.ui.components.filters.BookingFilterEvent
 import com.example.appointmentlistapp.ui.components.filters.BookingFilterState
 import com.example.appointmentlistapp.ui.components.filters.LogBookFilterEvent
@@ -16,6 +19,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
+import retrofit2.HttpException
+import java.io.IOException
 import java.text.SimpleDateFormat
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -42,6 +48,7 @@ sealed class LogBookEvent {
 
 @RequiresApi(Build.VERSION_CODES.O)
 class LogBookViewModel : ViewModel() {
+
 
     //Data
     private fun getStartOfDay(millis: Long): Long {
@@ -195,7 +202,8 @@ class LogBookViewModel : ViewModel() {
 
     }
 
-
+    private val _errorMessage = MutableStateFlow<String?>(null)
+    val errorMessage: StateFlow<String?> = _errorMessage.asStateFlow()
 
     private val _selectedLogBook = MutableStateFlow<Logbook?>(null)
     val selectedLogBook: StateFlow<Logbook?> = _selectedLogBook.asStateFlow()
@@ -257,6 +265,108 @@ class LogBookViewModel : ViewModel() {
             _selectedLogBook.value
         }
     }
+
+    fun fetchButtonsForClientAndScreen(clientId: String, screenId: String) {
+        // ... (function implementation remains unchanged) ...
+        if (clientId.isBlank() || screenId.isBlank()) {
+            _buttonConfigs.value = emptyList()
+            setErrorMessage("Fehler bei der Button-Konfiguration.")
+            return
+        }
+
+        viewModelScope.launch {
+            _isLoading.value = true
+            setErrorMessage(null)
+            try {
+                val buttonConfigs =
+                    RetrofitInstance.api.getButtonsForClientAndScreen(clientId, screenId)
+                _buttonConfigs.value = buttonConfigs
+                Log.d("BookingViewModel", "Fetched ${buttonConfigs.size} buttons.")
+            } catch (e: Exception) {
+                val errorMsg = when (e) {
+                    is IOException -> "Netzwerkfehler beim Laden der Buttons."
+                    is HttpException -> "API-Fehler beim Laden der Buttons: HTTP ${e.code()}"
+                    else -> "Ein unerwarteter Fehler ist aufgetreten: ${e.message}"
+                }
+                setErrorMessage(errorMsg)
+            } finally {
+                _isLoading.value = false
+            }
+        }
+    }
+
+    private fun setErrorMessage(message: String?) {
+        _errorMessage.value = message
+    }
+
+    private val _isLoading = MutableStateFlow(false)
+
+
+    fun fetchPurposeOfTrips() {
+        viewModelScope.launch {
+            _isLoading.value = true
+            setErrorMessage(null)
+            try {
+                val purposeOfTrips = RetrofitInstance.api.getPurposeOfTrips()
+                _purposeOfTrips.value = purposeOfTrips
+                Log.d("BookingViewModel", "Fetched ${purposeOfTrips.size} purpose of trips.")
+            } catch (e: Exception) {
+                val errorMsg = when (e) {
+                    is IOException -> "Netzwerkfehler beim Laden der Buttons."
+                    is HttpException -> "API-Fehler beim Laden der Buttons: HTTP ${e.code()}"
+                    else -> "Ein unerwarteter Fehler ist aufgetreten: ${e.message}"
+                }
+                setErrorMessage(errorMsg)
+            } finally {
+                _isLoading.value = false
+            }
+        }
+    }
+
+
+    fun fetchStatusOptions() {
+        viewModelScope.launch {
+            _isLoading.value = true
+            setErrorMessage(null)
+            try {
+                val statusOptions = RetrofitInstance.api.getStatusOptions()
+                _statusOptions.value = statusOptions
+                Log.d("BookingViewModel", "Fetched ${statusOptions.size} status options.")
+            } catch (e: Exception) {
+                val errorMsg = when (e) {
+                    is IOException -> "Netzwerkfehler beim Laden der Buttons."
+                    is HttpException -> "API-Fehler beim Laden der Buttons: HTTP ${e.code()}"
+                    else -> "Ein unerwarteter Fehler ist aufgetreten: ${e.message}"
+                }
+                setErrorMessage(errorMsg)
+            } finally {
+                _isLoading.value = false
+            }
+        }
+    }
+
+    fun fetchVehiclesByDriver(driverId: String) {
+        viewModelScope.launch {
+            _isLoading.value = true
+            setErrorMessage(null)
+            try {
+                val vehiclesBYDriverId = RetrofitInstance.api.getVehiclesByDriverId(driverId)
+                _vehiclesBYDriverId.value = vehiclesBYDriverId
+                Log.d("BookingViewModel", "Fetched ${vehiclesBYDriverId.size} status options.")
+            } catch (e: Exception) {
+                val errorMsg = when (e) {
+                    is IOException -> "Netzwerkfehler beim Laden der Buttons."
+                    is HttpException -> "API-Fehler beim Laden der Buttons: HTTP ${e.code()}"
+                    else -> "Ein unerwarteter Fehler ist aufgetreten: ${e.message}"
+                }
+                setErrorMessage(errorMsg)
+            } finally {
+                _isLoading.value = false
+            }
+        }
+    }
+
+
 
 
     fun handleEvent(event: LogBookEvent) {
