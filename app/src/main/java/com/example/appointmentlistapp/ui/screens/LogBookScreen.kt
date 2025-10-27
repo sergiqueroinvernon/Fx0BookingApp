@@ -294,26 +294,13 @@ fun LogBookScreen() {
                     purposeOfTrips = purposeOfTrips,
                     statusOptions = statusOptions,
                     vehiclesByDriverId = vehiclesBYDriverId,
-                    filterState = LogBookFilterState( // Creating a mock LogBookState from current state
-                        entryNr = currentFilterState.entryNr,
-                        status = currentFilterState.status,
-                        dateStart = currentFilterState.dateStart, // Mapping property
-                        vehicleRegistration = currentFilterState.vehicleRegistration,
-                        purpose = currentFilterState.purpose,
-
-
-                        ),
+                    filterState = currentFilterState,
                     onEvent = handleLogBookFilterEvent,
                     onClose = { showFilterMask = false }
                 )
             }
         }
-        // -------------------------------------
 
-
-        // -------------------------------------
-
-        // --- HEADER SECTION (Title and Error) ---
         Text(
             text = "Bearbeitung meiner Fahrtenbuch-Einträge", // Corrected title
             modifier = Modifier.padding(horizontal = 20.dp, vertical = 16.dp)
