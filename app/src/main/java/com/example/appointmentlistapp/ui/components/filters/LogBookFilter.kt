@@ -5,7 +5,7 @@ package com.example.appointmentlistapp.ui.components.filters
 
 data class LogBookFilterState(
     // Eintragsnr.
-    val entryNr: String = "",
+    val entryId: String = "",
     // Status
     val status: String = "",
     // Datum Start (renamed from handOverDate for clarity, assuming it's a single date or date range start)
@@ -21,7 +21,7 @@ data class LogBookFilterState(
 // Sealed class defining all possible actions that modify the filter state or trigger an action
 sealed class LogBookFilterEvent {
     // Corresponds to the 'Eintragsnr.' field
-    data class EntryNrChange(val entryNo: String) : LogBookFilterEvent()
+    data class EntryIdChange(val entryId: String) : LogBookFilterEvent()
 
     // Corresponds to the 'Status' dropdown
     data class StatusChange(val status: String) : LogBookFilterEvent()

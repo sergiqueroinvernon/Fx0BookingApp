@@ -16,7 +16,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.appointmentlistapp.data.Logbook
-import com.example.appointmentlistapp.data.LogbookStatus // Keep this if used for logic/display mapping
 import java.time.format.DateTimeFormatter
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -39,7 +38,7 @@ fun LogbookDetailView(logbook: Logbook?, modifier: Modifier = Modifier) {
                     SectionHeader("Eintrag")
                     DetailRow(
                         label1 = "Eintragsnr.",
-                        value1 = logbook.entryNr.toString(), // Fix: Convert Long to String
+                        value1 = logbook.entryId.toString(), // Fix: Convert Long to String
                         label2 = "Status",
                         value2 = logbook.status // Fix: Corrected property access
                     )
@@ -62,8 +61,8 @@ fun LogbookDetailView(logbook: Logbook?, modifier: Modifier = Modifier) {
                         label2 = "Uhrzeit Ziel", value2 = logbook.endTime.format(timeFormatter)
                     )
                     DetailRow(
-                        label1 = "Fahrzeug", value1 = logbook.vehicle.registration,
-                        label2 = "Interne Nr.", value2 = logbook.internalNumber // Placeholder
+                        label1 = "Fahrzeug", value1 = logbook.vehicle?.registration,
+                     //   label2 = "Interne Nr.", value2 = logbook.internalNumber // Placeholder
                     )
                     DetailRow(
                         label1 = "Reisezweck",
@@ -81,7 +80,7 @@ fun LogbookDetailView(logbook: Logbook?, modifier: Modifier = Modifier) {
                     DetailRow(label1 = "Ort Fahrtbeginn", value1 = logbook.startLocation)
 
                     //fahrtstrecke / ziel (assuming it's end location of the last leg)
-                    DetailRow(label1 = "Fahrtstrecke / Ziel", value1 = logbook.tripLegs.lastOrNull()?.endLocation)
+                   // DetailRow(label1 = "Fahrtstrecke / Ziel", value1 = logbook.tripLegs.lastOrNull()?.endLocation)
 
                     DetailRow(
                         label1 = "km-Stand Start", value1 = "${logbook.startOdometer} km",
@@ -90,6 +89,7 @@ fun LogbookDetailView(logbook: Logbook?, modifier: Modifier = Modifier) {
                     DetailRow(label1 = "Strecke", value1 = "${logbook.distance} km")
                 }
 
+                /*
                 // Section: Teilstrecken
                 if (logbook.tripLegs.isNotEmpty()) {
                     item { SectionHeader("Teilstrecken") }
@@ -116,28 +116,32 @@ fun LogbookDetailView(logbook: Logbook?, modifier: Modifier = Modifier) {
                         if(index < logbook.tripLegs.size -1) Spacer(modifier = Modifier.height(8.dp))
                     }
                 }
+*/
 
 
-                // Section: Genehmigung
-                logbook.approval?.let {
-                    item {
-                        SectionHeader("Genehmigung")
-                        DetailRow(label1 = "Genehmigt am", value1 = it.approvedOn?.format(dateFormatter))
-                        DetailRow(label1 = "Genehmigt von", value1 = it.approvedBy)
-                        // Changed label to match screenshot
-                        DetailRow(label1 = "Anmerkung Genehmigung", value1 = it.notes)
-                    }
-                }
 
-                // Section: Storno (Cancellation)
-                logbook.cancellation?.let {
-                    item {
-                        SectionHeader("Storno")
-                        DetailRow(label1 = "Storniert am", value1 = it.cancelledOn?.format(dateFormatter))
-                        DetailRow(label1 = "Storniert von", value1 = it.cancelledBy)
-                        DetailRow(label1 = "Stornogrund", value1 = it.reason)
-                    }
-                }
+//                // Section: Genehmigung
+//                logbook.approval?.let {
+//                    item {
+//                        SectionHeader("Genehmigung")
+//                        DetailRow(label1 = "Genehmigt am", value1 = it.approvedOn?.format(dateFormatter))
+//                        DetailRow(label1 = "Genehmigt von", value1 = it.approvedBy)
+//                        // Changed label to match screenshot
+//                        DetailRow(label1 = "Anmerkung Genehmigung", value1 = it.notes)
+//                    }
+//                }
+//
+//                // Section: Storno (Cancellation)
+//                logbook.cancellation?.let {
+//                    item {
+//                        SectionHeader("Storno")
+//                        DetailRow(label1 = "Storniert am", value1 = it.cancelledOn?.format(dateFormatter))
+//                        DetailRow(label1 = "Storniert von", value1 = it.cancelledBy)
+//                        DetailRow(label1 = "Stornogrund", value1 = it.reason)
+//                    }
+//                }
+
+
 
                 // Section: Anmerkung
                 item {
@@ -145,6 +149,8 @@ fun LogbookDetailView(logbook: Logbook?, modifier: Modifier = Modifier) {
                     // Changed label to match screenshot
                     DetailRow(label1 = "Anmerkung", value1 = logbook.notes)
                 }
+
+
             }
         } else {
             Text("Bitte einen Eintrag aus der Liste auswählen.")

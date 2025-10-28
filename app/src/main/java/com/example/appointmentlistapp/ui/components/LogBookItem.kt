@@ -74,7 +74,7 @@ fun LogBookItem(
                     fontSize = 18.sp,
                 )
                 Spacer(modifier = Modifier.height(4.dp))
-                Text(text = "Eintragsnr.: ${logBook.entryNr?: "N/A"}")
+                Text(text = "Eintragsnr.: ${logBook.entryId?: "N/A"}")
                 Text(text = "Status.: ${logBook.status?: "N/A"}")
                 Text(text = "Start.: ${logBook.startTime?: "N/A"}")
                 Text(text = "Fahrzeug: ${logBook.vehicle?: "N/A"}")

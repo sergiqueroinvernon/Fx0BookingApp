@@ -15,7 +15,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.appointmentlistapp.data.Logbook
-import com.example.appointmentlistapp.data.LogbookStatus
 import java.time.format.DateTimeFormatter
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -33,78 +32,7 @@ fun LogbookCheckDetailsView(logbook: Logbook?, modifier: Modifier = Modifier) {
                 modifier = Modifier.fillMaxSize(),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                // Section: Eintrag
-                item {
-                    SectionHeader("Eintrag")
-                    /*
-                    DetailRow(
-                        label1 = "Eintragsnr.", value1 = logbook..toString(),
-                        label2 = "Status", value2 = when (logbook.status) {
-                            LogbookStatus.CONFIRMED -> "Bestätigt"
-                            LogbookStatus.NOT_CONFIRMED -> "Nicht bestätigt"
-                        }
-                    )
-                    */
 
-                }
-
-                // Section: Angaben zur Fahrt
-                item {
-                    SectionHeader("Angaben zur Fahrt")
-                    DetailRow(
-                        label1 = "Startdatum", value1 = logbook.startTime.format(dateFormatter),
-                        label2 = "Startzeit", value2 = logbook.startTime.format(timeFormatter)
-                    )
-                    DetailRow(
-                        label1 = "Zieldatum", value1 = logbook.endTime.format(dateFormatter),
-                        label2 = "Zielzeit", value2 = logbook.endTime.format(timeFormatter)
-                    )
-                    DetailRow(
-                        label1 = "Fahrzeug", value1 = logbook.vehicle.registration,
-                        //label2 = "Interne Nr.", value2 = logbook.vehicle.internNumber
-                    )
-                    //DetailRow(label1 = "Reisezweck", value1 = logbook.purpose)
-                    DetailRow(label1 = "Startort", value1 = logbook.startLocation)
-                    DetailRow(
-                        label1 = "km-Stand Start", value1 = "${logbook.startOdometer} km",
-                        label2 = "km-Stand Ziel", value2 = "${logbook.endOdometer} km"
-                    )
-                    DetailRow(label1 = "Strecke", value1 = "${logbook.distance} km")
-                }
-
-                // Section: Teilstrecken
-                if (logbook.tripLegs.isNotEmpty()) {
-                    item { SectionHeader("Teilstrecken") }
-                    items(logbook.tripLegs.size) { index ->
-                        val leg = logbook.tripLegs[index]
-                        DetailRow(
-                            label1 = "Startort ${index + 1}", value1 = leg.startLocation,
-                            label2 = "Startzeit ${index + 1}", value2 = leg.startTime.format(timeFormatter)
-                        )
-                        DetailRow(
-                            label1 = "Zielort ${index + 1}", value1 = leg.endLocation,
-                            label2 = "Zielzeit ${index + 1}", value2 = leg.endTime.format(timeFormatter)
-                        )
-                        if(index < logbook.tripLegs.size -1) Spacer(modifier = Modifier.height(8.dp))
-                    }
-                }
-
-
-                // Section: Genehmigung
-                logbook.approval?.let {
-                    item {
-                        SectionHeader("Genehmigung")
-                        DetailRow(label1 = "Genehmigt am", value1 = it.approvedOn?.format(dateFormatter))
-                        DetailRow(label1 = "Genehmigt von", value1 = it.approvedBy)
-                        DetailRow(label1 = "Anmerkung Genehmigung", value1 = it.notes)
-                    }
-                }
-
-                // Section: Anmerkung
-                item {
-                    SectionHeader("Anmerkung")
-                    DetailRow(label1 = "Anmerkung", value1 = logbook.notes)
-                }
             }
         } else {
             Text("Bitte einen Eintrag aus der Liste auswählen.")

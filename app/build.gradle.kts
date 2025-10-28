@@ -56,11 +56,9 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
-
-    // Core Lifecycle and Navigation
+    implementation("com.google.code.gson:gson:2.10.1") // Stellen Sie sicher, dass Gson vorhanden ist
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.3")
     implementation("androidx.navigation:navigation-compose:2.9.4")
-
     // Networking
     implementation("com.squareup.retrofit2:retrofit:3.0.0")
     implementation("com.squareup.retrofit2:converter-gson:3.0.0")
@@ -68,7 +66,7 @@ dependencies {
     // Room Database
     implementation("androidx.room:room-runtime:2.7.2")
     implementation("androidx.room:room-ktx:2.7.2")
-
+// Remove this line to stop the dependency search:
     // Image Loading
     implementation("io.coil-kt:coil-compose:2.7.0")
     implementation(libs.runtime)

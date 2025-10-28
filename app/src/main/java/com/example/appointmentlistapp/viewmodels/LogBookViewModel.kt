@@ -92,7 +92,7 @@ class LogBookViewModel : ViewModel() {
 
     private val _filterState = MutableStateFlow(
         LogBookFilterState(
-            entryNr = "",
+            entryId = "",
             status = "",
             dateStart = "",
             purpose = "",
@@ -100,13 +100,27 @@ class LogBookViewModel : ViewModel() {
         )
     )
 
+    // 🆕 MODIFIED: Update the ALL appointments list, then re-apply filter to update UI
+    fun toggleLogbookChecked(logBook: Logbook) {
+        // 1. Actualitza el valor del Flow mestre, creant una nova llista
+        _logBooks.value = _logBooks.value.map { currentLogBook ->
+            if (currentLogBook.entryId == logBook.entryId) {
+                currentLogBook.copy(isChecked = !(currentLogBook.isChecked ?: false))
+            } else {
+                logBook
+            }
+        }
+        // La línia anterior dispara automàticament el filtre 'combine'.
+    }
+
+
     private val _tempFilterState = MutableStateFlow(
         LogBookFilterState(
-            entryNr = "",
+            entryId = "",
             status = "",
             dateStart = "",
             purpose = "",
-    )
+        )
     )
 
     private val _scannedDriverId = MutableStateFlow<String?>(null)
@@ -114,23 +128,29 @@ class LogBookViewModel : ViewModel() {
 
 
     val filterState: StateFlow<LogBookFilterState> = _tempFilterState.asStateFlow()
-    private val _activeFilterState = MutableStateFlow(LogBookFilterState(
-        entryNr = "",
-        status = "",
-        dateStart = "",
-        purpose = "",
-        vehicleRegistration = ""
-    ))
+    private val _activeFilterState = MutableStateFlow(
+        LogBookFilterState(
+            entryId = "",
+            status = "",
+            dateStart = "",
+            purpose = "",
+            vehicleRegistration = ""
+        )
+    )
 
     fun handleFilterEvent(event: LogBookFilterEvent) {
         when (event) {
 
             // These all update the _tempFilterState
-            is LogBookFilterEvent.EntryNrChange-> _tempFilterState.update { it.copy(entryNr = event.entryNo) }
+            is LogBookFilterEvent.EntryIdChange -> _tempFilterState.update { it.copy(entryId = event.entryId) }
             is LogBookFilterEvent.StatusChange -> _tempFilterState.update { it.copy(status = event.status) }
             is LogBookFilterEvent.DateStartChange -> _tempFilterState.update { it.copy(dateStart = event.date) }
             is LogBookFilterEvent.PurposeIdChange -> _tempFilterState.update { it.copy(purpose = event.purposeId.toString()) }
-            is LogBookFilterEvent.VehicleRegistrationChange -> _tempFilterState.update { it.copy(vehicleRegistration = event.registrationName) }
+            is LogBookFilterEvent.VehicleRegistrationChange -> _tempFilterState.update {
+                it.copy(
+                    vehicleRegistration = event.registrationName
+                )
+            }
 
             LogBookFilterEvent.ApplyFilter -> {
                 _activeFilterState.value = _tempFilterState.value
@@ -138,14 +158,14 @@ class LogBookViewModel : ViewModel() {
 
             LogBookFilterEvent.ResetFilter -> {
                 _tempFilterState.value = LogBookFilterState(
-                    entryNr = "",
+                    entryId = "",
                     status = "",
                     dateStart = "",
                     purpose = "",
                     vehicleRegistration = ""
                 )
                 _activeFilterState.value = LogBookFilterState(
-                    entryNr = "",
+                    entryId = "",
                     status = "",
                     dateStart = "",
                     purpose = "",
@@ -162,13 +182,12 @@ class LogBookViewModel : ViewModel() {
         filter: LogBookFilterState
     ): List<Logbook> {
 
-        // 1. Updated "isDefault" check
-        val isFilterEmpty = 
-                filter.entryNr.isBlank() &&
-                filter.status.isBlank() &&
-                filter.dateStart.isBlank() &&
-                filter.vehicleRegistration.isBlank() &&
-                filter.purpose.isBlank()
+        val isFilterEmpty =
+            filter.entryId.isBlank() &&
+                    filter.status.isBlank() &&
+                    filter.dateStart.isBlank() &&
+                    filter.vehicleRegistration.isBlank() &&
+                    filter.purpose.isBlank()
 
 
         if (isFilterEmpty) {
@@ -178,10 +197,10 @@ class LogBookViewModel : ViewModel() {
         return logBooks.filter { logBook ->
 
             // 1. Vorgangsnr.
-            // The entryNr in Logbook is a Long, but the filter is a String.
-            // We need to convert the Logbook entryNr to a String for the comparison.
-            val matchesEntryNr = filter.entryNr.isBlank() || logBook.entryNr.toString()
-                .contains(filter.entryNr, ignoreCase = true)
+            // The entryId in Logbook is a Long, but the filter is a String.
+            // We need to convert the Logbook entryId to a String for the comparison.
+            val matchesentryId = filter.entryId.isBlank() || logBook.entryId.toString()
+                .contains(filter.entryId, ignoreCase = true)
 
             // 2. Status
             val matchesStatus = filter.status.isBlank() ||
@@ -198,18 +217,19 @@ class LogBookViewModel : ViewModel() {
                     logBook.purposeOfTrip.toString() == filter.purpose
 
             // 5. Date
-            val appointmentStartTime = parseDateString(logBook.startTime)
-            val matchesStartDate = filter.dateStart.isBlank() || (
+            val appointmentStartTime = logBook.startTime
+            /*val matchesStartDate = filter.dateStart.isBlank() || (
                     appointmentStartTime != null &&
                             filter.dateStart.toLongOrNull()?.let { filterMillis ->
-                                appointmentStartTime >= getStartOfDay(filterMillis) && appointmentStartTime <= getEndOfDay(filterMillis)
-                            } ?: true)
+                                appointmentStartTime >= getStartOfDay(filterMillis) && appointmentStartTime <= getEndOfDay(
+                                    filterMillis
+                                )
+                            } ?: true)*/
 
             // Combine all conditions
-            matchesEntryNr && matchesStatus && matchesVehicle && matchesPurpose && matchesStartDate
+            matchesentryId && matchesStatus && matchesVehicle && matchesPurpose  //matchesStartDate
         }
     }
-
 
 
     private val _purposeOfTrips = MutableStateFlow<List<PurposeOfTrip>>(emptyList())
@@ -266,30 +286,26 @@ class LogBookViewModel : ViewModel() {
             _uiState.update { it.copy(isLoading = true, errorMessage = null) }
             try {
                 // Fetch data from the API
-                val fetchedLogBooks = RetrofitInstance.logBookApi.getLogbooksByDriverId(driverId)
-                _logBooks.value = fetchedLogBooks // Update the raw data flow
-
+                val logBooks =
+                    RetrofitInstance.logBookApi.getLogbooksByDriverId("82EEB103-0E29-43E3-979F-6487440A7AFE")
+                _logBooks.value = logBooks
                 // Update the main UI state
-                _uiState.update { currentState ->
-                    currentState.copy(
-                        isLoading = false,
-                        entries = fetchedLogBooks,
-                        // Automatically select the first entry if the list is not empty
-                        selectedEntry = fetchedLogBooks.firstOrNull()
-                    )
-                }
-                Log.d("LogBookViewModel", "Successfully fetched ${fetchedLogBooks.size} logbook entries.")
+
+
+            } catch (e: IOException) {
+                setErrorMessage("Netzwerkfehler. Bitte überprüfen Sie Ihre Verbindung und stellen Sie sicher, dass die API läuft.")
+            } catch (e: HttpException) {
+                setErrorMessage("API-Fehler: ${e.message()}")
             } catch (e: Exception) {
-                val errorMsg = when (e) {
-                    is IOException -> "Netzwerkfehler beim Laden der Fahrtenbuch-Einträge."
-                    is HttpException -> "API-Fehler: HTTP ${e.code()}"
-                    else -> "Unerwarteter Fehler: ${e.message}"
-                }
-                _uiState.update { it.copy(isLoading = false, errorMessage = errorMsg) }
-                Log.e("LogBookViewModel", "Error fetching logbook entries", e)
+                setErrorMessage("Ein unerwarteter Fehler ist aufgetreten: ${e.message}")
+            } finally {
+                _isLoading.value = false
             }
+
+
         }
     }
+
     val isLoading = MutableStateFlow(false)
 
 
@@ -305,9 +321,16 @@ class LogBookViewModel : ViewModel() {
             entries = emptyList() // Initialize with an empty list
         )
     )
+
     // Public immutable state that the UI can observe
     val uiState: StateFlow<LogBookUiState> = _uiState.asStateFlow()
 
+    fun setScannedDriverId(driverId: String) {
+        if (_scannedDriverId.value != driverId) {
+            _scannedDriverId.value = driverId
+            fetchLogBookEntries(driverId)
+        }
+    }
 
 
     // 2. Initializer block now correctly sets the selected entry using the unified state
@@ -317,31 +340,21 @@ class LogBookViewModel : ViewModel() {
     }
 
 
-    fun toggleLogBookChecked(logbookId: Logbook) {
-        // 1. Actualitza el valor del Flow mestre, creant una nova llista
-        _logBooks.value = _logBooks.value.map { logBook ->
-            if (logBook.entryNr == logbookId.entryNr) {
-                logBook.copy(isChecked = !logBook.isChecked)
-            } else {
-                logBook
-            }
-        }
-    }
-
     private fun handleButtonClicked(config: ButtonConfig) {
-        when(config.type.lowercase().trim()){
-            "details" -> _showDetails.value = !_showDetails.value
+        when (config.type.lowercase().trim()) {
+            "details" -> _showDetails.value = _showDetails.value?.not() ?: true
             "add" -> Log.d("ViewModel", "Action: Navigate to ADD screen.")
             "edit" -> Log.d(
                 "ViewModel",
-                "Action: Navigate to EDIT screen for booking ID: ${_selectedLogBook.value?.entryNr}"
+                "Action: Navigate to EDIT screen for booking ID: ${_selectedLogBook.value?.entryId}"
             )
+
             else -> Log.w("ViewModel", "Unknown button action type: ${config.type}")
         }
     }
 
     fun selectLogBook(logBookId: Long) {
-        val selectedLogbook = _logBooks.value.find { it.entryNr == logBookId }
+        val selectedLogbook = _logBooks.value.find { it.entryId == logBookId }
         _selectedLogBook.value = selectedLogbook
     }
 
@@ -445,18 +458,19 @@ class LogBookViewModel : ViewModel() {
         }
     }
 
+
     fun handleEvent(event: LogBookEvent) {
         when (event) {
             is LogBookEvent.ButtonClicked -> handleButtonClicked(event.config)
             is LogBookEvent.LogbookCheckedChange -> selectLogBook(event.logbookId)
-            is LogBookEvent.LogbookSelected -> toggleLogBookChecked(event.logBook)
+            is LogBookEvent.LogbookSelected -> toggleLogbookChecked(event.logBook)
         }
     }
 
 
     fun selectEntry(entryId: Long) {
         _uiState.update { currentState ->
-            val newSelectedEntry = currentState.entries.find { it.entryNr == entryId }
+            val newSelectedEntry = currentState.entries.find { it.entryId == entryId }
             currentState.copy(
                 selectedEntry = newSelectedEntry,
                 // Ensure detail view is visible when an entry is selected
@@ -481,7 +495,7 @@ class LogBookViewModel : ViewModel() {
                 checkedEntryIds = newCheckedEntryIds,
                 // Also update the isChecked flag directly in the Logbook model if desired
                 entries = currentState.entries.map { entry ->
-                    if (entry.entryNr == entryId) {
+                    if (entry.entryId == entryId) {
                         entry.copy(isChecked = !isChecked)
                     } else {
                         entry
@@ -500,72 +514,4 @@ class LogBookViewModel : ViewModel() {
 
     // --- MOCK DATA CREATION (Uses the corrected data model) ---
 
-    @RequiresApi(Build.VERSION_CODES.O)
-    private fun createMockLogbookEntries(): List<Logbook> {
-        return listOf(
-            Logbook(
-                entryNr = 1000351477, // Corrected property name
-                status = LogbookStatus.CONFIRMED.name, // Use name property
-                startTime = LocalDateTime.of(2025, 7, 21, 13, 33),
-                endTime = LocalDateTime.of(2025, 7, 21, 13, 45),
-                vehicle = Vehicle(
-                    registration = "D-WG 466E",
-                    id = "V001",
-                    poolId = TODO(),
-                    // poolId property missing in new Logbook definition, removing from Vehicle mock
-                ),
-                internalNumber = "INT477", // Added missing property
-                startOdometer = 7974.0,
-                endOdometer = 7984.0,
-                purposeOfTrip = "Kundenbesuch", // Corrected property name
-                distance = 10.0,
-                startLocation = "Firmenzentrale, Düsseldorf",
-                endLocation = "Kundenadresse, Düsseldorf", // Added missing property
-                isReactionTimeDriver = false,
-                isResponseTimeTrip = false,
-                justification = null,
-                tripLegs = emptyList(),
-                approval = Approval(
-                    approvedOn = LocalDate.of(2025, 7, 22),
-                    approvedBy = "Max Mustermann",
-                    notes = "Fahrt genehmigt."
-                ),
-                cancellation = null,
-                notes = "Keine besonderen Vorkommnisse."
-            ),
-            Logbook(
-                entryNr = 1000351454,
-                status = LogbookStatus.NOT_CONFIRMED.name,
-                startTime = LocalDateTime.of(2025, 7, 21, 12, 48),
-                endTime = LocalDateTime.of(2025, 7, 21, 13, 15),
-                vehicle = Vehicle(
-                    registration = "D-EM 719E",
-                    id = "V002",
-                    poolId = TODO(),
-                ),
-                internalNumber = "INT454",
-                startOdometer = 7964.0,
-                endOdometer = 7974.0,
-                purposeOfTrip = "Baustelle",
-                distance = 10.0,
-                startLocation = "Lager, Köln",
-                endLocation = "Baustelle A, Köln",
-                isReactionTimeDriver = true,
-                isResponseTimeTrip = true,
-                justification = "Dringender Materialtransport",
-                tripLegs = listOf(
-                    TripLeg(
-                        startTime = LocalDateTime.of(2025, 7, 21, 12, 48),
-                        startLocation = "Lager, Köln",
-                        endTime = LocalDateTime.of(2025, 7, 21, 13, 15),
-                        endLocation = "Baustelle A, Köln"
-                    )
-                ),
-                approval = null,
-                cancellation = null,
-                notes = null
-            )
-        )
-    }
 }
-

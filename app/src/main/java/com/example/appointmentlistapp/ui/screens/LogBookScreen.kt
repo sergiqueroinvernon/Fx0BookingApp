@@ -91,8 +91,8 @@ fun LogBookFilterMask( // Renamed and fixed signature
 
             // 1. Eintragsnr. (Using LogBook-specific properties and events)
             OutlinedTextField(
-                value = filterState.entryNr,
-                onValueChange = { onEvent(LogBookFilterEvent.EntryNrChange(it)) },
+                value = filterState.entryId,
+                onValueChange = { onEvent(LogBookFilterEvent.EntryIdChange(it)) },
                 label = { Text("Eintragsnr.") },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true
@@ -278,10 +278,11 @@ fun LogBookScreen() {
 
     LaunchedEffect(Unit) {
         // These calls should ideally be adapted for Logbook data
+        logBookViewModel.fetchLogBookEntries("82EEB103-0E29-43E3-979F-6487440A7AFE")
         logBookViewModel.fetchButtonsForClientAndScreen("client123", "LogBookScreen")
         logBookViewModel.fetchPurposeOfTrips()
         logBookViewModel.fetchStatusOptions()
-        logBookViewModel.fetchVehiclesByDriver("F7F5C431-E776-48B4-B9BC-9ABA528E6F23")
+       // logBookViewModel.fetchVehiclesByDriver("F7F5C431-E776-48B4-B9BC-9ABA528E6F23")
     }
 
 
@@ -384,7 +385,7 @@ fun LogBookScreen() {
                                 isChecked = logBook.isChecked ?: false,
                                 onCheckedChange = {
                                     logBookViewModel.handleEvent(
-                                        LogBookEvent.LogbookCheckedChange(logBook.entryNr)
+                                        LogBookEvent.LogbookCheckedChange(logBook.entryId)
                                     )
                                 },
                             )

@@ -16,7 +16,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.appointmentlistapp.data.Logbook
-import com.example.appointmentlistapp.data.LogbookStatus
 import java.time.format.DateTimeFormatter
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -36,15 +35,15 @@ fun LogbookList(
             HeaderRow()
             Divider()
         }
-        items(entries, key = { it.entryNr }) { entry ->
-            val isSelected = entry.entryNr == selectedEntry?.entryNr
-            val isChecked = checkedEntryIds.contains(entry.entryNr)
+        items(entries, key = { it.entryId }) { entry ->
+            val isSelected = entry.entryId == selectedEntry?.entryId
+            val isChecked = checkedEntryIds.contains(entry.entryId)
             DataRow(
                 entry = entry,
                 isSelected = isSelected,
                 isChecked = isChecked,
                 onRowClick = { onEntrySelected(entry) },
-                onCheckedChange = { onEntryCheckedChange(entry.entryNr) }
+                onCheckedChange = { onEntryCheckedChange(entry.entryId) }
             )
             Divider()
         }
@@ -99,10 +98,10 @@ private fun DataRow(
             fontSize = 14.sp,
             fontWeight = FontWeight.Bold
         )
-        Text(entry.entryNr.toString(), Modifier.weight(1f), fontSize = 14.sp)
-        Text(entry.startTime.format(dateFormatter), Modifier.weight(1.5f), fontSize = 14.sp)
-        Text(entry.vehicle.registration, Modifier.weight(1.5f), fontSize = 14.sp)
-        Text(entry.purposeOfTrip ?: "-", Modifier.weight(1f), fontSize = 14.sp)
+        Text(text = entry.entryId.toString(), modifier = Modifier.weight(1f), fontSize = 14.sp)
+        Text(text = entry.startTime.format(dateFormatter), modifier = Modifier.weight(1.5f), fontSize = 14.sp)
+        Text(text = entry.vehicle?.registration ?: "-", modifier = Modifier.weight(1.5f), fontSize = 14.sp)
+        Text(text = entry.purposeOfTrip ?: "-", modifier = Modifier.weight(1f), fontSize = 14.sp)
     }
 }
 
