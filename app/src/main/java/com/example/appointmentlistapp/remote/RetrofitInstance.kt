@@ -1,6 +1,8 @@
 package com.example.appointmentlistapp.data.remote
 
 import com.example.appointmentlistapp.data.BookingAppService
+import com.example.appointmentlistapp.data.api.LogbookAppService
+
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
@@ -16,8 +18,14 @@ object RetrofitInstance {
                 .build()
         }
 
-        val api: BookingAppService by lazy {
-            retrofit.create(BookingAppService::class.java) // Correctly creates the service
-        }
+    val bookingApi: BookingAppService by lazy {
+        retrofit.create(BookingAppService::class.java) // Correctly creates the service
+    }
+
+    val logBookApi: LogbookAppService by lazy {
+        retrofit.create(LogbookAppService::class.java) // Correctly creates the service
+    }
+
+
 
     }

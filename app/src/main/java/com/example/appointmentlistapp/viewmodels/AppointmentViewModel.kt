@@ -45,7 +45,7 @@ class AppointmentViewModel : ViewModel() {
             _isLoading.value = true
             setErrorMessage(null)
             try {
-                val driverAppointments = RetrofitInstance.api.getAppointmentsByDriverId(driverId)
+                val driverAppointments = RetrofitInstance.bookingApi.getAppointmentsByDriverId(driverId)
                 _appointments.value = driverAppointments
             } catch (e: IOException) {
                 setErrorMessage("Netzwerkfehler. Bitte überprüfen Sie Ihre Verbindung und stellen Sie sicher, dass die API läuft.")
@@ -94,7 +94,7 @@ class AppointmentViewModel : ViewModel() {
 
             for (appointment in selectedAppointments) {
                 try {
-                    val response = RetrofitInstance.api.checkInAppointment(appointment.id)
+                    val response = RetrofitInstance.bookingApi.checkInAppointment(appointment.id)
                     if (response.isSuccessful) {
                         successCount++
                     } else {

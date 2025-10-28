@@ -245,7 +245,50 @@ class LogBookViewModel : ViewModel() {
         driverId: String? = _scannedDriverId.value,
         useCachedData: Boolean = false
     ) {
+        // If we want to use cached data and it's already there, don't fetch again
+        if (useCachedData && _logBooks.value.isNotEmpty()) {
+            Log.d("LogBookViewModel", "Using cached logbook data.")
+            return
+        }
 
+        // A driver ID is required to fetch logbooks
+        if (driverId == null) {
+            _uiState.update {
+                it.copy(
+                    isLoading = false,
+                    errorMessage = "Fahrer-ID nicht gefunden. Bitte erneut scannen."
+                )
+            }
+            return
+        }
+
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true, errorMessage = null) }
+            try {
+                // Fetch data from the API
+                val fetchedLogBooks = RetrofitInstance.  getLog(driverId)
+                _logBooks.value = fetchedLogBooks // Update the raw data flow
+
+                // Update the main UI state
+                _uiState.update { currentState ->
+                    currentState.copy(
+                        isLoading = false,
+                        entries = fetchedLogBooks,
+                        // Automatically select the first entry if the list is not empty
+                        selectedEntry = fetchedLogBooks.firstOrNull()
+                    )
+                }
+                Log.d("LogBookViewModel", "Successfully fetched ${fetchedLogBooks.size} logbook entries.")
+            } catch (e: Exception) {
+                val errorMsg = when (e) {
+                    is IOException -> "Netzwerkfehler beim Laden der Fahrtenbuch-Einträge."
+                    is HttpException -> "API-Fehler: HTTP ${e.code()}"
+                    else -> "Unerwarteter Fehler: ${e.message}"
+                }
+                _uiState.update { it.copy(isLoading = false, errorMessage = errorMsg) }
+                Log.e("LogBookViewModel", "Error fetching logbook entries", e)
+            }
+        }
     }
     val isLoading = MutableStateFlow(false)
 
@@ -259,7 +302,7 @@ class LogBookViewModel : ViewModel() {
     // 1. Consolidated state management into a single MutableStateFlow
     private val _uiState = MutableStateFlow(
         LogBookUiState(
-            entries = createMockLogbookEntries() // Initialize with mock data
+            entries = emptyList() // Initialize with an empty list
         )
     )
     // Public immutable state that the UI can observe
@@ -269,12 +312,8 @@ class LogBookViewModel : ViewModel() {
 
     // 2. Initializer block now correctly sets the selected entry using the unified state
     init {
-        _uiState.update { currentState ->
-            currentState.copy(
-                selectedEntry = currentState.entries.firstOrNull(),
-                isDetailPlainVisible = true // Show details for the first entry by default
-            )
-        }
+        // We fetch data on demand, so the init block is a good place for setup,
+        // but not for initial data fetching unless it's always required at startup.
     }
 
 
