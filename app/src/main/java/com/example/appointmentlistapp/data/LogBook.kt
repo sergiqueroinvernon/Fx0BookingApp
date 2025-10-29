@@ -37,24 +37,24 @@ data class Logbook(
 
     // 1. CLAU PRIMÀRIA & Claus Foranes (FKs)
     @SerializedName("entryId")
-    val entryId: Long,
+    val entryId: Long?,
 
     @SerializedName("Driver")
     val driver: Driver? = null,
 
 
     @SerializedName("driverId")
-    val driverId: String,       // Mapeig: C# Guid -> Kotlin String
+    val driverId: String?,       // Mapeig: C# Guid -> Kotlin String
 
     @SerializedName("vehicleId")
-    val vehicleId: Int,
+    val vehicleId: Int?,
 
     @SerializedName("purposeOfTripId")
-    val purposeOfTripId: Int,
+    val purposeOfTripId: Int?,
 
     // 2. CAMPS DE DADES SIMPLES
     @SerializedName("status")
-    val status: String,
+    val status: String?,
 
     @SerializedName("internalNumber")
     val internalNumber: String?, // Nullable
@@ -62,11 +62,11 @@ data class Logbook(
     @SerializedName("purposeOfTrip")
     val purposeOfTrip: String?,  // Nullable
 
-    @SerializedName("StartLocation")
-    val startLocation: String,
+    @SerializedName("startLocation")
+    val startLocation: String?,
 
     @SerializedName("endLocation")
-    val endLocation: String,
+    val endLocation: String?,
 
     @SerializedName("isReactionTimeDriver")
     val isReactionTimeDriver: Boolean,
@@ -83,10 +83,10 @@ data class Logbook(
     // 3. CAMPS TEMPORALS (C# DateTime -> Kotlin LocalDateTime)
     // Requereix un TypeAdapter per a Gson/Moshi
     @SerializedName("startTime")
-    val startTime: String,
+    val startTime: String?,
 
     @SerializedName("endTime")
-    val endTime: String,
+    val endTime: String?,
 
     // 4. CAMPS NUMÈRICS (C# Decimal -> Kotlin Double)
     @SerializedName("startOdometer")

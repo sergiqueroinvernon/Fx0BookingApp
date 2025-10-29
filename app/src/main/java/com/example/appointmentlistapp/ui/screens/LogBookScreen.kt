@@ -370,7 +370,7 @@ fun LogBookScreen() {
                         items(
                             logBooks,
                             key = { logBook ->
-                                logBook ?: logBook.toString()
+                                logBook?.entryId ?: java.util.UUID.randomUUID().toString()
                             }) { logBook ->
                             LogBookItem(
                                 logBook = logBook,
@@ -385,7 +385,7 @@ fun LogBookScreen() {
                                 isChecked = logBook.isChecked ?: false,
                                 onCheckedChange = {
                                     logBookViewModel.handleEvent(
-                                        LogBookEvent.LogbookCheckedChange(logBook.entryId)
+                                        LogBookEvent.LogbookCheckedChange(logBook.entryId ?: "")
                                     )
                                 },
                             )

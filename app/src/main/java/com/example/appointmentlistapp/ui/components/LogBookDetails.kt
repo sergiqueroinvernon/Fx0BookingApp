@@ -53,12 +53,12 @@ fun LogbookDetailView(logbook: Logbook?, modifier: Modifier = Modifier) {
                 item {
                     SectionHeader("Angaben zur Fahrt")
                     DetailRow(
-                        label1 = "Datum Start", value1 = logbook.startTime.format(dateFormatter),
-                        label2 = "Uhrzeit Start", value2 = logbook.startTime.format(timeFormatter)
+                        label1 = "Datum Start", value1 = logbook.startTime?.format(dateFormatter),
+                        label2 = "Uhrzeit Start", value2 = logbook.startTime?.format(timeFormatter)
                     )
                     DetailRow(
-                        label1 = "Datum Ziel", value1 = logbook.endTime.format(dateFormatter),
-                        label2 = "Uhrzeit Ziel", value2 = logbook.endTime.format(timeFormatter)
+                        label1 = "Datum Ziel", value1 = logbook.endTime?.format(dateFormatter),
+                        label2 = "Uhrzeit Ziel", value2 = logbook.endTime?.format(timeFormatter)
                     )
                     DetailRow(
                         label1 = "Fahrzeug", value1 = logbook.vehicle?.registration,

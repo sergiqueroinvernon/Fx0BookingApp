@@ -35,7 +35,7 @@ fun LogbookList(
             HeaderRow()
             Divider()
         }
-        items(entries, key = { it.entryId }) { entry ->
+        items(entries, key = { it.entryId!! }) { entry ->
             val isSelected = entry.entryId == selectedEntry?.entryId
             val isChecked = checkedEntryIds.contains(entry.entryId)
             DataRow(
@@ -43,7 +43,7 @@ fun LogbookList(
                 isSelected = isSelected,
                 isChecked = isChecked,
                 onRowClick = { onEntrySelected(entry) },
-                onCheckedChange = { onEntryCheckedChange(entry.entryId) }
+                onCheckedChange = { onEntryCheckedChange(entry.entryId!!) }
             )
             Divider()
         }
@@ -99,7 +99,7 @@ private fun DataRow(
             fontWeight = FontWeight.Bold
         )
         Text(text = entry.entryId.toString(), modifier = Modifier.weight(1f), fontSize = 14.sp)
-        Text(text = entry.startTime.format(dateFormatter), modifier = Modifier.weight(1.5f), fontSize = 14.sp)
+        Text(text = entry.startTime?.format(dateFormatter) ?: "-", modifier = Modifier.weight(1.5f), fontSize = 14.sp)
         Text(text = entry.vehicle?.registration ?: "-", modifier = Modifier.weight(1.5f), fontSize = 14.sp)
         Text(text = entry.purposeOfTrip ?: "-", modifier = Modifier.weight(1f), fontSize = 14.sp)
     }

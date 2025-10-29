@@ -22,7 +22,6 @@ import kotlinx.coroutines.launch
 import retrofit2.HttpException
 import java.io.IOException
 import java.text.SimpleDateFormat
-import java.time.LocalDate
 import java.time.LocalDateTime
 import java.util.Calendar
 import java.util.Locale
@@ -42,7 +41,7 @@ data class LogBookUiState(
 sealed class LogBookEvent {
     data class ButtonClicked(val config: ButtonConfig) : LogBookEvent()
     data class LogbookSelected(val logBook: Logbook) : LogBookEvent()
-    data class LogbookCheckedChange(val logbookId: Long) : LogBookEvent()
+    data class LogbookCheckedChange(val logbookId: Any) : LogBookEvent()
 }
 
 
@@ -462,7 +461,7 @@ class LogBookViewModel : ViewModel() {
     fun handleEvent(event: LogBookEvent) {
         when (event) {
             is LogBookEvent.ButtonClicked -> handleButtonClicked(event.config)
-            is LogBookEvent.LogbookCheckedChange -> selectLogBook(event.logbookId)
+            is LogBookEvent.LogbookCheckedChange -> selectLogBook(event.logbookId as Long)
             is LogBookEvent.LogbookSelected -> toggleLogbookChecked(event.logBook)
         }
     }
